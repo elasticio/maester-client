@@ -46,7 +46,30 @@ describe('objects', function () {
     });
 
     describe('get object', function () {
-        it('should get object as text', async function () {
+        it('should get object', async function () {
+            const id = randomObjectId();
+            const data = 'test123';
+            const contentType = 'text/plain';
+            const contentLength = data.length;
+
+            const scope = nock(this.client.baseUri, this.options)
+                .defaultReplyHeaders({
+                    'content-type': contentType,
+                    'content-length': contentLength.toString()
+                })
+                .get(`/objects/${id}`)
+                .reply(200, data);
+
+            const response = await this.client.objects.get(id);
+
+            expect(scope.isDone()).to.be.true;
+            expect(response.contentType).to.equal(contentType);
+            expect(response.contentLength).to.equal(contentLength);
+            expect(response.metadata).to.deep.equal({});
+            expect(response.data).to.equal(data);
+        });
+
+        it('should get object with metadata', async function () {
             const id = randomObjectId();
             const data = 'test123';
             const contentType = 'text/plain';
@@ -81,27 +104,45 @@ describe('objects', function () {
             };
             const contentType = 'application/json';
             const contentLength = JSON.stringify(data).length;
-            const metadata = {
-                field1: 'test',
-                'field-2': '123'
-            };
 
             const scope = nock(this.client.baseUri, this.options)
                 .defaultReplyHeaders({
                     'content-type': contentType,
-                    'content-length': contentLength.toString(),
-                    ...metaToHeaders(metadata)
+                    'content-length': contentLength.toString()
                 })
                 .get(`/objects/${id}`)
                 .reply(200, data);
 
-            const response = await this.client.objects.get(id);
+            const response = await this.client.objects.getJSON(id);
 
             expect(scope.isDone()).to.be.true;
             expect(response.contentType).to.equal(contentType);
             expect(response.contentLength).to.equal(contentLength);
-            expect(response.metadata).to.deep.equal(metadata);
+            expect(response.metadata).to.deep.equal({});
             expect(response.data).to.deep.equal(data);
+        });
+
+        it('should get object as buffer', async function () {
+            const id = randomObjectId();
+            const data = 'test123';
+            const contentType = 'application/octet-stream';
+            const contentLength = data.length;
+
+            const scope = nock(this.client.baseUri, this.options)
+                .defaultReplyHeaders({
+                    'content-type': contentType,
+                    'content-length': contentLength.toString()
+                })
+                .get(`/objects/${id}`)
+                .reply(200, data);
+
+            const response = await this.client.objects.getBuffer(id);
+
+            expect(scope.isDone()).to.be.true;
+            expect(response.contentType).to.equal(contentType);
+            expect(response.contentLength).to.equal(contentLength);
+            expect(response.metadata).to.deep.equal({});
+            expect(response.data.toString()).to.equal(data);
         });
 
         it('should get object as stream', async function () {
@@ -109,26 +150,21 @@ describe('objects', function () {
             const data = randomBytes(1024);
             const contentType = 'application/octet-stream';
             const contentLength = data.length;
-            const metadata = {
-                field1: 'test',
-                'field-2': '123'
-            };
 
             const scope = nock(this.client.baseUri, this.options)
                 .defaultReplyHeaders({
                     'content-type': contentType,
-                    'content-length': contentLength.toString(),
-                    ...metaToHeaders(metadata)
+                    'content-length': contentLength.toString()
                 })
                 .get(`/objects/${id}`)
                 .reply(200, data);
 
-            const response = await this.client.objects.get(id, 'stream');
+            const response = await this.client.objects.getStream(id);
 
             expect(scope.isDone()).to.be.true;
             expect(response.contentType).to.equal(contentType);
             expect(response.contentLength).to.equal(contentLength);
-            expect(response.metadata).to.deep.equal(metadata);
+            expect(response.metadata).to.deep.equal({});
 
             const buffer: Buffer = await new Promise((resolve, reject) => {
                 const chunks: Buffer[] = [];

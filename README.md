@@ -70,10 +70,26 @@ const object = await client.objects.get(id);
 console.log(object.data);
 ```
 
+Object's property `data` has value of type `string`, `object`, `Buffer` or `Stream`. 
+
+Get object as JSON:
+
+```
+const object = await client.objects.getJSON(id);
+console.log(object.data);
+```
+
+Get object as buffer:
+
+```
+const object = await client.objects.getBuffer(id);
+console.log(object.data.toString())
+```
+
 Get object as stream:
 
 ```
-const object = await client.objects.get(id, 'stream');
+const object = await client.objects.getStream(id);
 object.data.pipe(...)
 ```
 

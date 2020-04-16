@@ -87,6 +87,18 @@ export default class ObjectRepository {
             .then((res: AxiosResponse) => new GetObjectResponse(res));
     }
 
+    public getJSON(id: string): Promise<GetObjectResponse> {
+        return this.get(id, 'json');
+    }
+
+    public getBuffer(id: string): Promise<GetObjectResponse> {
+        return this.get(id, 'arraybuffer');
+    }
+
+    public getStream(id: string): Promise<GetObjectResponse> {
+        return this.get(id, 'stream');
+    }
+
     public create(data: PlainOrArray<string | Buffer | Stream | ObjectData>,
                   params?: CreateObjectParams): Promise<PlainOrArray<CreateObjectResponse>> {
         const { bucket, metadata } = params ?? {};
