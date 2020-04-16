@@ -3,7 +3,6 @@ import { createHash, randomBytes } from 'crypto';
 import { expect } from 'chai';
 import { describe, it, before } from 'mocha';
 import { Readable } from 'stream';
-import FormData from 'form-data';
 
 import { randomObjectId, matchFormData } from './utils';
 import { Client, metaToHeaders } from '../src';
@@ -143,273 +142,150 @@ describe('objects', function () {
     });
 
     describe('create object', function () {
-        describe('ordinary', function () {
-            it('should create object from text', async function () {
-                const data = 'test123';
-                const response = randomCreateObjectResponse(data);
+        it('should create object from text', async function () {
+            const data = 'test123';
+            const response = randomCreateObjectResponse(data);
 
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', response.contentType)
-                    .matchHeader('content-length', response.contentLength.toString())
-                    .post('/objects', data)
-                    .reply(201, response);
+            const scope = nock(this.client.baseUri, this.options)
+                .matchHeader('content-type', /multipart\/form-data/)
+                .post('/objects', body =>
+                    matchFormData(body, 'data', data, response.contentType))
+                .reply(201, response);
 
-                const object = await this.client.objects.create(data);
+            const object = await this.client.objects.create(data);
 
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
-            });
-
-            it('should create object with metadata', async function () {
-                const data = 'test123';
-                const response = randomCreateObjectResponse(data, {
-                    metadata: {
-                        field1: 'test',
-                        'field-2': '123'
-                    }
-                });
-
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', response.contentType)
-                    .matchHeader('content-length', response.contentLength.toString())
-                    .matchHeader('x-meta-field1', response.metadata.field1)
-                    .matchHeader('x-meta-field-2', response.metadata['field-2'])
-                    .post('/objects', data)
-                    .reply(201, response);
-
-                const object = await this.client.objects.create(data, {
-                    metadata: response.metadata
-                });
-
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
-            });
-
-            it('should create object and attach it bucket', async function () {
-                const data = 'test123';
-                const bucket = randomObjectId();
-                const response = randomCreateObjectResponse(data);
-
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', response.contentType)
-                    .matchHeader('content-length', response.contentLength.toString())
-                    .matchHeader('x-meta-bucket', bucket)
-                    .post('/objects', data)
-                    .reply(201, response);
-
-                const object = await this.client.objects.create(data, { bucket });
-
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
-            });
-
-            it('should create object and override content type', async function () {
-                const data = 'test123';
-                const response = randomCreateObjectResponse(data, { contentType: 'text/plain' });
-
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', response.contentType)
-                    .matchHeader('content-length', response.contentLength.toString())
-                    .post('/objects', data)
-                    .reply(201, response);
-
-                const object = await this.client.objects.create(data, {
-                    contentType: response.contentType
-                });
-
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
-            });
-
-            it('should create object from buffer', async function () {
-                const data = randomBytes(1024);
-                const response = randomCreateObjectResponse(data);
-
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', response.contentType)
-                    .matchHeader('content-length', response.contentLength.toString())
-                    .post('/objects', data)
-                    .reply(201, response);
-
-                const object = await this.client.objects.create(data);
-
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
-            });
-
-            it('should create object from stream', async function () {
-                const data = randomBytes(1024);
-                const stream = Readable.from([data]);
-                const response = randomCreateObjectResponse(data);
-
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', response.contentType)
-                    .post('/objects', data)
-                    .reply(201, response);
-
-                const object = await this.client.objects.create(stream);
-
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
-            });
+            expect(scope.isDone()).to.be.true;
+            expect(object).to.deep.equal(transformResponse(response));
         });
 
-        describe('multipart/form-data', function () {
-            it('should create object from text', async function () {
-                const data = 'test123';
-                const response = randomCreateObjectResponse(data);
-
-                const formData = new FormData();
-                formData.append('data', data);
-
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
-                    .post('/objects', body =>
-                        matchFormData(body, 'data', data))
-                    .reply(201, response);
-
-                const object = await this.client.objects.create(formData);
-
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
+        it('should create object with metadata', async function () {
+            const data = 'test123';
+            const response = randomCreateObjectResponse(data, {
+                metadata: {
+                    field1: 'test',
+                    'field-2': '123'
+                }
             });
 
-            it('should create object with metadata', async function () {
-                const data = 'test123';
-                const response = randomCreateObjectResponse(data, {
-                    metadata: {
-                        field1: 'test',
-                        'field-2': '123'
-                    }
-                });
+            const scope = nock(this.client.baseUri, this.options)
+                .matchHeader('content-type', /multipart\/form-data/)
+                .post('/objects', body =>
+                    matchFormData(body, 'data', data, response.contentType) &&
+                    matchFormData(body, 'field1', response.metadata.field1) &&
+                    matchFormData(body, 'field-2', response.metadata['field-2']))
+                .reply(201, response);
 
-                const formData = new FormData();
-                formData.append('data', data);
-
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
-                    .matchHeader('x-meta-field1', response.metadata.field1)
-                    .matchHeader('x-meta-field-2', response.metadata['field-2'])
-                    .post('/objects', body =>
-                        matchFormData(body, 'data', data))
-                    .reply(201, response);
-
-                const object = await this.client.objects.create(formData, {
-                    metadata: response.metadata
-                });
-
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
+            const object = await this.client.objects.create(data, {
+                metadata: response.metadata
             });
 
-            it('should create object and attach it bucket', async function () {
-                const data = 'test123';
-                const bucket = randomObjectId();
-                const response = randomCreateObjectResponse(data);
+            expect(scope.isDone()).to.be.true;
+            expect(object).to.deep.equal(transformResponse(response));
+        });
 
-                const formData = new FormData();
-                formData.append('data', data);
+        it('should create object and attach it bucket', async function () {
+            const data = 'test123';
+            const bucket = randomObjectId();
+            const response = randomCreateObjectResponse(data);
 
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
-                    .post('/objects', body =>
-                        matchFormData(body, 'data', data))
-                    .reply(201, response);
+            const scope = nock(this.client.baseUri, this.options)
+                .matchHeader('content-type', /multipart\/form-data/)
+                .post('/objects', body =>
+                    matchFormData(body, 'data', data, response.contentType) &&
+                    matchFormData(body, 'bucket', bucket))
+                .reply(201, response);
 
-                const object = await this.client.objects.create(formData, { bucket });
+            const object = await this.client.objects.create(data, { bucket });
 
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
+            expect(scope.isDone()).to.be.true;
+            expect(object).to.deep.equal(transformResponse(response));
+        });
+
+        it('should create object and override content type', async function () {
+            const data = 'test123';
+            const response = randomCreateObjectResponse(data, { contentType: 'text/plain' });
+
+            const scope = nock(this.client.baseUri, this.options)
+                .matchHeader('content-type', /multipart\/form-data/)
+                .post('/objects', body =>
+                    matchFormData(body, 'data', data, response.contentType))
+                .reply(201, response);
+
+            const object = await this.client.objects.create({
+                data,
+                contentType: response.contentType
             });
 
-            it('should create object and override content type', async function () {
-                const data = 'test123';
-                const response = randomCreateObjectResponse(data, { contentType: 'text/plain' });
+            expect(scope.isDone()).to.be.true;
+            expect(object).to.deep.equal(transformResponse(response));
+        });
 
-                const formData = new FormData();
-                formData.append('data', data, { contentType: response.contentType });
+        it('should create object from buffer', async function () {
+            const data = randomBytes(1024);
+            const response = randomCreateObjectResponse(data);
 
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
-                    .post('/objects', body =>
-                        matchFormData(body, 'data', data, response.contentType))
-                    .reply(201, response);
+            const scope = nock(this.client.baseUri, this.options)
+                .matchHeader('content-type', /multipart\/form-data/)
+                .post('/objects', body =>
+                    matchFormData(body, 'data', data, response.contentType))
+                .reply(201, response);
 
-                const object = await this.client.objects.create(formData);
+            const object = await this.client.objects.create(data);
 
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
-            });
+            expect(scope.isDone()).to.be.true;
+            expect(object).to.deep.equal(transformResponse(response));
+        });
 
-            it('should create object from buffer', async function () {
-                const data = randomBytes(1024);
-                const response = randomCreateObjectResponse(data);
+        it('should create object from stream', async function () {
+            const data = randomBytes(1024);
+            const stream = Readable.from([data]);
+            const response = randomCreateObjectResponse(data);
 
-                const formData = new FormData();
-                formData.append('data', data);
+            const scope = nock(this.client.baseUri, this.options)
+                .matchHeader('content-type', /multipart\/form-data/)
+                .post('/objects', body =>
+                    matchFormData(body, 'data', data, response.contentType))
+                .reply(201, response);
 
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
-                    .post('/objects', body =>
-                        matchFormData(body, 'data', data, 'application/octet-stream'))
-                    .reply(201, response);
+            const object = await this.client.objects.create(stream);
 
-                const object = await this.client.objects.create(formData);
+            expect(scope.isDone()).to.be.true;
+            expect(object).to.deep.equal(transformResponse(response));
+        });
 
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
-            });
+        it('should create multiple objects', async function () {
+            const data1 = 'test123';
+            const data2 = randomBytes(1024);
+            const data3 = randomBytes(1024);
+            const stream = Readable.from([data3]);
+            const response = [
+                randomCreateObjectResponse(data1, { contentType: 'text/plain' }),
+                randomCreateObjectResponse(data2),
+                randomCreateObjectResponse(data3)
+            ];
 
-            it('should create object from stream', async function () {
-                const data = randomBytes(1024);
-                const stream = Readable.from([data]);
-                const response = randomCreateObjectResponse(data);
+            const data = [
+                {
+                    data: data1,
+                    contentType: response[0].contentType
+                },
+                data2,
+                stream
+            ];
 
-                const formData = new FormData();
-                formData.append('data', stream);
+            const scope = nock(this.client.baseUri, this.options)
+                .matchHeader('content-type', /multipart\/form-data/)
+                .post('/objects', body =>
+                    matchFormData(body, 'data', data1, response[0].contentType) &&
+                    matchFormData(body, 'data', data2, response[1].contentType) &&
+                    matchFormData(body, 'data', data3, response[2].contentType)
+                )
+                .reply(201, response);
 
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
-                    .post('/objects', body =>
-                        matchFormData(body, 'data', data, 'application/octet-stream'))
-                    .reply(201, response);
+            const objects = await this.client.objects.create(data);
 
-                const object = await this.client.objects.create(formData);
-
-                expect(scope.isDone()).to.be.true;
-                expect(object).to.deep.equal(transformResponse(response));
-            });
-
-            it('should create multiple objects', async function () {
-                const data1 = 'test123';
-                const data2 = randomBytes(1024);
-                const data3 = randomBytes(1024);
-                const stream = Readable.from([data3]);
-                const response = [
-                    randomCreateObjectResponse(data1),
-                    randomCreateObjectResponse(data2),
-                    randomCreateObjectResponse(data3)
-                ];
-
-                const formData = new FormData();
-                formData.append('data', data1);
-                formData.append('data', data2);
-                formData.append('data', stream);
-
-                const scope = nock(this.client.baseUri, this.options)
-                    .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
-                    .post('/objects', body =>
-                        matchFormData(body, 'data', data1) &&
-                        matchFormData(body, 'data', data2, 'application/octet-stream') &&
-                        matchFormData(body, 'data', data3, 'application/octet-stream')
-                    )
-                    .reply(201, response);
-
-                const objects = await this.client.objects.create(formData);
-
-                expect(scope.isDone()).to.be.true;
-                expect(objects).to.deep.equal(response.map(transformResponse));
-            });
+            expect(scope.isDone()).to.be.true;
+            expect(objects).to.deep.equal(response.map(transformResponse));
         });
     });
 

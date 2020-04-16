@@ -3,8 +3,19 @@ import FormData from 'form-data';
 import { AxiosInstance, AxiosResponse, ResponseType } from 'axios';
 
 export const USER_META_HEADER_PREFIX = 'x-meta-';
+export const DEFAULT_CONTENT_TYPE = 'application/octet-stream';
 
+export type PlainOrArray<T> = T | T[];
 export type ObjectMetadata = Record<string, any>;
+
+export interface ObjectData {
+    data: string | Buffer | Stream;
+    contentType?: 'string';
+}
+
+export function isObjectData(data: any): data is ObjectData {
+    return typeof data === 'object' && 'data' in data;
+}
 
 export function metaToHeaders(meta: ObjectMetadata): Record<string, string> {
     const headers: Record<string, string> = {};
@@ -76,28 +87,36 @@ export default class ObjectRepository {
             .then((res: AxiosResponse) => new GetObjectResponse(res));
     }
 
-    public create(data: string | Buffer | FormData | Stream,
-                  params?: CreateObjectParams): Promise<CreateObjectResponse | CreateObjectResponse[]> {
-        const { contentType, bucket, metadata } = params ?? {};
-        const userMetadata = metadata ?? {};
+    public create(data: PlainOrArray<string | Buffer | Stream | ObjectData>,
+                  params?: CreateObjectParams): Promise<PlainOrArray<CreateObjectResponse>> {
+        const { bucket, metadata } = params ?? {};
+
+        const dataArray = Array.isArray(data) ? data : [data];
+        const formData = new FormData();
+
+        for (const item of dataArray) {
+            const [data, contentType] = isObjectData(item)
+                ? [item.data, item.contentType]
+                : [item, DEFAULT_CONTENT_TYPE];
+
+            formData.append('data', data, { contentType });
+        }
 
         if (bucket) {
-            if (data instanceof FormData) {
-                data.append('bucket', bucket);
-            } else {
-                userMetadata.bucket = bucket;
+            formData.append('bucket', bucket);
+        }
+
+        if (metadata) {
+            for (const [key, value] of Object.entries(metadata)) {
+                formData.append(key, value);
             }
         }
 
         const headers = {
-            ...metaToHeaders(userMetadata)
+            'content-type': `multipart/form-data; boundary=${formData.getBoundary()}`
         };
 
-        headers['content-type'] = data instanceof FormData
-            ? `multipart/form-data; boundary=${data.getBoundary()}`
-            : contentType ?? 'application/octet-stream';
-
-        return this.client.post('/objects', data, { headers })
+        return this.client.post('/objects', formData, { headers })
             .then((res: AxiosResponse) => Array.isArray(res.data)
                 ? res.data.map(data => new CreateObjectResponse(data))
                 : new CreateObjectResponse(res.data));

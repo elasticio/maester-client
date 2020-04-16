@@ -83,7 +83,7 @@ Create object:
 const response = await client.objects.create(data);
 ```
 
-where `data` can be `string`, `Buffer`, `FormData` or `Stream`
+Where `data` can be `string`, `Buffer`, `Stream` or array of these values.
 
 Create object with metadata:
 
@@ -103,10 +103,11 @@ const response = await client.objects.create(data, {
 });
 ```
 
-Create object and override content type:
+Create object and override its content type:
 
 ```
-const response = await client.objects.create(data, {
+const response = await client.objects.create({ 
+    data: 'hello world',
     contentType: 'text/plain'
 });
 ```
@@ -114,13 +115,17 @@ const response = await client.objects.create(data, {
 Create multiple objects at once:
 
 ```
-const FormData = require('form-data');
-
-const data = new FormData();
-data.append('data', 'hello world', { contentType: 'text/plain' });
-data.append('data', JSON.stringify(json), { contentType: 'application/json' });
-data.append('data', fs.createReadStream('/foo/bar.jpg'))
-data.append('data', Buffer.allocUnsafe(1024));
+const data = [
+    {
+        data: 'hello world'
+    },
+    {
+        data: JSON.stringify(json), 
+        contentType: 'application/json'
+    },
+    data: fs.createReadStream('/foo/bar.jpg'),
+    Buffer.allocUnsafe(1024)
+];
 
 const response = await client.objects.create(data, {
     bucket: 'bucket-id',
