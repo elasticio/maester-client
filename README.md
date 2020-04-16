@@ -93,6 +93,12 @@ const object = await client.objects.getStream(id);
 object.data.pipe(...)
 ```
 
+Readable stream example:
+
+```
+client.objects.getReadStream(id).pipe(fs.createWriteStream('/foo/bar.jpg'));
+```
+
 Create object:
 
 ```
@@ -149,6 +155,12 @@ const response = await client.objects.create(data, {
         description: 'my stuff'
     }
 });
+```
+
+Writable stream example:
+
+```
+fs.createReadStream('/foo/bar.jpg').pipe(client.objects.createWriteStream());
 ```
 
 Delete object:

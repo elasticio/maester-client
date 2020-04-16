@@ -1,5 +1,5 @@
-import Stream from 'stream';
 import FormData from 'form-data';
+import { Stream, Readable, Writable, PassThrough } from 'stream';
 import { AxiosInstance, AxiosResponse, ResponseType } from 'axios';
 
 export const USER_META_HEADER_PREFIX = 'x-meta-';
@@ -99,7 +99,11 @@ export default class ObjectRepository {
         return this.get(id, 'stream');
     }
 
-    public create(data: PlainOrArray<string | Buffer | Stream | ObjectData>,
+    public getReadStream(id: string): Promise<Readable> {
+        return this.getStream(id).then(res => res.data as Readable);
+    }
+
+    public create(data: PlainOrArray<string | Buffer | Readable | ObjectData>,
                   params?: CreateObjectParams): Promise<PlainOrArray<CreateObjectResponse>> {
         const { bucket, metadata } = params ?? {};
 
@@ -132,6 +136,12 @@ export default class ObjectRepository {
             .then((res: AxiosResponse) => Array.isArray(res.data)
                 ? res.data.map(data => new CreateObjectResponse(data))
                 : new CreateObjectResponse(res.data));
+    }
+
+    public createWriteStream(params?: CreateObjectParams): Writable {
+        const stream = new PassThrough();
+        this.create(stream, params).catch(err => stream.destroy(err));
+        return stream;
     }
 
     public delete(id: string): Promise<void> {

@@ -175,6 +175,34 @@ describe('objects', function () {
 
             expect(buffer.toString()).to.equal(data.toString());
         });
+
+        it('should get read stream', async function () {
+            const id = randomObjectId();
+            const data = randomBytes(1024);
+            const contentType = 'application/octet-stream';
+            const contentLength = data.length;
+
+            const scope = nock(this.client.baseUri, this.options)
+                .defaultReplyHeaders({
+                    'content-type': contentType,
+                    'content-length': contentLength.toString()
+                })
+                .get(`/objects/${id}`)
+                .reply(200, data);
+
+            const stream = await this.client.objects.getReadStream(id);
+
+            expect(scope.isDone()).to.be.true;
+
+            const buffer: Buffer = await new Promise((resolve, reject) => {
+                const chunks: Buffer[] = [];
+                stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+                stream.on('error', reject);
+                stream.on('end', () => resolve(Buffer.concat(chunks)))
+            });
+
+            expect(buffer.toString()).to.equal(data.toString());
+        });
     });
 
     describe('create object', function () {
@@ -322,6 +350,26 @@ describe('objects', function () {
 
             expect(scope.isDone()).to.be.true;
             expect(objects).to.deep.equal(response.map(transformResponse));
+        });
+
+        it('should create write stream', async function () {
+            const data = randomBytes(1024);
+            const stream = Readable.from([data]);
+
+            const scope = nock(this.client.baseUri, this.options)
+                .matchHeader('content-type', /multipart\/form-data/)
+                .post('/objects', body =>
+                    matchFormData(body, 'data', data, 'application/octet-stream'))
+                .reply(201);
+
+            const writeable = stream.pipe(this.client.objects.createWriteStream());
+
+            await new Promise((resolve, reject) => {
+                writeable.on('error', reject);
+                writeable.on('finish', resolve);
+            });
+
+            expect(scope.isDone()).to.be.true;
         });
     });
 
