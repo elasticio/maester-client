@@ -1,0 +1,56 @@
+{
+    "extends": [
+        "standard-with-typescript",
+        "plugin:mocha/recommended"
+    ],
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
+    "plugins": [
+        "mocha"
+    ],
+    "rules": {
+        "semi": "off",
+        "@typescript-eslint/space-before-function-paren": "off",
+        "@typescript-eslint/no-unused-expressions": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/strict-boolean-expressions": "off",
+        "@typescript-eslint/promise-function-async": "off",
+        "@typescript-eslint/return-await": "off",
+        "@typescript-eslint/member-delimiter-style": [
+            "error",
+            {
+                "multiline": {
+                    "delimiter": "semi",
+                    "requireLast": true
+                },
+                "singleline": {
+                    "delimiter": "semi",
+                    "requireLast": false
+                }
+            }
+        ],
+        "@typescript-eslint/indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1,
+                "FunctionDeclaration": {
+                    "parameters": "first"
+                },
+                "FunctionExpression": {
+                    "parameters": "first"
+                }
+            }
+        ],
+        "max-len": [
+            "warn",
+            120,
+            4,
+            {
+                "ignoreUrls": true,
+                "ignoreTemplateLiterals": true
+            }
+        ]
+    }
+}
