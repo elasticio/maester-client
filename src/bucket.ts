@@ -1,19 +1,27 @@
 import { AxiosInstance, AxiosResponse } from 'axios';
 
+export interface BucketData {
+    id?: string;
+    objects?: string[];
+    externalId?: string | null;
+    closed?: boolean;
+    createdAt?: string;
+}
+
 export class Bucket {
     public readonly id: string;
     public readonly objects: string[];
     public readonly externalId: string | null;
     public readonly closed: boolean;
-    public readonly createdAt: Date;
+    public readonly createdAt: Date | null;
 
-    constructor(data: any) {
+    constructor(data: BucketData) {
         const { id, objects, externalId, closed, createdAt } = data;
         this.id = id ?? '';
         this.objects = objects ?? [];
         this.externalId = externalId ?? null;
         this.closed = closed ?? false;
-        this.createdAt = new Date(createdAt);
+        this.createdAt = createdAt ? new Date(createdAt) : null;
     }
 }
 

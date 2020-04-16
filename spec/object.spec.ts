@@ -113,7 +113,7 @@ describe('objects', function () {
                 .get(`/objects/${id}`)
                 .reply(200, data);
 
-            const response = await this.client.objects.getJSON(id);
+            const response = await this.client.objects.get(id);
 
             expect(scope.isDone()).to.be.true;
             expect(response.contentType).to.equal(contentType);

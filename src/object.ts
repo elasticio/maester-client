@@ -1,5 +1,5 @@
 import FormData from 'form-data';
-import { Stream, Readable, Writable, PassThrough } from 'stream';
+import { Readable, Writable, PassThrough } from 'stream';
 import { AxiosInstance, AxiosResponse, ResponseType } from 'axios';
 
 export const USER_META_HEADER_PREFIX = 'x-meta-';
@@ -9,7 +9,7 @@ export type PlainOrArray<T> = T | T[];
 export type ObjectMetadata = Record<string, any>;
 
 export interface ObjectData {
-    data: string | Buffer | Stream;
+    data: string | Buffer | Readable;
     contentType?: 'string';
 }
 
@@ -39,7 +39,7 @@ export class GetObjectResponse {
     public readonly contentType: string;
     public readonly contentLength: number;
     public readonly metadata: ObjectMetadata;
-    public readonly data: any;
+    public readonly data: object | string | Buffer | Readable;
 
     constructor(res: AxiosResponse) {
         const { headers, data } = res;
@@ -56,21 +56,30 @@ export interface CreateObjectParams {
     metadata?: ObjectMetadata;
 }
 
+export interface CreateObjectResponseData {
+    objectId?: string;
+    contentType?: string;
+    contentLength?: number;
+    md5?: string;
+    createdAt?: string;
+    metadata?: ObjectMetadata;
+}
+
 export class CreateObjectResponse {
     public readonly id: string;
     public readonly contentType: string;
     public readonly contentLength: number;
     public readonly md5: string;
-    public readonly createdAt: Date;
+    public readonly createdAt: Date | null;
     public readonly metadata: ObjectMetadata;
 
-    constructor(data: any) {
+    constructor(data: CreateObjectResponseData) {
         const { objectId, contentType, contentLength, md5, createdAt, metadata } = data;
         this.id = objectId ?? '';
         this.contentType = contentType ?? '';
         this.contentLength = contentLength ?? 0;
         this.md5 = md5 ?? '';
-        this.createdAt = new Date(createdAt);
+        this.createdAt = createdAt ? new Date(createdAt) : null;
         this.metadata = metadata ?? {};
     }
 }
@@ -85,10 +94,6 @@ export default class ObjectRepository {
     public get(id: string, responseType?: ResponseType): Promise<GetObjectResponse> {
         return this.client.get(`/objects/${id}`, { responseType })
             .then((res: AxiosResponse) => new GetObjectResponse(res));
-    }
-
-    public getJSON(id: string): Promise<GetObjectResponse> {
-        return this.get(id, 'json');
     }
 
     public getBuffer(id: string): Promise<GetObjectResponse> {

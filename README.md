@@ -145,7 +145,7 @@ const data = [
         data: JSON.stringify(json), 
         contentType: 'application/json'
     },
-    data: fs.createReadStream('/foo/bar.jpg'),
+    fs.createReadStream('/foo/bar.jpg'),
     Buffer.allocUnsafe(1024)
 ];
 
