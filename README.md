@@ -8,18 +8,7 @@ The official object-storage client for elasticio-sailor-nodejs.
 ```
 const Client = require('@elasticio/maester-client');
 
-const jwtPayload = {
-    tenantId: 'tenant-id',
-    contractId: 'contract-id',
-    workspaceId: 'workspace-id',
-    flowId: 'flow-id',
-    userId: 'user-id'
-};
-
-const jwtSecret = 'my-super-secret';
-
-const client = new Client('http://maester.local:3002');
-client.sign(jwtPayload, jwtSecret);
+const client = new Client('http://maester.local:3002', 'my-token');
 ```
 
 ### Buckets API

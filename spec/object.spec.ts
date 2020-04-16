@@ -5,8 +5,8 @@ import { describe, it, before } from 'mocha';
 import { Readable } from 'stream';
 import FormData from 'form-data';
 
-import { baseUri, randomObjectId, getClient, getToken, matchFormData } from './utils';
-import { metaToHeaders } from '../src';
+import { randomObjectId, matchFormData } from './utils';
+import { Client, metaToHeaders } from '../src';
 
 describe('objects', function () {
     interface RandomCreateObjectParams {
@@ -38,10 +38,10 @@ describe('objects', function () {
     }
 
     before(function () {
-        this.client = getClient();
+        this.client = new Client('http://127.0.0.1', 'token');
         this.authorization = {
             reqheaders: {
-                authorization: `Bearer ${getToken()}`
+                authorization: `Bearer ${this.client.token as string}`
             }
         };
     });
@@ -57,7 +57,7 @@ describe('objects', function () {
                 'field-2': '123'
             };
 
-            const scope = nock(baseUri, this.options)
+            const scope = nock(this.client.baseUri, this.options)
                 .defaultReplyHeaders({
                     'content-type': contentType,
                     'content-length': contentLength.toString(),
@@ -87,7 +87,7 @@ describe('objects', function () {
                 'field-2': '123'
             };
 
-            const scope = nock(baseUri, this.options)
+            const scope = nock(this.client.baseUri, this.options)
                 .defaultReplyHeaders({
                     'content-type': contentType,
                     'content-length': contentLength.toString(),
@@ -115,7 +115,7 @@ describe('objects', function () {
                 'field-2': '123'
             };
 
-            const scope = nock(baseUri, this.options)
+            const scope = nock(this.client.baseUri, this.options)
                 .defaultReplyHeaders({
                     'content-type': contentType,
                     'content-length': contentLength.toString(),
@@ -148,7 +148,7 @@ describe('objects', function () {
                 const data = 'test123';
                 const response = randomCreateObjectResponse(data);
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', response.contentType)
                     .matchHeader('content-length', response.contentLength.toString())
                     .post('/objects', data)
@@ -169,7 +169,7 @@ describe('objects', function () {
                     }
                 });
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', response.contentType)
                     .matchHeader('content-length', response.contentLength.toString())
                     .matchHeader('x-meta-field1', response.metadata.field1)
@@ -190,7 +190,7 @@ describe('objects', function () {
                 const bucket = randomObjectId();
                 const response = randomCreateObjectResponse(data);
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', response.contentType)
                     .matchHeader('content-length', response.contentLength.toString())
                     .matchHeader('x-meta-bucket', bucket)
@@ -207,7 +207,7 @@ describe('objects', function () {
                 const data = 'test123';
                 const response = randomCreateObjectResponse(data, { contentType: 'text/plain' });
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', response.contentType)
                     .matchHeader('content-length', response.contentLength.toString())
                     .post('/objects', data)
@@ -225,7 +225,7 @@ describe('objects', function () {
                 const data = randomBytes(1024);
                 const response = randomCreateObjectResponse(data);
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', response.contentType)
                     .matchHeader('content-length', response.contentLength.toString())
                     .post('/objects', data)
@@ -242,7 +242,7 @@ describe('objects', function () {
                 const stream = Readable.from([data]);
                 const response = randomCreateObjectResponse(data);
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', response.contentType)
                     .post('/objects', data)
                     .reply(201, response);
@@ -262,7 +262,7 @@ describe('objects', function () {
                 const formData = new FormData();
                 formData.append('data', data);
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
                     .post('/objects', body =>
                         matchFormData(body, 'data', data))
@@ -286,7 +286,7 @@ describe('objects', function () {
                 const formData = new FormData();
                 formData.append('data', data);
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
                     .matchHeader('x-meta-field1', response.metadata.field1)
                     .matchHeader('x-meta-field-2', response.metadata['field-2'])
@@ -310,7 +310,7 @@ describe('objects', function () {
                 const formData = new FormData();
                 formData.append('data', data);
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
                     .post('/objects', body =>
                         matchFormData(body, 'data', data))
@@ -329,7 +329,7 @@ describe('objects', function () {
                 const formData = new FormData();
                 formData.append('data', data, { contentType: response.contentType });
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
                     .post('/objects', body =>
                         matchFormData(body, 'data', data, response.contentType))
@@ -348,7 +348,7 @@ describe('objects', function () {
                 const formData = new FormData();
                 formData.append('data', data);
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
                     .post('/objects', body =>
                         matchFormData(body, 'data', data, 'application/octet-stream'))
@@ -368,7 +368,7 @@ describe('objects', function () {
                 const formData = new FormData();
                 formData.append('data', stream);
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
                     .post('/objects', body =>
                         matchFormData(body, 'data', data, 'application/octet-stream'))
@@ -396,7 +396,7 @@ describe('objects', function () {
                 formData.append('data', data2);
                 formData.append('data', stream);
 
-                const scope = nock(baseUri, this.options)
+                const scope = nock(this.client.baseUri, this.options)
                     .matchHeader('content-type', `multipart/form-data; boundary=${formData.getBoundary()}`)
                     .post('/objects', body =>
                         matchFormData(body, 'data', data1) &&
@@ -416,7 +416,7 @@ describe('objects', function () {
     it('should delete objects', async function () {
         const id = randomObjectId();
 
-        const scope = nock(baseUri, this.options)
+        const scope = nock(this.client.baseUri, this.options)
             .delete(`/objects/${id}`)
             .reply(204);
 

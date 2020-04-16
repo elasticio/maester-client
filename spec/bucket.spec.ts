@@ -2,7 +2,8 @@ import nock from 'nock';
 import { expect } from 'chai';
 import { describe, it, before } from 'mocha';
 
-import { baseUri, randomObjectId, getClient, getToken } from './utils';
+import { randomObjectId } from './utils';
+import { Client } from '../src';
 
 describe('buckets', () => {
     function randomBucket() {
@@ -23,10 +24,10 @@ describe('buckets', () => {
     }
 
     before(function () {
-        this.client = getClient();
+        this.client = new Client('http://127.0.0.1', 'token');
         this.options = {
             reqheaders: {
-                authorization: `Bearer ${getToken()}`
+                authorization: `Bearer ${this.client.token as string}`
             }
         };
     });
@@ -34,7 +35,7 @@ describe('buckets', () => {
     it('should get bucket', async function () {
         const response = randomBucket();
 
-        const scope = nock(baseUri, this.options)
+        const scope = nock(this.client.baseUri, this.options)
             .get(`/buckets/${response.id}`)
             .reply(200, response);
 
@@ -66,7 +67,7 @@ describe('buckets', () => {
             }
         };
 
-        const scope = nock(baseUri, this.options)
+        const scope = nock(this.client.baseUri, this.options)
             .get('/buckets')
             .query(params)
             .reply(200, response);
@@ -87,7 +88,7 @@ describe('buckets', () => {
     it('should create bucket', async function () {
         const response = randomBucket();
 
-        const scope = nock(baseUri, this.options)
+        const scope = nock(this.client.baseUri, this.options)
             .post('/buckets')
             .reply(201, response);
 
@@ -108,7 +109,7 @@ describe('buckets', () => {
             closed: response.closed
         };
 
-        const scope = nock(baseUri, this.options)
+        const scope = nock(this.client.baseUri, this.options)
             .patch(`/buckets/${response.id}`, body)
             .reply(200, response);
 
@@ -121,7 +122,7 @@ describe('buckets', () => {
     it('should delete bucket', async function () {
         const id = randomObjectId();
 
-        const scope = nock(baseUri, this.options)
+        const scope = nock(this.client.baseUri, this.options)
             .delete(`/buckets/${id}`)
             .reply(204);
 
