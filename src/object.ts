@@ -99,8 +99,12 @@ export default class ObjectRepository {
         return this.get(id, 'stream');
     }
 
-    public getReadStream(id: string): Promise<Readable> {
-        return this.getStream(id).then(res => res.data as Readable);
+    public createReadStream(id: string): Readable {
+        const pass = new PassThrough();
+        this.getStream(id)
+            .then(res => (res.data as Readable).pipe(pass))
+            .catch(err => pass.destroy(err));
+        return pass;
     }
 
     public create(data: PlainOrArray<string | Buffer | Readable | ObjectData>,

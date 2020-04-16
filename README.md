@@ -93,10 +93,10 @@ const object = await client.objects.getStream(id);
 object.data.pipe(...)
 ```
 
-Readable stream example:
+Create read stream example:
 
 ```
-client.objects.getReadStream(id).pipe(fs.createWriteStream('/foo/bar.jpg'));
+client.objects.createReadStream(id).pipe(fs.createWriteStream('/foo/bar.jpg'));
 ```
 
 Create object:

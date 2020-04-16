@@ -176,7 +176,7 @@ describe('objects', function () {
             expect(buffer.toString()).to.equal(data.toString());
         });
 
-        it('should get read stream', async function () {
+        it('should create read stream', async function () {
             const id = randomObjectId();
             const data = randomBytes(1024);
             const contentType = 'application/octet-stream';
@@ -190,9 +190,7 @@ describe('objects', function () {
                 .get(`/objects/${id}`)
                 .reply(200, data);
 
-            const stream = await this.client.objects.getReadStream(id);
-
-            expect(scope.isDone()).to.be.true;
+            const stream = this.client.objects.createReadStream(id);
 
             const buffer: Buffer = await new Promise((resolve, reject) => {
                 const chunks: Buffer[] = [];
@@ -201,6 +199,7 @@ describe('objects', function () {
                 stream.on('end', () => resolve(Buffer.concat(chunks)))
             });
 
+            expect(scope.isDone()).to.be.true;
             expect(buffer.toString()).to.equal(data.toString());
         });
     });
