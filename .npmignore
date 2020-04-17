@@ -1,3 +1,6 @@
 .idea
 /src
+/dist/spec
+.eslintignore
+.eslintrc.json
 tsconfig.json
