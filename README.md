@@ -93,6 +93,17 @@ const object = await client.objects.getStream(id);
 object.data.pipe(...)
 ```
 
+Get object query:
+
+```
+const query = {
+  'x-query-foo': 'fooQuery',
+  'x-query-bar': 'barQuery',
+};
+
+const response = await this.client.objects.getObjectQuery(query);
+```
+
 Create read stream example:
 
 ```
@@ -107,6 +118,21 @@ const response = await client.objects.create(data);
 
 Where `data` can be `string`, `Buffer`, `Stream` or array of these values.
 
+Create object with queryable parameters:
+
+```
+const params = {
+  objectFields: {
+    key1: {
+      Meta: 'someMeta',
+      Query: 'someQuery',
+    }
+  }
+}
+
+const response = await client.objects.create(data, params);
+```
+
 Create object with metadata:
 
 ```
@@ -114,14 +140,6 @@ const response = await client.objects.create(data, {
     metadata: {
         key: 'value'
     }
-});
-```
-
-Create object and add it to a bucket:
-
-```
-const response = await client.objects.create(data, {
-    bucket: 'bucket-id'
 });
 ```
 
@@ -163,8 +181,33 @@ Writable stream example:
 fs.createReadStream('/foo/bar.jpg').pipe(client.objects.createWriteStream());
 ```
 
+Update object query:
+
+```
+const data = 'hello world';
+
+const objectFields = {
+    foo: { Query: 'fooQuery', Meta: 'fooMeta' },
+    bar: { Query: 'barQuery', Meta: 'barMeta' }
+};
+const params = { id: 'some', objectFields };
+
+const object = await this.client.objects.updateObjectQuery(data, params);
+```
+
 Delete object:
 
 ```
 await client.objects.delete(id);
+```
+
+Delete object query:
+
+```
+const query = {
+    foo: 'a',
+    bar: 'b'
+};
+
+await client.objects.delete(query);
 ```

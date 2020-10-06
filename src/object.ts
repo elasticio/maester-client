@@ -7,6 +7,7 @@ export const DEFAULT_CONTENT_TYPE = 'application/octet-stream';
 
 export type PlainOrArray<T> = T | T[];
 export type ObjectMetadata = Record<string, any>;
+export type QueriableField = Record<string, any>;
 
 export interface ObjectData {
     data: string | Buffer | Readable;
@@ -50,10 +51,31 @@ export class GetObjectResponse {
     }
 }
 
+export interface ObjectQueryRequest {
+    [key: string]: string;
+}
+
+export interface GetObjectQueryResponse {
+    objectId: string;
+    contentType: string;
+    createdAt: string;
+    metadata: ObjectMetadata;
+    queriableFields: QueriableField;
+}
+
+interface ObjectField {
+    Meta: string;
+    Query: string;
+}
+
+interface ObjectFields {
+    [key: string]: ObjectField;
+}
+
 export interface CreateObjectParams {
     contentType?: string;
-    bucket?: string;
     metadata?: ObjectMetadata;
+    objectFields?: ObjectFields;
 }
 
 export interface CreateObjectResponseData {
@@ -82,6 +104,11 @@ export class CreateObjectResponse {
         this.createdAt = createdAt ? new Date(createdAt) : null;
         this.metadata = metadata ?? {};
     }
+}
+
+export interface PutObjectParams {
+    id?: string;
+    objectFields?: ObjectFields;
 }
 
 export default class ObjectRepository {
@@ -114,7 +141,7 @@ export default class ObjectRepository {
 
     public create(data: PlainOrArray<string | Buffer | Readable | ObjectData>,
                   params?: CreateObjectParams): Promise<PlainOrArray<CreateObjectResponse>> {
-        const { bucket, metadata } = params ?? {};
+        const { metadata } = params ?? {};
 
         const dataArray = Array.isArray(data) ? data : [data];
         const formData = new FormData();
@@ -127,19 +154,22 @@ export default class ObjectRepository {
             formData.append('data', data, { contentType });
         }
 
-        if (bucket) {
-            formData.append('bucket', bucket);
-        }
-
         if (metadata) {
             for (const [key, value] of Object.entries(metadata)) {
                 formData.append(key, value);
             }
         }
 
-        const headers = {
+        const headers: any = {
             'content-type': `multipart/form-data; boundary=${formData.getBoundary()}`
         };
+
+        if (params?.objectFields) {
+            Object.entries(params.objectFields).forEach(e => {
+                if (e[1].Query) headers[`X-Query-${e[0]}`] = e[1].Query;
+                if (e[1].Meta) headers[`X-Meta-${e[0]}`] = e[1].Meta;
+            })
+        }
 
         return this.client.post('/objects', formData, { headers })
             .then((res: AxiosResponse) => Array.isArray(res.data)
@@ -153,7 +183,53 @@ export default class ObjectRepository {
         return stream;
     }
 
+    public getObjectQuery(query: ObjectQueryRequest, responseType?: ResponseType): Promise<GetObjectQueryResponse[]> {
+        const queryString = Object.entries(query)
+            .map(e => `query[${e[0]}]=${e[1]}`)
+            .reduce((q1, q2) => `${q1}&${q2}`);
+        return this.client.get(`/objects?${queryString}`, { responseType })
+            .then(res => res.data);
+    }
+
+    public async updateObjectQuery(data: PlainOrArray<string | Buffer | Readable | ObjectData>,
+                                   params?: PutObjectParams): Promise<void> {
+        const { id } = params ?? {};
+
+        const dataArray = Array.isArray(data) ? data : [data];
+        const formData = new FormData();
+
+        for (const item of dataArray) {
+            const [data, contentType] = isObjectData(item)
+                ? [item.data, item.contentType]
+                : [item, DEFAULT_CONTENT_TYPE];
+
+            formData.append('data', data, { contentType });
+        }
+
+        const headers: any = {
+            'content-type': 'application/octet-stream'
+        };
+
+        if (params?.objectFields) {
+            Object.entries(params.objectFields).forEach(e => {
+                if (e[1].Query) headers[`X-Query-${e[0]}`] = e[1].Query;
+                if (e[1].Meta) headers[`X-Meta-${e[0]}`] = e[1].Meta;
+            })
+        }
+
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        return this.client.put(`/objects/${id}`, data, { headers })
+            .then(res => res.data);
+    }
+
     public delete(id: string): Promise<void> {
         return this.client.delete(`/objects/${id}`);
+    }
+
+    public deleteQuery(queryFields: ObjectQueryRequest): Promise<void> {
+        const queryString = Object.entries(queryFields)
+            .map(e => `query[${e[0]}]=${e[1]}`)
+            .reduce((q1, q2) => `${q1}&${q2}`);
+        return this.client.delete(`/objects?${queryString}`);
     }
 }
