@@ -185,7 +185,7 @@ export default class ObjectRepository {
 
     public getObjectQuery(query: ObjectQueryRequest, responseType?: ResponseType): Promise<GetObjectQueryResponse[]> {
         const queryString = Object.entries(query)
-            .map(e => `query[${e[0]}]=${e[1]}`)
+            .map(e => `query[${encodeURIComponent(e[0])}]=${encodeURIComponent(e[1])}`)
             .reduce((q1, q2) => `${q1}&${q2}`);
         return this.client.get(`/objects?${queryString}`, { responseType })
             .then(res => res.data);
@@ -228,7 +228,7 @@ export default class ObjectRepository {
 
     public deleteQuery(queryFields: ObjectQueryRequest): Promise<void> {
         const queryString = Object.entries(queryFields)
-            .map(e => `query[${e[0]}]=${e[1]}`)
+            .map(e => `query[${encodeURIComponent(e[0])}]=${encodeURIComponent(e[1])}`)
             .reduce((q1, q2) => `${q1}&${q2}`);
         return this.client.delete(`/objects?${queryString}`);
     }
