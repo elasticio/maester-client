@@ -204,6 +204,32 @@ describe('objects', function () {
         });
     });
 
+    describe('get objects query', function () {
+        it('should get objects', async function () {
+            const query = {
+                foo: 'a',
+                bar: 'b'
+            };
+            const data = 'test123';
+            const response = randomCreateObjectResponse(data);
+            const contentType = 'text/plain';
+            const contentLength = data.length;
+
+            const scope = nock(this.client.baseUri, this.options)
+                .defaultReplyHeaders({
+                    'content-type': contentType,
+                    'content-length': contentLength.toString()
+                })
+                .get('/objects?query[foo]=a&query[bar]=b')
+                .reply(200, response);
+
+            const object = await this.client.objects.getObjectQuery(query);
+
+            expect(scope.isDone()).to.be.true;
+            expect(object).to.deep.equal(response);
+        });
+    });
+
     describe('create object', function () {
         it('should create object from text', async function () {
             const data = 'test123';
@@ -241,24 +267,6 @@ describe('objects', function () {
             const object = await this.client.objects.create(data, {
                 metadata: response.metadata
             });
-
-            expect(scope.isDone()).to.be.true;
-            expect(object).to.deep.equal(transformResponse(response));
-        });
-
-        it('should create object and attach it bucket', async function () {
-            const data = 'test123';
-            const bucket = randomObjectId();
-            const response = randomCreateObjectResponse(data);
-
-            const scope = nock(this.client.baseUri, this.options)
-                .matchHeader('content-type', /multipart\/form-data/)
-                .post('/objects', body =>
-                    matchFormData(body, 'data', data, response.contentType) &&
-                    matchFormData(body, 'bucket', bucket))
-                .reply(201, response);
-
-            const object = await this.client.objects.create(data, { bucket });
 
             expect(scope.isDone()).to.be.true;
             expect(object).to.deep.equal(transformResponse(response));
@@ -372,6 +380,31 @@ describe('objects', function () {
         });
     });
 
+    describe('update object', function () {
+        it('should update object from text', async function () {
+            const data = 'test123';
+            const response = randomCreateObjectResponse(data);
+            const objectFields = {
+                foo: { Query: 'fooQuery', Meta: 'fooMeta' },
+                bar: { Query: 'barQuery', Meta: 'barMeta' }
+            };
+            const params = { id: 'some', objectFields };
+
+            const scope = nock(this.client.baseUri, this.options)
+                .matchHeader('x-query-foo', /fooQuery/)
+                .matchHeader('x-query-bar', /barQuery/)
+                .matchHeader('x-meta-foo', /fooMeta/)
+                .matchHeader('x-meta-bar', /barMeta/)
+                .put(`/objects/${params.id}`)
+                .reply(200, response);
+
+            const object = await this.client.objects.updateObjectQuery(data, params);
+
+            expect(scope.isDone()).to.be.true;
+            expect(object).to.deep.equal(response);
+        });
+    });
+
     it('should delete objects', async function () {
         const id = randomObjectId();
 
@@ -382,5 +415,22 @@ describe('objects', function () {
         await this.client.objects.delete(id);
 
         expect(scope.isDone()).to.be.true;
+    });
+
+    describe('delete objects query', function () {
+        it('should delete objects', async function () {
+            const query = {
+                foo: 'a',
+                bar: 'b'
+            };
+            const scope = nock(this.client.baseUri, this.options)
+                .delete('/objects?query[foo]=a&query[bar]=b')
+                .reply(200);
+
+            const object = await this.client.objects.deleteQuery(query);
+
+            expect(scope.isDone()).to.be.true;
+            expect(object.status).to.equal(200);
+        });
     });
 });
