@@ -3,6 +3,7 @@ import { Readable, Writable, PassThrough } from 'stream';
 import { AxiosInstance, AxiosResponse, ResponseType } from 'axios';
 
 export const USER_META_HEADER_PREFIX = 'x-meta-';
+export const USER_QUERY_HEADER_PREFIX = 'x-query-';
 export const DEFAULT_CONTENT_TYPE = 'application/octet-stream';
 
 export type PlainOrArray<T> = T | T[];
@@ -36,18 +37,40 @@ export function headersToMeta(headers: Record<string, string>): ObjectMetadata {
     return meta;
 }
 
+export function headersToQuery(headers: Record<string, string>): ObjectMetadata {
+    const meta: ObjectMetadata = {};
+    for (const [key, value] of Object.entries(headers)) {
+        if (key.indexOf(USER_QUERY_HEADER_PREFIX) === 0) {
+            meta[key.substr(USER_QUERY_HEADER_PREFIX.length)] = value;
+        }
+    }
+    return meta;
+}
+
 export class GetObjectResponse {
-    public readonly contentType: string;
-    public readonly contentLength: number;
-    public readonly metadata: ObjectMetadata;
     public readonly data: object | string | Buffer | Readable;
+    public readonly contentType?: string;
+    public readonly contentLength?: number;
+    public readonly metadata?: ObjectMetadata;
+    public readonly queriableFields?: QueriableField;
 
     constructor(res: AxiosResponse) {
         const { headers, data } = res;
-        this.contentType = headers['content-type'] ?? '';
-        this.contentLength = parseInt(headers['content-length'] ?? 0);
-        this.metadata = headersToMeta(headers);
         this.data = data;
+        if (headers['content-type']) {
+            this.contentType = headers['content-type'];
+        }
+        if (headers['content-length']) {
+            this.contentLength = parseInt(headers['content-length']);
+        }
+        const metadata: ObjectMetadata = headersToMeta(headers);
+        if (Object.keys(metadata).length !== 0) {
+            this.metadata = metadata;
+        }
+        const queriableFields = headersToQuery(headers);
+        if (Object.keys(queriableFields).length !== 0) {
+            this.queriableFields = queriableFields;
+        }
     }
 }
 
@@ -90,8 +113,8 @@ export interface CreateObjectResponseData {
 export class CreateObjectResponse {
     public readonly id: string;
     public readonly contentType: string;
-    public readonly contentLength: number;
-    public readonly md5: string;
+    public readonly contentLength?: number;
+    public readonly md5?: string;
     public readonly createdAt: Date | null;
     public readonly metadata: ObjectMetadata;
 
@@ -99,8 +122,12 @@ export class CreateObjectResponse {
         const { objectId, contentType, contentLength, md5, createdAt, metadata } = data;
         this.id = objectId ?? '';
         this.contentType = contentType ?? '';
-        this.contentLength = contentLength ?? 0;
-        this.md5 = md5 ?? '';
+        if (contentLength) {
+            this.contentLength = contentLength;
+        }
+        if (md5) {
+            this.md5 = md5;
+        }
         this.createdAt = createdAt ? new Date(createdAt) : null;
         this.metadata = metadata ?? {};
     }

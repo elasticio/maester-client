@@ -6,12 +6,12 @@ The official object-storage client for elasticio-sailor-nodejs.
 
 ### Create client
 ```
-const Client = require('@elasticio/maester-client');
+const { Client } = require('@elastic.io/maester-client');
 
 const client = new Client('http://maester.local:3002', 'my-token');
 ```
 
-### Buckets API
+### Buckets API (deprecated)
 
 Get bucket:
 
