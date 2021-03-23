@@ -5,6 +5,7 @@ The official object-storage client for elasticio-sailor-nodejs.
 ## Usage
 
 ### Create client
+
 ```
 const Client = require('@elasticio/maester-client');
 
@@ -70,7 +71,7 @@ const object = await client.objects.get(id);
 console.log(object.data);
 ```
 
-Object's property `data` has value of type `string`, `object`, `Buffer` or `Stream`. 
+Object's property `data` has value of type `string`, `object`, `Buffer` or `Stream`.
 
 Get object as JSON:
 
@@ -102,15 +103,6 @@ const query = {
 };
 
 const response = await this.client.objects.getObjectQuery(query);
-```
-
-Get list of objects by query:
-```
-const query = {
-	foo: 'bar',
-	fooBar: 'foo bar'
-}
-const response = await this.client.objects.getListByQuery(query);
 ```
 
 Create read stream example:
@@ -155,7 +147,7 @@ const response = await client.objects.create(data, {
 Create object and override its content type:
 
 ```
-const response = await client.objects.create({ 
+const response = await client.objects.create({
     data: 'hello world',
     contentType: 'text/plain'
 });
@@ -169,7 +161,7 @@ const data = [
         data: 'hello world'
     },
     {
-        data: JSON.stringify(json), 
+        data: JSON.stringify(json),
         contentType: 'application/json'
     },
     fs.createReadStream('/foo/bar.jpg'),

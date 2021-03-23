@@ -5,7 +5,7 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "build": "rm -fr dist && tsc",
+    "build": "tsc",
     "watch": "tsc -w",
     "test": "mocha -r ts-node/register spec/**/*.spec.ts",
     "pretest": "eslint --ext .ts .",
@@ -50,11 +50,8 @@
     "typescript": "3.8.3"
   },
   "dependencies": {
-    "@elastic.io/bunyan-logger": "1.0.6",
     "axios": "0.19.2",
     "form-data": "3.0.0",
-    "get-stream": "6.0.0",
-    "jsonwebtoken": "8.5.1",
     "qs": "6.9.3"
   }
 }
