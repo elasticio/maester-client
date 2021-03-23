@@ -7,15 +7,19 @@ import { promisify } from 'util';
 import { Readable } from 'stream';
 
 enum ObjectHeaders {
-    ttl = 'x-eio-ttl',
-    status = 'x-query-status'
+    ttl = 'x-eio-ttl',  
+    status = 'x-query-status' // added
 }
 
 interface RequestHeaders { [index: string]: string | number }
 
-export type BatchStatus = 'OPEN' | 'READY' | 'LOCKED' | 'FAILED' | 'SUCCESS';
+export type BatchStatus = 'OPEN' | 'READY' | 'LOCKED' | 'FAILED' | 'SUCCESS'; // added
 
 export interface JWTPayload { [index: string]: string };
+
+// export interface ObjectOptions {
+//     ttl: number;
+// };
 export interface ObjectOptions {
     ttl?: number;
     status?: BatchStatus;
@@ -88,14 +92,8 @@ export default class StorageClient {
 
     public async readStream(objectId: string, jwtPayloadOrToken?: JWTPayload | string): Promise<AxiosResponse> {
         const res = await this.requestRetry(
-            async (): Promise<AxiosResponse> => this.api.get(`/objects/${objectId}`, { responseType: 'stream', headers: await this.getHeaders(this.jwtSecret) })
-        );
-        return res;
-    }
-
-    public async readAllStream(jwtPayloadOrToken?: JWTPayload | string): Promise<AxiosResponse> {
-        const res = await this.requestRetry(
-            async (): Promise<AxiosResponse> => this.api.get('/objects', { responseType: 'stream', headers: await this.getHeaders(this.jwtSecret) })
+            // async (): Promise<AxiosResponse> => this.api.get(`/objects/${objectId}`, { responseType: 'stream', headers: await this.getHeaders(jwtPayloadOrToken) })
+            async (): Promise<AxiosResponse> => this.api.get(`/objects/${objectId}`, { responseType: 'stream', headers: await this.getHeaders(jwtPayloadOrToken || this.jwtSecret) })
         );
         return res;
     }
@@ -108,7 +106,8 @@ export default class StorageClient {
             headers[ObjectHeaders.ttl] = options.ttl;
         }
         const res = await this.requestRetry(
-            async (): Promise<AxiosResponse> => this.api.post(`/objects`, stream(), { headers: await this.getHeaders(this.jwtSecret, headers) })
+            // async (): Promise<AxiosResponse> => this.api.post(`/objects`, stream(), { headers: await this.getHeaders(jwtPayloadOrToken, headers) })
+            async (): Promise<AxiosResponse> => this.api.post(`/objects`, stream(), { headers: await this.getHeaders(jwtPayloadOrToken || this.jwtSecret, headers) })
         );
         return res;
     }

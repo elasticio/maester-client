@@ -70,6 +70,10 @@ export default class ObjectStorage {
         return this.addAsStream(dataStream, jwtPayloadOrToken, options);
     }
 
+    /**
+     NEW METHODS FOR BATCH
+    */
+   
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async addBatch(data: any, status: BatchStatus): Promise<string> {
         const dataStream = () => {
