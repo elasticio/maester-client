@@ -45,7 +45,7 @@ describe('objects', function () {
         };
     });
 
-    describe('get object', function () {
+    xdescribe('get object', function () {
         it('should get object', async function () {
             const id = randomObjectId();
             const data = 'test123';
@@ -127,7 +127,6 @@ describe('objects', function () {
             const data = 'test123';
             const contentType = 'application/octet-stream';
             const contentLength = data.length;
-
             const scope = nock(this.client.baseUri, this.options)
                 .defaultReplyHeaders({
                     'content-type': contentType,
@@ -228,9 +227,33 @@ describe('objects', function () {
             expect(scope.isDone()).to.be.true;
             expect(object).to.deep.equal(response);
         });
+
+        it('should get list of objects', async function () {
+            // const id = randomObjectId();
+            const data = 'test123';
+            const contentType = 'text/plain';
+            const contentLength = data.length;
+            nock(this.client.baseUri, this.options)
+                .defaultReplyHeaders({
+                    'content-type': contentType,
+                    'content-length': contentLength.toString()
+                })
+                .get('/objects')
+                .query({})
+                .reply(200, [{ foo: 'bar' }, { bar: 'foo' }]);
+
+            const response = await this.client.objects.getListByQuery({ r: 2 });
+            console.log('resp', response)
+
+            // expect(scope.isDone()).to.be.true;
+            // expect(response.contentType).to.equal(contentType);
+            // expect(response.contentLength).to.equal(contentLength);
+            // expect(response.metadata).to.deep.equal({});
+            // expect(response.data).to.equal(data);
+        });
     });
 
-    describe('create object', function () {
+    xdescribe('create object', function () {
         it('should create object from text', async function () {
             const data = 'test123';
             const response = randomCreateObjectResponse(data);
@@ -380,7 +403,7 @@ describe('objects', function () {
         });
     });
 
-    describe('update object', function () {
+    xdescribe('update object', function () {
         it('should update object from text', async function () {
             const data = 'test123';
             const response = randomCreateObjectResponse(data);
@@ -405,7 +428,7 @@ describe('objects', function () {
         });
     });
 
-    it('should delete objects', async function () {
+    xit('should delete objects', async function () {
         const id = randomObjectId();
 
         const scope = nock(this.client.baseUri, this.options)
@@ -417,7 +440,7 @@ describe('objects', function () {
         expect(scope.isDone()).to.be.true;
     });
 
-    describe('delete objects query', function () {
+    xdescribe('delete objects query', function () {
         it('should delete objects', async function () {
             const query = {
                 foo: 'a',

@@ -1,57 +1,60 @@
 {
-    "name": "@elastic.io/maester-client",
-    "version": "1.1.0",
-    "description": "The official object-storage client for sailor-nodejs.",
-    "main": "dist/src/index.js",
-    "types": "dist/src/index.d.ts",
-    "scripts": {
-        "build": "tsc",
-        "watch": "tsc -w",
-        "test": "mocha -r ts-node/register spec/**/*.spec.ts",
-        "pretest": "eslint --ext .ts .",
-        "prepublish": "npm run build"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/elasticio/maester-client.git"
-    },
-    "keywords": [
-        "elasticio",
-        "platform",
-        "ipaas",
-        "nodejs"
-    ],
-    "author": "Elastic.io",
-    "license": "Apache-2.0",
-    "bugs": {
-        "url": "https://github.com/elasticio/maester-client/issues"
-    },
-    "homepage": "https://github.com/elasticio/maester-client#readme",
-    "devDependencies": {
-        "@types/chai": "4.2.11",
-        "@types/dicer": "0.2.0",
-        "@types/jsonwebtoken": "8.3.9",
-        "@types/mocha": "7.0.2",
-        "@types/nock": "11.1.0",
-        "@types/qs": "6.9.1",
-        "@typescript-eslint/eslint-plugin": "2.28.0",
-        "@typescript-eslint/parser": "2.28.0",
-        "chai": "4.2.0",
-        "eslint": "6.8.0",
-        "eslint-config-standard-with-typescript": "15.0.1",
-        "eslint-plugin-import": "2.20.2",
-        "eslint-plugin-mocha": "6.3.0",
-        "eslint-plugin-node": "11.1.0",
-        "eslint-plugin-promise": "4.2.1",
-        "eslint-plugin-standard": "4.0.1",
-        "mocha": "7.1.1",
-        "nock": "12.0.3",
-        "ts-node": "8.8.2",
-        "typescript": "3.8.3"
-    },
-    "dependencies": {
-        "axios": "0.19.2",
-        "form-data": "3.0.0",
-        "qs": "6.9.3"
-    }
+  "name": "@elastic.io/maester-client",
+  "version": "1.1.0",
+  "description": "The official object-storage client for sailor-nodejs.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "rm -fr dist && tsc",
+    "watch": "tsc -w",
+    "test": "mocha -r ts-node/register spec/**/*.spec.ts",
+    "pretest": "eslint --ext .ts .",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elasticio/maester-client.git"
+  },
+  "keywords": [
+    "elasticio",
+    "platform",
+    "ipaas",
+    "nodejs"
+  ],
+  "author": "Elastic.io",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/elasticio/maester-client/issues"
+  },
+  "homepage": "https://github.com/elasticio/maester-client#readme",
+  "devDependencies": {
+    "@types/chai": "4.2.11",
+    "@types/dicer": "0.2.0",
+    "@types/jsonwebtoken": "8.3.9",
+    "@types/mocha": "7.0.2",
+    "@types/nock": "11.1.0",
+    "@types/qs": "6.9.1",
+    "@typescript-eslint/eslint-plugin": "2.28.0",
+    "@typescript-eslint/parser": "2.28.0",
+    "chai": "4.2.0",
+    "eslint": "6.8.0",
+    "eslint-config-standard-with-typescript": "15.0.1",
+    "eslint-plugin-import": "2.20.2",
+    "eslint-plugin-mocha": "6.3.0",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-promise": "4.2.1",
+    "eslint-plugin-standard": "4.0.1",
+    "mocha": "7.1.1",
+    "nock": "12.0.3",
+    "ts-node": "8.8.2",
+    "typescript": "3.8.3"
+  },
+  "dependencies": {
+    "@elastic.io/bunyan-logger": "1.0.6",
+    "axios": "0.19.2",
+    "form-data": "3.0.0",
+    "get-stream": "6.0.0",
+    "jsonwebtoken": "8.5.1",
+    "qs": "6.9.3"
+  }
 }

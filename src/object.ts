@@ -109,7 +109,7 @@ export class CreateObjectResponse {
 export interface PutObjectParams {
     id?: string;
     objectFields?: ObjectFields;
-}
+}                            
 
 export default class ObjectRepository {
     private readonly client: AxiosInstance;
@@ -120,7 +120,7 @@ export default class ObjectRepository {
 
     public get(id: string, responseType?: ResponseType): Promise<GetObjectResponse> {
         return this.client.get(`/objects/${id}`, { responseType })
-            .then((res: AxiosResponse) => new GetObjectResponse(res));
+            .then((res: AxiosResponse) =>  new GetObjectResponse(res))
     }
 
     public getBuffer(id: string): Promise<GetObjectResponse> {
@@ -129,6 +129,18 @@ export default class ObjectRepository {
 
     public getStream(id: string): Promise<GetObjectResponse> {
         return this.get(id, 'stream');
+    }
+
+    public getListByQuery(query: object): Promise<GetObjectResponse> {
+        return this.client.get('/objects', query).then((res: AxiosResponse) => new GetObjectResponse(res));
+    }
+
+    public getObjectQuery(query: ObjectQueryRequest, responseType?: ResponseType): Promise<GetObjectQueryResponse[]> {
+        const queryString = Object.entries(query)
+            .map(e => `query[${encodeURIComponent(e[0])}]=${encodeURIComponent(e[1])}`)
+            .reduce((q1, q2) => `${q1}&${q2}`);
+        return this.client.get(`/objects?${queryString}`, { responseType })
+            .then(res => res.data);
     }
 
     public createReadStream(id: string): Readable {
@@ -181,14 +193,6 @@ export default class ObjectRepository {
         const stream = new PassThrough();
         this.create(stream, params).catch(err => stream.destroy(err));
         return stream;
-    }
-
-    public getObjectQuery(query: ObjectQueryRequest, responseType?: ResponseType): Promise<GetObjectQueryResponse[]> {
-        const queryString = Object.entries(query)
-            .map(e => `query[${encodeURIComponent(e[0])}]=${encodeURIComponent(e[1])}`)
-            .reduce((q1, q2) => `${q1}&${q2}`);
-        return this.client.get(`/objects?${queryString}`, { responseType })
-            .then(res => res.data);
     }
 
     public async updateObjectQuery(data: PlainOrArray<string | Buffer | Readable | ObjectData>,

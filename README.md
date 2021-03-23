@@ -104,6 +104,15 @@ const query = {
 const response = await this.client.objects.getObjectQuery(query);
 ```
 
+Get list of objects by query:
+```
+const query = {
+	foo: 'bar',
+	fooBar: 'foo bar'
+}
+const response = await this.client.objects.getListByQuery(query);
+```
+
 Create read stream example:
 
 ```
