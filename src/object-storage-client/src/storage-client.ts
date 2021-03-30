@@ -1,25 +1,23 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import http from 'http';
 import https from 'https';
-import log from './logger';
+import log from './logger'
 import { sign } from 'jsonwebtoken';
 import { promisify } from 'util';
 import { Readable } from 'stream';
 
 enum ObjectHeaders {
-    ttl = 'x-eio-ttl',  
-    status = 'x-query-status' // added
+    ttl = 'x-eio-ttl',
+    status = 'x-query-status'
 }
 
 interface RequestHeaders { [index: string]: string | number }
 
-export type BatchStatus = 'OPEN' | 'READY' | 'LOCKED' | 'FAILED' | 'SUCCESS'; // added
+// seems, I should add batch-component and import it from there
+export type BatchStatus = 'OPEN' | 'READY' | 'LOCKED' | 'FAILED' | 'SUCCESS';
 
 export interface JWTPayload { [index: string]: string };
 
-// export interface ObjectOptions {
-//     ttl: number;
-// };
 export interface ObjectOptions {
     ttl?: number;
     status?: BatchStatus;
@@ -32,11 +30,11 @@ export interface RequestOptions {
 }
 
 export default class StorageClient {
-    private api: AxiosInstance;
+    private readonly api: AxiosInstance;
     private readonly jwtSecret?: string;
 
-    private static httpAgent = new http.Agent({ keepAlive: true });
-    private static httpsAgent = new https.Agent({ keepAlive: true });
+    private static readonly httpAgent = new http.Agent({ keepAlive: true });
+    private static readonly httpsAgent = new https.Agent({ keepAlive: true });
 
     public constructor(config: { uri: string; jwtSecret?: string }) {
         this.api = axios.create({
@@ -63,7 +61,7 @@ export default class StorageClient {
             } catch (e) {
                 err = e;
             }
-            if (onResponse && onResponse(err, res)) {
+            if (onResponse?.(err, res)) {
                 continue;
             }
             // last attempt error should not be logged
@@ -92,8 +90,7 @@ export default class StorageClient {
 
     public async readStream(objectId: string, jwtPayloadOrToken?: JWTPayload | string): Promise<AxiosResponse> {
         const res = await this.requestRetry(
-            // async (): Promise<AxiosResponse> => this.api.get(`/objects/${objectId}`, { responseType: 'stream', headers: await this.getHeaders(jwtPayloadOrToken) })
-            async (): Promise<AxiosResponse> => this.api.get(`/objects/${objectId}`, { responseType: 'stream', headers: await this.getHeaders(jwtPayloadOrToken || this.jwtSecret) })
+            async (): Promise<AxiosResponse> => this.api.get(`/objects/${objectId}`, { responseType: 'stream', headers: await this.getHeaders(jwtPayloadOrToken ?? this.jwtSecret) })
         );
         return res;
     }
@@ -102,12 +99,11 @@ export default class StorageClient {
         const headers: RequestHeaders = {
             'content-type': 'application/octet-stream'
         };
-        if (options && options.ttl) {
+        if (options?.ttl) {
             headers[ObjectHeaders.ttl] = options.ttl;
         }
         const res = await this.requestRetry(
-            // async (): Promise<AxiosResponse> => this.api.post(`/objects`, stream(), { headers: await this.getHeaders(jwtPayloadOrToken, headers) })
-            async (): Promise<AxiosResponse> => this.api.post(`/objects`, stream(), { headers: await this.getHeaders(jwtPayloadOrToken || this.jwtSecret, headers) })
+            async (): Promise<AxiosResponse> => this.api.post('/objects', stream(), { headers: await this.getHeaders(jwtPayloadOrToken ?? this.jwtSecret, headers) })
         );
         return res;
     }
@@ -119,48 +115,53 @@ export default class StorageClient {
         return res;
     }
 
-    public async writeBatchStream(stream: () => Readable, options: ObjectOptions): Promise<AxiosResponse> {
+    /**
+     NEW METHODS FOR BATCH
+    */
+
+    public async writeBatchStream(stream: () => Readable, options: ObjectOptions, jwtPayloadOrToken?: JWTPayload | string): Promise<AxiosResponse> {
         const headers: RequestHeaders = {
             'content-type': 'application/octet-stream'
         };
+
         if (options.ttl) {
             headers[ObjectHeaders.ttl] = options.ttl;
         } else if (options.status) {
             headers[ObjectHeaders.status] = options.status;
         }
         const res = await this.requestRetry(
-            async (): Promise<AxiosResponse> => this.api.post('/objects', stream(), { headers: await this.getHeaders(this.jwtSecret, headers) })
+            async (): Promise<AxiosResponse> => this.api.post('/objects', stream(), { headers: await this.getHeaders(jwtPayloadOrToken ?? this.jwtSecret, headers) })
         );
-        return res;
+        return res.data;
     }
 
-    public async readAllByStatusAsStream(status: string): Promise<AxiosResponse> {
+    public async getAllByStatusAsStream(status: string, jwtPayloadOrToken?: JWTPayload | string): Promise<AxiosResponse> {
         const res = await this.requestRetry(
-            async (): Promise<AxiosResponse> => this.api.get('/objects', { responseType: 'stream', headers: await this.getHeaders(this.jwtSecret), params: {'query[status]': status} })
+            async (): Promise<AxiosResponse> => this.api.get('/objects', { responseType: 'stream', headers: await this.getHeaders(jwtPayloadOrToken ?? this.jwtSecret), params: { 'query[status]': status } })
         );
         return res;
     }
 
-    public async updateBatchStream(objectId: string, stream: () => Readable): Promise<AxiosResponse> {
+    public async updateBatchStream(objectId: string, stream: () => Readable, jwtPayloadOrToken?: JWTPayload | string): Promise<AxiosResponse> {
         const res = await this.requestRetry(
-            async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), { responseType: 'stream', headers: await this.getHeaders(this.jwtSecret) })
+            async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), { responseType: 'stream', headers: await this.getHeaders(jwtPayloadOrToken ?? this.jwtSecret) })
         );
         return res;
     }
 
-    public async updateBatchStatusById(objectId: string, status: string, stream: () => Readable): Promise<AxiosResponse> {
+    public async updateBatchStatusById(objectId: string, status: string, stream: () => Readable, jwtPayloadOrToken?: JWTPayload | string): Promise<AxiosResponse> {
         const headers: RequestHeaders = {};
         headers[ObjectHeaders.status] = status;
         const res = await this.requestRetry(
-            async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), { headers: await this.getHeaders(this.jwtSecret, headers) })
+            async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), { headers: await this.getHeaders(jwtPayloadOrToken ?? this.jwtSecret, headers) })
         );
-        return res;
+        return res.data;
     }
-    
-    public async deleteBatch(objectId: string): Promise<AxiosResponse> {
-        const res = await this.requestRetry(
-            async (): Promise<AxiosResponse> => this.api.delete(`/objects/${objectId}`, { headers: await this.getHeaders(this.jwtSecret) })
+
+    public async deleteBatch(objectId: string, jwtPayloadOrToken?: JWTPayload | string): Promise<number> {
+        await this.requestRetry(
+            async (): Promise<AxiosResponse> => this.api.delete(`/objects/${objectId}`, { headers: await this.getHeaders(jwtPayloadOrToken ?? this.jwtSecret) })
         );
-        return res;
+        return 1;
     }
 }
