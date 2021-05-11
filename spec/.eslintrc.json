@@ -1,0 +1,7 @@
+{
+    "extends": "../.eslintrc.js",
+    "rules": {
+        "no-unused-expressions": "off",
+        "@typescript-eslint/ban-ts-ignore": "off"
+    }
+}
