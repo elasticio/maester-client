@@ -2,12 +2,6 @@ import { Readable, Duplex } from 'stream';
 import getStream from 'get-stream';
 import StorageClient, { JWTPayload, ObjectOptions } from './storageClient';
 
-export interface ObjectDTO {
-  stream?: Readable;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  headers: any;
-}
-
 export type TransformMiddleware = () => Duplex;
 
 export default class ObjectStorage {
@@ -21,52 +15,60 @@ export default class ObjectStorage {
     this.reverses = [];
   }
 
-  public use(forward: TransformMiddleware, reverse: TransformMiddleware): ObjectStorage {
-    this.forwards.push(forward);
-    this.reverses.unshift(reverse);
-    return this;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async getAsJSON(objectId: string, jwtPayloadOrToken?: JWTPayload | string): Promise<any> {
-    const objectDTO = await this.getAsStream(objectId, jwtPayloadOrToken);
-    const data = await getStream(objectDTO.stream);
-    return JSON.parse(data);
-  }
-
-  public async getAsStream(objectId: string, jwtPayloadOrToken?: JWTPayload | string, params?: any): Promise<ObjectDTO> {
-    const res = await this.client.readStream(objectId, jwtPayloadOrToken, params);
-    const resultStream = this.applyMiddlewares(res.data, this.reverses);
-    return { stream: resultStream, headers: res.headers };
-  }
-
-  public async deleteOne(objectId: string, jwtPayloadOrToken?: JWTPayload | string): Promise<void> {
-    await this.client.deleteOne(objectId, jwtPayloadOrToken);
-  }
-
-  public async addAsStream(stream: () => Readable, jwtPayloadOrToken?: JWTPayload | string, options?: ObjectOptions): Promise<string> {
-    const resultStream = () => {
-      return this.applyMiddlewares(stream(), this.forwards);
-    };
-    const res = await this.client.writeStream(resultStream, jwtPayloadOrToken, options);
-    return res.data.objectId;
-  }
-
   private applyMiddlewares(stream: Readable, middlewares: TransformMiddleware[]): Readable {
     return middlewares.reduce((stream, middleware) => {
       return stream.pipe(middleware());
     }, stream);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async addAsJSON(data: any, jwtPayloadOrToken: JWTPayload | string, options?: ObjectOptions): Promise<string> {
-    const dataStream = () => {
-      const dataString = JSON.stringify(data);
-      const stream = new Readable();
-      stream.push(dataString);
-      stream.push(null);
-      return stream;
+  private formStream(data: object): Readable {
+    const dataString = JSON.stringify(data);
+    const stream = new Readable();
+    stream.push(dataString);
+    stream.push(null);
+    return stream;
+  }
+
+  public use(forward: TransformMiddleware, reverse: TransformMiddleware): ObjectStorage {
+    this.forwards.push(forward);
+    this.reverses.unshift(reverse);
+    return this;
+  }
+
+  public async getById(objectId: string, jwtPayloadOrToken?: JWTPayload | string): Promise<object> {
+    const { data } = await this.client.readStream(objectId, jwtPayloadOrToken);
+    const stream = this.applyMiddlewares(data, this.reverses);
+    const result = await getStream(stream);
+    return JSON.parse(result);
+  }
+
+  public async getAllByParams(params: object, jwtPayloadOrToken?: JWTPayload | string): Promise<object> {
+    const { data } = await this.client.readAllByParamsAsStream(params, jwtPayloadOrToken);
+    const stream = this.applyMiddlewares(data, this.reverses);
+    const result = await getStream(stream);
+    return JSON.parse(result);
+  }
+
+  public async deleteOne(objectId: string, jwtPayloadOrToken?: JWTPayload | string): Promise<void> {
+    await this.client.deleteOne(objectId, jwtPayloadOrToken);
+  }
+
+  public async addAsStream(
+    stream: Readable,
+    headers: object,
+    jwtPayloadOrToken?: JWTPayload | string,
+    options?: ObjectOptions
+  ): Promise<string> {
+    const resultStream = () => {
+      return this.applyMiddlewares(stream, this.forwards);
     };
-    return this.addAsStream(dataStream, jwtPayloadOrToken, options);
+    const res = await this.client.writeStream(resultStream, headers, jwtPayloadOrToken, options);
+    return res.data.objectId;
+  }
+
+  public async updateOne(objectId: string, data: object, jwtPayloadOrToken?: JWTPayload | string): Promise<void> {
+    const dataStream = this.formStream(data);
+    const resultStream = this.applyMiddlewares(dataStream, this.forwards);
+    await this.client.updateAsStream(objectId, resultStream, jwtPayloadOrToken);
   }
 }

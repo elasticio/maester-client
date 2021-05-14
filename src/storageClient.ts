@@ -99,13 +99,27 @@ export default class StorageClient {
     return res;
   }
 
+  public async readAllByParamsAsStream(params: object, jwtPayloadOrToken?: JWTPayload | string): Promise<AxiosResponse> {
+    const res = await this.requestRetry(
+      async (): Promise<AxiosResponse> =>
+        this.api.get('/objects', {
+          responseType: 'stream',
+          headers: await this.getHeaders(jwtPayloadOrToken),
+          params,
+        })
+    );
+    return res;
+  }
+
   public async writeStream(
     stream: () => Readable,
+    customHeaders: object,
     jwtPayloadOrToken?: JWTPayload | string,
     options?: ObjectOptions
   ): Promise<AxiosResponse> {
     const headers: RequestHeaders = {
       'content-type': 'application/octet-stream',
+      ...customHeaders,
     };
     if (options && options.ttl) {
       headers[ObjectHeaders.ttl] = options.ttl;
@@ -127,5 +141,13 @@ export default class StorageClient {
         })
     );
     return res;
+  }
+
+  public async updateAsStream(objectId: string, stream: Readable, jwtPayloadOrToken?: JWTPayload | string): Promise<void> {
+    const token = jwtPayloadOrToken || this.jwtSecret || '';
+    await this.requestRetry(
+      async (): Promise<AxiosResponse> =>
+        this.api.put(`/objects/${objectId}`, stream, { responseType: 'stream', headers: await this.getHeaders(token) })
+    );
   }
 }
