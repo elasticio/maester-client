@@ -9,7 +9,7 @@ import { verify, sign } from 'jsonwebtoken';
 import getStream from 'get-stream';
 import { streamResponse } from './helpers';
 
-xdescribe('Storage Client', () => {
+describe('Storage Client', () => {
     const config = {
         uri: 'https://ma.es.ter',
         jwtSecret: 'jwt'
@@ -113,7 +113,7 @@ xdescribe('Storage Client', () => {
             .post('/objects')
             .reply(200, responseData);
 
-        const response = await storageClient.writeStream(putStream, {});
+        const response = await storageClient.writeStream(putStream, {}, {});
         expect(response.data).to.be.deep.equal(responseData);
         expect(storageClientCalls.isDone()).to.be.true;
     });

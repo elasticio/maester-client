@@ -8,7 +8,7 @@ import { Readable } from 'stream';
 import { verify, sign } from 'jsonwebtoken';
 import { streamResponse, encryptStream, decryptStream, zip, unzip } from './helpers';
 
-xdescribe('Object Storage', () => {
+describe('Object Storage', () => {
     const config = {
         uri: 'https://ma.es.ter',
         jwtSecret: 'jwt'
@@ -61,6 +61,21 @@ xdescribe('Object Storage', () => {
                     .reply(204);
 
                 await objectStorage.deleteOne('1', sign(jwtPayload, config.jwtSecret));
+
+                expect(objectStorageCalls.isDone()).to.be.true;
+            });
+
+            it('should getAllByParams', async () => {
+                const objectStorage = new ObjectStorage({ uri: config.uri });
+
+                const jwtPayload = { tenantId: '12', contractId: '1' };
+                const objectStorageCalls = nock(config.uri)
+                  // @ts-ignore: Nock .d.ts are outdated.
+                  .matchHeader('authorization', authHeaderMatch(jwtPayload))
+                  .get('/objects?foo=bar')
+                  .reply(200, {});
+
+                await objectStorage.getAllByParams({foo: 'bar'}, sign(jwtPayload, config.jwtSecret));
 
                 expect(objectStorageCalls.isDone()).to.be.true;
             });
@@ -126,7 +141,7 @@ xdescribe('Object Storage', () => {
 
                 let err;
                 try {
-                    await objectStorage.addAsStream(postStream, {});
+                    await objectStorage.addAsStream(postStream, {}, {});
                 } catch (e) {
                     err = e;
                 }
@@ -150,7 +165,7 @@ xdescribe('Object Storage', () => {
 
                 let err;
                 try {
-                    await objectStorage.addAsStream(postStream, {});
+                    await objectStorage.addAsStream(postStream, {}, {});
                 } catch (e) {
                     err = e;
                 }
@@ -167,7 +182,7 @@ xdescribe('Object Storage', () => {
                     .post('/objects')
                     .reply(200);
 
-                const objectId = await objectStorage.addAsStream(postStream, {});
+                const objectId = await objectStorage.addAsStream(postStream, {}, {});
 
                 expect(objectStorageCalls.isDone()).to.be.true;
                 expect(objectId).to.match(/^[0-9a-z-]+$/);
@@ -183,7 +198,7 @@ xdescribe('Object Storage', () => {
                     .post('/objects')
                     .reply(200);
 
-                const objectId = await objectStorage.addAsStream(postStream, jwtPayload);
+                const objectId = await objectStorage.addAsStream(postStream, {}, jwtPayload);
 
                 expect(objectStorageCalls.isDone()).to.be.true;
                 expect(objectId).to.match(/^[0-9a-z-]+$/);
@@ -260,7 +275,7 @@ xdescribe('Object Storage', () => {
 
                 let err;
                 try {
-                    await objectStorageWithMiddlewares.addAsStream(postStream, {});
+                    await objectStorageWithMiddlewares.addAsStream(postStream, {}, {});
                 } catch (e) {
                     err = e;
                 }
@@ -285,7 +300,7 @@ xdescribe('Object Storage', () => {
 
                 let err;
                 try {
-                    await objectStorageWithMiddlewares.addAsStream(postStream, {});
+                    await objectStorageWithMiddlewares.addAsStream(postStream, {}, {});
                 } catch (e) {
                     err = e;
                 }
@@ -303,7 +318,7 @@ xdescribe('Object Storage', () => {
                     .post('/objects')
                     .reply(200, { objectId: '1' });
 
-                const objectId = await objectStorageWithMiddlewares.addAsStream(postStream, {});
+                const objectId = await objectStorageWithMiddlewares.addAsStream(postStream, {}, {});
 
                 expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
                 expect(objectId).to.be.equal('1');
@@ -367,7 +382,7 @@ xdescribe('Object Storage', () => {
                     .post('/objects')
                     .reply(200);
 
-                const objectId = await objectStorageWithMiddlewares.addAsStream(postStream, jwtPayload);
+                const objectId = await objectStorageWithMiddlewares.addAsStream(postStream, {}, jwtPayload);
 
                 expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
                 expect(objectId).to.match(/^[0-9a-z-]+$/);
