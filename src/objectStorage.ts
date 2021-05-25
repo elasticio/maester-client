@@ -1,6 +1,6 @@
 import { Readable, Duplex } from 'stream';
 import getStream from 'get-stream';
-import StorageClient, { JWTPayload, ObjectOptions } from './storageClient';
+import StorageClient, { JWTPayload } from './storageClient';
 
 export type TransformMiddleware = () => Duplex;
 
@@ -57,12 +57,11 @@ export default class ObjectStorage {
       stream: Readable,
       headers: object,
       jwtPayloadOrToken?: JWTPayload | string,
-      options?: ObjectOptions
   ): Promise<string> {
       const resultStream = () => {
           return this.applyMiddlewares(stream, this.forwards);
       };
-      const res = await this.client.writeStream(resultStream, headers, jwtPayloadOrToken, options);
+      const res = await this.client.writeStream(resultStream, headers, jwtPayloadOrToken);
       return res.data.objectId;
   }
 

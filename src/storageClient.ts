@@ -6,10 +6,6 @@ import { sign } from 'jsonwebtoken';
 import { promisify } from 'util';
 import { Readable } from 'stream';
 
-enum ObjectHeaders {
-  ttl = 'x-eio-ttl',
-}
-
 interface RequestHeaders {
   [index: string]: string | number;
 }
@@ -17,10 +13,6 @@ interface RequestHeaders {
 export interface JWTPayload {
   [index: string]: string;
 }
-export interface ObjectOptions {
-  ttl: number;
-}
-
 export interface RequestOptions {
   maxAttempts?: number;
   delay?: number;
@@ -58,6 +50,8 @@ export default class StorageClient {
           res = null;
           attempts++;
           try {
+              console.log('RETRYING ', attempts, ' TIME');
+
               res = await request();
           } catch (e) {
               err = e;
@@ -115,15 +109,11 @@ export default class StorageClient {
       stream: () => Readable,
       customHeaders: object,
       jwtPayloadOrToken?: JWTPayload | string,
-      options?: ObjectOptions
   ): Promise<AxiosResponse> {
       const headers: RequestHeaders = {
           'content-type': 'application/octet-stream',
           ...customHeaders
       };
-      if (options && options.ttl) {
-          headers[ObjectHeaders.ttl] = options.ttl;
-      }
       const res = await this.requestRetry(
           async (): Promise<AxiosResponse> =>
               this.api.post('/objects', stream(), {
