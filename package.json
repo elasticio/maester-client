@@ -1,11 +1,11 @@
 {
   "name": "@elastic.io/maester-client",
-  "version": "2.0.0-dev.3",
+  "version": "2.0.0-dev.4",
   "description": "The official object-storage client for sailor-nodejs.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "pretest": "eslint '*/**/*.ts' --quiet",
+    "pretest": "eslint '*/**/*.ts' --quiet --fix",
     "license-check": "license-checker --excludePrivatePackages --excludePackages \"$(node ../../../.ignored-licenses.js)\" --onlyAllow \"$(node ../../../.allowed-licenses.js)\"",
     "test": "NODE_ENV=test mocha -r ts-node/register --recursive ./spec/**/*.ts",
     "build": "tsc",
@@ -49,11 +49,8 @@
   "dependencies": {
     "@elastic.io/bunyan-logger": "1.0.6",
     "@types/sinon": "10.0.0",
-    "axios": "0.19.2",
-    "form-data": "3.0.0",
+    "axios": "0.21.1",
     "get-stream": "6.0.1",
-    "jsonwebtoken": "8.5.1",
-    "qs": "6.9.3",
     "sinon": "10.0.0"
   }
 }

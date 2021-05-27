@@ -6,7 +6,9 @@ export type TransformMiddleware = () => Duplex;
 
 export default class ObjectStorage {
   private client: StorageClient;
+
   private forwards: TransformMiddleware[];
+
   private reverses: TransformMiddleware[];
 
   public constructor(config: { uri: string; jwtSecret: string }, client?: StorageClient) {
@@ -16,9 +18,8 @@ export default class ObjectStorage {
   }
 
   private applyMiddlewares(stream: Readable, middlewares: TransformMiddleware[]): Readable {
-    return middlewares.reduce((stream, middleware) => {
-      return stream.pipe(middleware());
-    }, stream);
+    // eslint-disable-next-line no-shadow
+    return middlewares.reduce((stream, middleware) => stream.pipe(middleware()), stream);
   }
 
   private formStream(data: object): Readable {
@@ -54,9 +55,7 @@ export default class ObjectStorage {
   }
 
   public async addOne(data: object, headers: object): Promise<string> {
-    const resultStream = () => {
-        return this.applyMiddlewares(this.formStream(data), this.forwards);
-    };
+    const resultStream = () => this.applyMiddlewares(this.formStream(data), this.forwards);
     const res = await this.client.writeStream(resultStream, headers);
     return res.data.objectId;
   }
