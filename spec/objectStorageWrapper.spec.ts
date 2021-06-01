@@ -19,7 +19,7 @@ let context: any;
 let objectStorageWrapper: any;
 const bucketObject: BucketObject = {
   objectId: 'objectId',
-  lastSeenTime: 'date',
+  lastSeenTime: new Date(),
   objectData: { foo: 'bar' },
 };
 

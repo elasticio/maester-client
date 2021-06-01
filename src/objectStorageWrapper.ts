@@ -2,7 +2,7 @@ import ObjectStorage from './objectStorage';
 
 export interface BucketObject {
   objectId: string;
-  lastSeenTime: string;
+  lastSeenTime: Date;
   objectData: any;
 }
 
