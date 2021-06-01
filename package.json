@@ -1,6 +1,6 @@
 {
   "name": "@elastic.io/maester-client",
-  "version": "2.0.0-dev.4",
+  "version": "2.0.0-dev.5",
   "description": "The official object-storage client for sailor-nodejs.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "@elastic.io/bunyan-logger": "1.0.6",
+    "@elastic.io/component-commons-library": "1.1.1",
     "@types/sinon": "10.0.0",
     "axios": "0.21.1",
     "get-stream": "6.0.1",
