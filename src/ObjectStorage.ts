@@ -1,6 +1,6 @@
 import { Readable, Duplex } from 'stream';
 import getStream from 'get-stream';
-import StorageClient from './storageClient';
+import StorageClient from './StorageClient';
 
 export type TransformMiddleware = () => Duplex;
 
@@ -36,33 +36,40 @@ export default class ObjectStorage {
     return this;
   }
 
-  public async getById(objectId: string): Promise<object> {
+  public async getById(objectId: string): Promise<string> {
     const { data } = await this.client.readStream(objectId);
     const stream = this.applyMiddlewares(data, this.reverses);
-    const result = await getStream(stream);
-    return JSON.parse(result);
+    return getStream(stream);
   }
 
-  public async getAllByParams(params: object): Promise<object> {
+  public async getAllByParams(params: object): Promise<string> {
     const { data } = await this.client.readAllByParamsAsStream(params);
     const stream = this.applyMiddlewares(data, this.reverses);
-    const result = await getStream(stream);
-    return JSON.parse(result);
+    return getStream(stream);
   }
 
-  public async deleteOne(objectId: string): Promise<void> {
-    await this.client.deleteOne(objectId);
+  public async deleteOne(objectId: string): Promise<string> {
+    const { data } = await this.client.deleteOne(objectId);
+    const stream = this.applyMiddlewares(data, this.reverses);
+    return getStream(stream);
   }
 
+  // TODO not needed?
   public async addOne(data: object, headers: object): Promise<string> {
     const resultStream = () => this.applyMiddlewares(this.formStream(data), this.forwards);
     const res = await this.client.writeStream(resultStream, headers);
     return res.data.objectId;
   }
 
-  public async updateOne(objectId: string, data: object): Promise<void> {
-    const dataStream = this.formStream(data);
-    const resultStream = this.applyMiddlewares(dataStream, this.forwards);
-    await this.client.updateAsStream(objectId, resultStream);
+  public async postObject(data: object, headers: object): Promise<string> {
+    const resultStream = () => this.applyMiddlewares(this.formStream(data), this.forwards);
+    const res = await this.client.writeStream(resultStream, headers);
+    return res.data;
+  }
+
+  public async updateOne(objectId: string, data: object): Promise<string> {
+    const resultStream = () => this.applyMiddlewares(this.formStream(data), this.forwards);
+    const res = await this.client.updateAsStream(objectId, resultStream);
+    return res.data;
   }
 }

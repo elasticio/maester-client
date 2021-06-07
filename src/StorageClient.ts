@@ -114,17 +114,19 @@ export default class StorageClient {
   public async deleteOne(objectId: string): Promise<AxiosResponse> {
     const res = await this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.delete(`/objects/${objectId}`, {
+        responseType: 'stream',
         headers: await this.getHeaders(),
       }),
     );
     return res;
   }
 
-  public async updateAsStream(objectId: string, stream: Readable): Promise<void> {
-    await this.requestRetry(
-      async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream, {
-        responseType: 'stream', headers: await this.getHeaders(),
+  public async updateAsStream(objectId: string, stream: () => Readable): Promise<AxiosResponse> {
+    const res = await this.requestRetry(
+      async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), {
+        headers: await this.getHeaders(),
       }),
     );
+    return res;
   }
 }

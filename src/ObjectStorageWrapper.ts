@@ -1,4 +1,4 @@
-import ObjectStorage from './objectStorage';
+import ObjectStorage from './ObjectStorage';
 
 export interface BucketObject {
   objectId: string;
@@ -33,35 +33,52 @@ export class ObjectStorageWrapper {
     this.objectStorage = new ObjectStorage({ uri: this.url, jwtSecret: this.token });
   }
 
-  async createBucketIfNotExists(externalId: string): Promise<{ bucket: Bucket; bucketId: string; isCreated: boolean }> {
-    this.logger.debug('running fn createBucketIfNotExists');
-    const buckets = await this.objectStorage.getAllByParams({ 'query[externalid]': externalId });
-    if (!buckets.length) {
-      this.logger.debug('no buckets found');
-      const newBucket: Bucket = { objects: [] };
-      const bucketId = await this.objectStorage.addOne(newBucket, { 'x-query-externalid': externalId, 'x-eio-ttl': -1 });
-      this.logger.debug('created new bucket');
-      return { bucket: newBucket, bucketId, isCreated: true };
-    }
-    this.logger.debug('bucket found');
-    const bucketId = buckets[0].objectId;
-    const bucket = await this.objectStorage.getById(bucketId);
-    return { bucket, bucketId, isCreated: false };
+  async createObject(data: object, queryKey?: string, queryValue?: string, ttl?: number) {
+    this.logger.debug('Going to create an object...');
+    let headers = {};
+    if (queryKey && !queryValue) throw new Error('queryValue is mandatory if queryKey passed');
+    if (!queryKey && queryValue) throw new Error('queryKey is mandatory if queryValue passed');
+    if (queryKey && queryValue) headers = ObjectStorageWrapper.buildQueryHeader(headers, queryKey, queryValue);
+    if (ttl) headers = ObjectStorageWrapper.buildTtlHeader(headers, ttl);
+    return this.objectStorage.postObject(data, headers);
   }
 
-  async createObject(object: BucketObject, bucketId: string) {
-    this.logger.debug('running fn createObject');
-    const bucket = await this.objectStorage.getById(bucketId);
-    this.logger.debug('...updating bucket');
-    await this.objectStorage.updateOne(bucketId, { ...bucket, objects: [...bucket.objects, object] });
+  async deleteObjectById(id: string) {
+    this.logger.debug(`Going to delete an object with id ${id}...`);
+    return this.objectStorage.deleteOne(id);
   }
 
-  async updateObject(id: string, newData: BucketObject, bucketId: string) {
-    this.logger.debug('running fn updateObject');
-    const bucket = await this.objectStorage.getById(bucketId);
-    const objectIndex = bucket.objects.findIndex((obj: BucketObject) => obj.objectId === id);
-    bucket.objects[objectIndex] = newData;
-    this.logger.debug('...updating bucket');
-    await this.objectStorage.updateOne(bucketId, bucket);
+  async lookupObjectById(id: string) {
+    this.logger.debug(`Going to find an object by id ${id}...`);
+    return this.objectStorage.getById(id);
+  }
+
+  async lookupObjectByQueryParameter(key: string, value: string) {
+    const queryKey = 'query['.concat(key, ']');
+    this.logger.debug(`Going to find an object by query '${queryKey}': '${value}'...`);
+    return this.objectStorage.getAllByParams({ [queryKey]: value });
+  }
+
+  async updateObject(id: string, data: object) {
+    this.logger.debug('Going to find an object by id...');
+    const findObject = await this.objectStorage.getById(id);
+    if (findObject === 'Object Not Found') throw new Error(`No objects found with id ${id}`);
+    if (findObject === 'Invalid object id') throw new Error(`Invalid object id ${id}`);
+    this.logger.debug(`Going to update and object with id ${id}...`);
+    return this.objectStorage.updateOne(id, data);
+  }
+
+  private static buildQueryHeader(headers: object, queryKey: string, queryValue: string) {
+    const xQueryKey = 'x-query-'.concat(queryKey);
+    return ObjectStorageWrapper.buildHeader(headers, xQueryKey, queryValue);
+  }
+
+  private static buildTtlHeader(headers: any, ttl: number) {
+    return ObjectStorageWrapper.buildHeader(headers, 'x-eio-ttl', ttl);
+  }
+
+  private static buildHeader(headers: any, key: string, value: string|number) {
+    headers = { ...headers, ...{ [key]: value } };
+    return headers;
   }
 }
