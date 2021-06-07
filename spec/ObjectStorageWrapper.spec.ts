@@ -123,21 +123,23 @@ describe('ObjectStorageWrapper', () => {
   });
   describe('Lookup object by ID', () => {
     describe('Object not found in Maester', () => {
-      it('Should return "object not found"', async () => {
+      it('Should throw "Object not found"', async () => {
         nock(maesterUri)
           .get(`/objects/${id}`)
           .reply(200, objectNotFoundResponse);
-        const result = await objectStorageWrapper.lookupObjectById(id);
-        expect(result).to.equal(objectNotFoundResponse);
+        await objectStorageWrapper.lookupObjectById(id).catch((error: { message: any; }) => {
+          expect(error.message).to.equal('Object Not Found');
+        });
       });
     });
     describe('ID is invalid', () => {
-      it('Should return "invalid object id"', async () => {
+      it('Should throw "Invalid object id"', async () => {
         nock(maesterUri)
           .get(`/objects/${id}`)
           .reply(200, invalidIdResponse);
-        const result = await objectStorageWrapper.lookupObjectById(id);
-        expect(result).to.equal(invalidIdResponse);
+        await objectStorageWrapper.lookupObjectById(id).catch((error: { message: any; }) => {
+          expect(error.message).to.equal('Invalid object id');
+        });
       });
     });
     describe('Lookup with valid ID', () => {
