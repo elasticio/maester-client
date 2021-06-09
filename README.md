@@ -1,213 +1,104 @@
 # Maester Client
 
-The official object-storage client for elasticio-sailor-nodejs.
+The official Elastic.io object-storage client.
 
 ## Usage
 
+Note: All the code snippets written in Typescript 
+
 ### Create client
 ```
-const Client = require('@elasticio/maester-client');
+import { ObjectStorageWrapper } from '@elastic.io/maester-client/dist/ObjectStorageWrapper';
 
-const client = new Client('http://maester.local:3002', 'my-token');
+const objectStorage = new ObjectStorageWrapper(this);
 ```
 
-### Buckets API
+### CRUD operations
 
-Get bucket:
+### Create object
+
+The method has the following signature:
+```
+async createObject(data: object, queryKey?: string, queryValue?: string, ttl?: number)
+```
+where
+- data - object data to create. *Required*
+- queryKey, queryValue - searchable field (see below in `Get objects by query parameter` section). *Optional*, but if queryKey is specified, queryValue must be specified as well. 
+- ttl - configurable object's time to live, milliseconds. *Optional*
 
 ```
-const bucket = await client.buckets.get(id);
+const obj = await objectStorage.createObject(data, somequeriablefieldKey, somequeriablefieldValue, 60000);
 ```
 
-List buckets:
+### Read operations
+#### Get object by ID:
+
+The method has the following signature:
+```
+async lookupObjectById(id: string)
+```
+where
+- id - Maester internal id of the object to update. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
 
 ```
-const buckets = await client.buckets.list({
-    page: {
-        number: 1,
-        size: 25
-    }
-});
+const obj = await objectStorage.lookupObjectById(id);
+```
+As Maester is able to store any data type, the method returns **a raw string**.
+You may want to parse JSON or do any other data processing according to object's expected data type:
+```
+const parsedObject = JSON.parse(obj);
+```
+The following errors can be thrown:
+- Object Not Found
+- Invalid object id
+
+#### Get objects by query parameter:
+
+The method has the following signature:
+```
+async lookupObjectByQueryParameter(key: string, value: string)
+```
+where
+- key, value - searchable field. *Required*
+
+If you create an object with a queriable header, internally it looks like this:
+```
+x-query-somequeriablefieldKey: somequeriablefieldValue
+```
+where 'x-query-' is a default prefix.
+
+Using Maester REST API you can find this object by:
+```
+/objects?query[somequeriablefieldkey]=somequeriablefieldValue
+```
+Using the library:
+```
+const obj = await objectStorage.lookupObjectByQueryParameter('somequeriablefieldKey', 'somequeriablefieldValue');
 ```
 
-List buckets by external ID:
+### Update object
+
+The method has the following signature:
+```
+async updateObject(id: string, data: object)
+```
+where
+- id - Maester internal id of the object to update. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
+- data - object to update. *Required*
 
 ```
-const buckets = await client.buckets.list({
-    externalId: 'my-external-id'
-});
+const obj = await objectStorage.updateObject(id, data);
 ```
 
-Create bucket:
+### Delete object
+
+The method has the following signature:
+```
+async deleteObjectById(id: string)
+```
+where
+- id - Maester internal id of the object to update. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
 
 ```
-const bucket = await client.buckets.create({
-    objects: ['object-1', 'object-2', ..., 'object-N'],
-    extrenalId: 'my-external-id
-});
-```
-
-Update bucket:
-
-```
-const bucket = await client.buckets.update(id, {
-    closed: true
-});
-```
-
-Delete bucket:
-
-```
-await client.buckets.delete(id);
-```
-
-### Objects API
-
-Get object:
-
-```
-const object = await client.objects.get(id);
-console.log(object.data);
-```
-
-Object's property `data` has value of type `string`, `object`, `Buffer` or `Stream`. 
-
-Get object as JSON:
-
-```
-const object = await client.objects.getJSON(id);
-console.log(object.data);
-```
-
-Get object as buffer:
-
-```
-const object = await client.objects.getBuffer(id);
-console.log(object.data.toString())
-```
-
-Get object as stream:
-
-```
-const object = await client.objects.getStream(id);
-object.data.pipe(...)
-```
-
-Get object query:
-
-```
-const query = {
-  'x-query-foo': 'fooQuery',
-  'x-query-bar': 'barQuery',
-};
-
-const response = await this.client.objects.getObjectQuery(query);
-```
-
-Create read stream example:
-
-```
-client.objects.createReadStream(id).pipe(fs.createWriteStream('/foo/bar.jpg'));
-```
-
-Create object:
-
-```
-const response = await client.objects.create(data);
-```
-
-Where `data` can be `string`, `Buffer`, `Stream` or array of these values.
-
-Create object with queryable parameters:
-
-```
-const params = {
-  objectFields: {
-    key1: {
-      Meta: 'someMeta',
-      Query: 'someQuery',
-    }
-  }
-}
-
-const response = await client.objects.create(data, params);
-```
-
-Create object with metadata:
-
-```
-const response = await client.objects.create(data, {
-    metadata: {
-        key: 'value'
-    }
-});
-```
-
-Create object and override its content type:
-
-```
-const response = await client.objects.create({ 
-    data: 'hello world',
-    contentType: 'text/plain'
-});
-```
-
-Create multiple objects at once:
-
-```
-const data = [
-    {
-        data: 'hello world'
-    },
-    {
-        data: JSON.stringify(json), 
-        contentType: 'application/json'
-    },
-    fs.createReadStream('/foo/bar.jpg'),
-    Buffer.allocUnsafe(1024)
-];
-
-const response = await client.objects.create(data, {
-    bucket: 'bucket-id',
-    metadata: {
-        description: 'my stuff'
-    }
-});
-```
-
-Writable stream example:
-
-```
-fs.createReadStream('/foo/bar.jpg').pipe(client.objects.createWriteStream());
-```
-
-Update object query:
-
-```
-const data = 'hello world';
-
-const objectFields = {
-    foo: { Query: 'fooQuery', Meta: 'fooMeta' },
-    bar: { Query: 'barQuery', Meta: 'barMeta' }
-};
-const params = { id: 'some', objectFields };
-
-const object = await this.client.objects.updateObjectQuery(data, params);
-```
-
-Delete object:
-
-```
-await client.objects.delete(id);
-```
-
-Delete object query:
-
-```
-const query = {
-    foo: 'a',
-    bar: 'b'
-};
-
-await client.objects.delete(query);
+const obj = await objectStorage.deleteObjectById(id);
 ```

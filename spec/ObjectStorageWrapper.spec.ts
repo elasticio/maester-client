@@ -91,7 +91,7 @@ describe('ObjectStorageWrapper', () => {
         nock(maesterUri)
           .post('/objects')
           .matchHeader('x-query-baz', queryValue)
-          .reply(200, createObjectWithQueriableField);
+          .reply(201, createObjectWithQueriableField);
         const result = await objectStorageWrapper.createObject(data, queryKey, queryValue, ttl);
         expect(result).to.deep.equal(createObjectWithQueriableField);
       });
@@ -101,7 +101,7 @@ describe('ObjectStorageWrapper', () => {
         nock(maesterUri)
           .post('/objects')
           .matchHeader('x-query-baz', queryValue)
-          .reply(200, createObjectWithoutQueriableField);
+          .reply(201, createObjectWithoutQueriableField);
         const result = await objectStorageWrapper.createObject(data, queryKey, queryValue, ttl);
         expect(result).to.deep.equal(createObjectWithoutQueriableField);
       });
