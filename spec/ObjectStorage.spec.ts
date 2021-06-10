@@ -27,6 +27,8 @@ describe('Object Storage', () => {
     objectId: 'obj.id',
     metadata: 'meta.userMetadata',
   };
+  // eslint-disable-next-line max-len
+  const responseString = '{"contentLength":"meta.contentLength","contentType":"meta.contentType","createdAt":"meta.createdAt","md5":"meta.md5Hash","objectId":"obj.id","metadata":"meta.userMetadata"}';
 
   let sinon: SinonSandbox;
   beforeEach(async () => {
@@ -81,8 +83,7 @@ describe('Object Storage', () => {
         expect(log.callCount).to.be.equal(2);
       });
 
-      // TODO enable test
-      xit('should retry get request on errors', async () => {
+      it('should retry get request on errors', async () => {
         const objectStorage = new ObjectStorage(config);
 
         const objectStorageCalls = nock(config.uri)
@@ -96,7 +97,7 @@ describe('Object Storage', () => {
         const response = await objectStorage.getById('1');
 
         expect(objectStorageCalls.isDone()).to.be.true;
-        expect(response).to.be.deep.equal(responseData);
+        expect(response).to.be.deep.equal(responseString);
       });
 
       it('should throw an error on put request connection error', async () => {
@@ -193,8 +194,7 @@ describe('Object Storage', () => {
         expect(log.callCount).to.be.equal(2);
       });
 
-      // TODO enable test
-      xit('should retry get request on errors', async () => {
+      it('should retry get request on errors', async () => {
         const objectStorageWithMiddlewares = new ObjectStorage(config);
         objectStorageWithMiddlewares.use(encryptStream, decryptStream);
         objectStorageWithMiddlewares.use(zip, unzip);
@@ -212,7 +212,7 @@ describe('Object Storage', () => {
         const response = await objectStorageWithMiddlewares.getById('1');
 
         expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-        expect(response).to.be.deep.equal(responseData);
+        expect(response).to.be.deep.equal(responseString);
       });
 
       it('should throw an error on put request connection error', async () => {
@@ -299,8 +299,7 @@ describe('Object Storage', () => {
         expect(objectIdSecond).to.be.equal('2');
       });
 
-      // TODO enable test
-      xit('should get 2 objects successfully', async () => {
+      it('should get 2 objects successfully', async () => {
         const objectStorageWithMiddlewares = new ObjectStorage(config);
         objectStorageWithMiddlewares.use(encryptStream, decryptStream);
         objectStorageWithMiddlewares.use(zip, unzip);
@@ -322,8 +321,8 @@ describe('Object Storage', () => {
         const outStreamFirst = await objectStorageWithMiddlewares.getById('1');
         const outStreamSecond = await objectStorageWithMiddlewares.getById('2');
         expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-        expect(outStreamFirst).to.be.deep.equal(responseData);
-        expect(outStreamSecond).to.be.deep.equal(responseData);
+        expect(outStreamFirst).to.be.deep.equal(responseString);
+        expect(outStreamSecond).to.be.deep.equal(responseString);
       });
 
       it('should use valid jwt token', async () => {
