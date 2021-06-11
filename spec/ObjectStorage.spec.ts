@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import {
   describe, beforeEach, afterEach, it,
 } from 'mocha';
-import ObjectStorage from '../src/objectStorage';
+import ObjectStorage from '../src/ObjectStorage';
 import logging from '../src/logger';
 import {
   streamResponse, encryptStream, decryptStream, zip, unzip,
@@ -27,6 +27,8 @@ describe('Object Storage', () => {
     objectId: 'obj.id',
     metadata: 'meta.userMetadata',
   };
+  // eslint-disable-next-line max-len
+  const responseString = '{"contentLength":"meta.contentLength","contentType":"meta.contentType","createdAt":"meta.createdAt","md5":"meta.md5Hash","objectId":"obj.id","metadata":"meta.userMetadata"}';
 
   let sinon: SinonSandbox;
   beforeEach(async () => {
@@ -95,7 +97,7 @@ describe('Object Storage', () => {
         const response = await objectStorage.getById('1');
 
         expect(objectStorageCalls.isDone()).to.be.true;
-        expect(response).to.be.deep.equal(responseData);
+        expect(response).to.be.deep.equal(responseString);
       });
 
       it('should throw an error on put request connection error', async () => {
@@ -210,7 +212,7 @@ describe('Object Storage', () => {
         const response = await objectStorageWithMiddlewares.getById('1');
 
         expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-        expect(response).to.be.deep.equal(responseData);
+        expect(response).to.be.deep.equal(responseString);
       });
 
       it('should throw an error on put request connection error', async () => {
@@ -319,8 +321,8 @@ describe('Object Storage', () => {
         const outStreamFirst = await objectStorageWithMiddlewares.getById('1');
         const outStreamSecond = await objectStorageWithMiddlewares.getById('2');
         expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-        expect(outStreamFirst).to.be.deep.equal(responseData);
-        expect(outStreamSecond).to.be.deep.equal(responseData);
+        expect(outStreamFirst).to.be.deep.equal(responseString);
+        expect(outStreamSecond).to.be.deep.equal(responseString);
       });
 
       it('should use valid jwt token', async () => {

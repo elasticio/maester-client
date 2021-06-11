@@ -7,7 +7,7 @@ import {
 } from 'mocha';
 import { Readable } from 'stream';
 import getStream from 'get-stream';
-import StorageClient from '../src/storageClient';
+import StorageClient from '../src/StorageClient';
 import logging from '../src/logger';
 import { streamResponse } from './helpers';
 

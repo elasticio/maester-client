@@ -1,2 +1,2 @@
-export * from './storageClient';
-export * from './objectStorage';
+export * from './StorageClient';
+export * from './ObjectStorage';
