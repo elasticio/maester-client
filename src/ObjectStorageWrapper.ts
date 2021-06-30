@@ -59,7 +59,9 @@ export class ObjectStorageWrapper {
   async lookupObjectByQueryParameter(key: string, value: string) {
     const queryKey = 'query['.concat(key, ']');
     this.logger.debug(`Going to find an object by query '${queryKey}': '${value}'...`);
-    return this.objectStorage.getAllByParams({ [queryKey]: value });
+    const result = await this.objectStorage.getAllByParams({ [queryKey]: value });
+    this.logger.debug(`Trying to parse the response to JSON: ${JSON.stringify(result)}`);
+    return ObjectStorageWrapper.parseJson(result);
   }
 
   async updateObject(id: string, data: object) {
@@ -83,5 +85,15 @@ export class ObjectStorageWrapper {
   private static buildHeader(headers: any, key: string, value: string|number) {
     headers = { ...headers, ...{ [key]: value } };
     return headers;
+  }
+
+  private static parseJson(source: string) {
+    let parsedJson;
+    try {
+      parsedJson = JSON.parse(source);
+    } catch (parseError) {
+      throw new Error('Could not parse Maester object as it is not a JSON object');
+    }
+    return parsedJson;
   }
 }
