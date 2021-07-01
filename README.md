@@ -75,7 +75,7 @@ Using the library:
 ```
 const obj = await objectStorage.lookupObjectByQueryParameter('somequeriablefieldKey', 'somequeriablefieldValue');
 ```
-**Note:** The method returns a string currently. The user must parse the response (JSON object or array) by themselves.
+The method returns a JSON array. It either is empty in case no objects found or contains objects
 
 ### Update object
 

@@ -64,8 +64,6 @@ describe('ObjectStorageWrapper', () => {
       demosearchfield: 'qwerty',
     },
   };
-  const stringifiedArrayOfOneObject = '[{"contentType":"application/json","createdAt":1622811501107,"objectId":"2bd48165-119f-489d-8842-8d07b2c7cc1b","metadata":{},"queriableFields":{"demosearchfield":"qwerty"}}]';
-  const stringifiedArrayOfTwoObjects = '[{"contentType":"application/json","createdAt":1622811501107,"objectId":"2bd48165-119f-489d-8842-8d07b2c7cc1b","metadata":{},"queriableFields":{"demosearchfield":"qwerty"}},{"contentType":"application/json","createdAt":1622811501108,"objectId":"78asdas87-ss77-77ss-7888-8d07b2c7cc2a","metadata":{},"queriableFields":{"demosearchfield":"qwerty"}}]';
 
   before(async () => {
     context = {
@@ -166,7 +164,7 @@ describe('ObjectStorageWrapper', () => {
           .get(`/objects?query[${queryKey}]=${queryValue}`)
           .reply(200, []);
         const result = await objectStorageWrapper.lookupObjectByQueryParameter(queryKey, queryValue);
-        expect(result).to.deep.equal('[]');
+        expect(result).to.deep.equal([]);
       });
     });
     describe('One object found in Maester', () => {
@@ -175,7 +173,7 @@ describe('ObjectStorageWrapper', () => {
           .get(`/objects?query[${queryKey}]=${queryValue}`)
           .reply(200, [createObjectWithQueriableField]);
         const result = await objectStorageWrapper.lookupObjectByQueryParameter(queryKey, queryValue);
-        expect(result).to.deep.equal(stringifiedArrayOfOneObject);
+        expect(result).to.deep.equal([createObjectWithQueriableField]);
       });
     });
     describe('Two objects found in Maester', () => {
@@ -184,7 +182,7 @@ describe('ObjectStorageWrapper', () => {
           .get(`/objects?query[${queryKey}]=${queryValue}`)
           .reply(200, [createObjectWithQueriableField, anotherCreateObjectWithQueriableField]);
         const result = await objectStorageWrapper.lookupObjectByQueryParameter(queryKey, queryValue);
-        expect(result).to.deep.equal(stringifiedArrayOfTwoObjects);
+        expect(result).to.deep.equal([createObjectWithQueriableField, anotherCreateObjectWithQueriableField]);
       });
     });
   });
