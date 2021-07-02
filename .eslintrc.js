@@ -31,7 +31,8 @@ module.exports = {
     "max-len": ["error", { "code": 180 }],
     "no-param-reassign": 0,
     "guard-for-in": "off",
-    "no-return-assign": 0
+    "no-return-assign": 0,
+    "no-prototype-builtins": 0
   },
   'settings': {
     'import/extensions': ['.js','.jsx','.ts','.tsx'],

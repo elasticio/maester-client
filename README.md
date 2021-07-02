@@ -4,7 +4,7 @@ The official Elastic.io object-storage client.
 
 ## Usage
 
-Note: All the code snippets written in Typescript 
+Note: All the code snippets written in Typescript
 
 ### Create client
 ```
@@ -19,15 +19,18 @@ const objectStorage = new ObjectStorageWrapper(this);
 
 The method has the following signature:
 ```
-async createObject(data: object, queryKey?: string, queryValue?: string, ttl?: number)
+async createObject(data: object, headers?: Header[], ttl?: number)
 ```
 where
 - data - object data to create. *Required*
-- queryKey, queryValue - searchable field (see below in `Get objects by query parameter` section). *Optional*, but if queryKey is specified, queryValue must be specified as well. 
+- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameter` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Optional*
 - ttl - configurable object's time to live, milliseconds. *Optional*
 
 ```
-const obj = await objectStorage.createObject(data, somequeriablefieldKey, somequeriablefieldValue, 60000);
+const obj = await objectStorage.createObject(data);
+const obj = await objectStorage.createObject(data, [], 100000);
+const obj = await objectStorage.createObject(data, [{key: 'someQueriableFieldKey', value: 'someQueriableFieldValue'}], 60000);
+const obj = await objectStorage.createObject(data, [{key: 'anotherQueriableFieldKey', value: 'anotherQueriableFieldValue'}], 60000);
 ```
 
 ### Read operations

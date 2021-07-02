@@ -1,5 +1,7 @@
 import ObjectStorage from './ObjectStorage';
 
+export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
+
 export interface BucketObject {
   objectId: string;
   lastSeenTime: Date;
@@ -12,6 +14,11 @@ export interface Bucket {
 
 export interface Scope {
   logger: object;
+}
+
+export interface Header {
+  key: string,
+  value: string
 }
 
 export class ObjectStorageWrapper {
@@ -33,14 +40,23 @@ export class ObjectStorageWrapper {
     this.objectStorage = new ObjectStorage({ uri: this.url, jwtSecret: this.token });
   }
 
-  async createObject(data: object, queryKey?: string, queryValue?: string, ttl?: number) {
+  async createObject(data: object, headers?: Header[], ttl?: number) {
     this.logger.debug('Going to create an object...');
-    let headers = {};
-    if (queryKey && !queryValue) throw new Error('queryValue is mandatory if queryKey passed');
-    if (!queryKey && queryValue) throw new Error('queryKey is mandatory if queryValue passed');
-    if (queryKey && queryValue) headers = ObjectStorageWrapper.buildQueryHeader(headers, queryKey, queryValue);
-    if (ttl) headers = ObjectStorageWrapper.buildTtlHeader(headers, ttl);
-    return this.objectStorage.postObject(data, headers);
+    let resultHeaders = {};
+    if (headers && headers.length > MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS) {
+      throw new Error(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
+    }
+    if (headers) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { key, value } of headers) {
+        if (key && !value) throw new Error('header "value" is mandatory if header "key" passed');
+        if (value && !key) throw new Error('header "key" is mandatory if header "value" passed');
+        if (resultHeaders.hasOwnProperty(`x-query-${key}`)) throw new Error(`header key "${key}" was already added`);
+        if (key && value) resultHeaders = ObjectStorageWrapper.buildQueryHeader(resultHeaders, key, value);
+      }
+    }
+    if (ttl) resultHeaders = ObjectStorageWrapper.buildTtlHeader(resultHeaders, ttl);
+    return this.objectStorage.postObject(data, resultHeaders);
   }
 
   async deleteObjectById(id: string) {
@@ -83,7 +99,7 @@ export class ObjectStorageWrapper {
   }
 
   private static buildHeader(headers: any, key: string, value: string|number) {
-    headers = { ...headers, ...{ [key]: value } };
+    headers = { ...headers, [key]: value };
     return headers;
   }
 

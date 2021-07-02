@@ -4,7 +4,7 @@ import { getLogger } from '@elastic.io/component-commons-library/lib/logger/logg
 import chai from 'chai';
 import nock from 'nock';
 import sinon from 'sinon';
-import { ObjectStorageWrapper, BucketObject } from '../src/ObjectStorageWrapper';
+import { ObjectStorageWrapper, BucketObject, MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS } from '../src/ObjectStorageWrapper';
 
 const { expect } = chai;
 
@@ -24,6 +24,13 @@ const bucketObject: BucketObject = {
 };
 
 describe('ObjectStorageWrapper', () => {
+  const genHeaders = (amount: number) => {
+    const resultHeaders = [];
+    for (let i = 0; i < amount; i++) {
+      resultHeaders.push({ key: `key${i}`, value: `value${i}` });
+    }
+    return resultHeaders;
+  };
   const objectNotFoundResponse = 'Object Not Found';
   const invalidIdResponse = 'Invalid object id';
   const data = {
@@ -84,37 +91,76 @@ describe('ObjectStorageWrapper', () => {
   });
 
   describe('Create object', () => {
-    describe('With queriable fields', () => {
-      it('Should save the data correctly', async () => {
-        nock(maesterUri)
-          .post('/objects')
-          .matchHeader('x-query-baz', queryValue)
-          .reply(201, createObjectWithQueriableField);
-        const result = await objectStorageWrapper.createObject(data, queryKey, queryValue, ttl);
-        expect(result).to.deep.equal(createObjectWithQueriableField);
+    describe('valid inputs', () => {
+      describe('With queriable fields', () => {
+        it('Should save the data correctly', async () => {
+          nock(maesterUri)
+            .post('/objects')
+            .matchHeader('x-query-key0', 'value0')
+            .matchHeader('x-eio-ttl', '-1')
+            .reply(201, createObjectWithQueriableField);
+          await objectStorageWrapper.createObject(data, genHeaders(1), ttl);
+        });
+        it('Should save the data correctly', async () => {
+          nock(maesterUri)
+            .post('/objects')
+            .matchHeader('x-query-key0', 'value0')
+            .matchHeader('x-query-key1', 'value1')
+            .matchHeader('x-query-key2', 'value2')
+            .matchHeader('x-query-key3', 'value3')
+            .matchHeader('x-query-key4', 'value4')
+            .matchHeader('x-eio-ttl', '-1')
+            .reply(201, createObjectWithQueriableField);
+          await objectStorageWrapper.createObject(data, genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS), ttl);
+        });
       });
-    });
-    describe('Without queriable fields', () => {
-      it('Should save the data correctly', async () => {
-        nock(maesterUri)
-          .post('/objects')
-          .matchHeader('x-query-baz', queryValue)
-          .reply(201, createObjectWithoutQueriableField);
-        const result = await objectStorageWrapper.createObject(data, queryKey, queryValue, ttl);
-        expect(result).to.deep.equal(createObjectWithoutQueriableField);
-      });
-    });
-    describe('Query key set, query value undefined', () => {
-      it('Should throw error', async () => {
-        await objectStorageWrapper.createObject(data, queryKey, undefined).catch((error: { message: any; }) => {
-          expect(error.message).to.equal('queryValue is mandatory if queryKey passed');
+      describe('Without queriable fields', () => {
+        it('Should save the data correctly', async () => {
+          nock(maesterUri)
+            .post('/objects')
+            .matchHeader('x-eio-ttl', '-1')
+            .reply(201, createObjectWithQueriableField);
+          await objectStorageWrapper.createObject(data, [], ttl);
+        });
+        it('Should save the data correctly', async () => {
+          nock(maesterUri)
+            .post('/objects')
+            .reply(201, createObjectWithQueriableField);
+          await objectStorageWrapper.createObject(data);
         });
       });
     });
-    describe('Query key set, query value undefined', () => {
-      it('Should throw error', async () => {
-        await objectStorageWrapper.createObject(data, undefined, queryValue, undefined).catch((error: { message: any; }) => {
-          expect(error.message).to.equal('queryKey is mandatory if queryValue passed');
+    describe('invalid inputs', () => {
+      describe('Query key set, query value undefined', () => {
+        it('Should throw error', async () => {
+          await objectStorageWrapper.createObject(data, [{ key: 'key0', value: 'value0' }, { key: 'key1' }], ttl)
+            .catch((error: { message: any; }) => {
+              expect(error.message).to.equal('header "value" is mandatory if header "key" passed');
+            });
+        });
+      });
+      describe('Query value set, query key undefined', () => {
+        it('Should throw error', async () => {
+          await objectStorageWrapper.createObject(data, [{ value: 'value1' }], ttl)
+            .catch((error: { message: any; }) => {
+              expect(error.message).to.equal('header "key" is mandatory if header "value" passed');
+            });
+        });
+      });
+      describe(`Maester headers maximum amount is exceed (${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS} items)`, () => {
+        it('Should throw error', async () => {
+          await objectStorageWrapper.createObject(data, genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS + 1), ttl)
+            .catch((error: { message: any; }) => {
+              expect(error.message).to.equal(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
+            });
+        });
+      });
+      describe('Header used more than one time', () => {
+        it('Should throw error', async () => {
+          await objectStorageWrapper.createObject(data, [{ key: 'key0', value: 'value0' }, { key: 'key0', value: 'value0' }], ttl)
+            .catch((error: { message: any; }) => {
+              expect(error.message).to.equal('header key "key0" was already added');
+            });
         });
       });
     });
