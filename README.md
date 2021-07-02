@@ -23,7 +23,7 @@ async createObject(data: object, headers?: Header[], ttl?: number)
 ```
 where
 - data - object data to create. *Required*
-- headers - *Optional* array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameter` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well.
+- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameter` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Optional*
 - ttl - configurable object's time to live, milliseconds. *Optional*
 
 ```
