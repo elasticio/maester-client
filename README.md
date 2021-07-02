@@ -30,7 +30,7 @@ where
 const obj = await objectStorage.createObject(data);
 const obj = await objectStorage.createObject(data, [], 100000);
 const obj = await objectStorage.createObject(data, [{key: 'someQueriableFieldKey', value: 'someQueriableFieldValue'}], 60000);
-const obj = await objectStorage.createObject(data, [{key: 'anotherQueriableFieldKey', value: 'anothersomeQueriableFieldValue'}], 60000);
+const obj = await objectStorage.createObject(data, [{key: 'anotherQueriableFieldKey', value: 'anotherQueriableFieldValue'}], 60000);
 ```
 
 ### Read operations
