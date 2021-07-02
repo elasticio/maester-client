@@ -1,6 +1,6 @@
 import ObjectStorage from './ObjectStorage';
 
-export const maesterMaxSupportedCountOfHeaders = 5;
+export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
 
 export interface BucketObject {
   objectId: string;
@@ -43,8 +43,8 @@ export class ObjectStorageWrapper {
   async createObject(data: object, headers?: Header[], ttl?: number) {
     this.logger.debug('Going to create an object...');
     let resultHeaders = {};
-    if (headers && headers.length > maesterMaxSupportedCountOfHeaders) {
-      throw new Error(`maximum available amount of headers is ${maesterMaxSupportedCountOfHeaders}`);
+    if (headers && headers.length > MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS) {
+      throw new Error(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
     }
     if (headers) {
       // eslint-disable-next-line no-restricted-syntax

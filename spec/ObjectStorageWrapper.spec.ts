@@ -4,7 +4,7 @@ import { getLogger } from '@elastic.io/component-commons-library/lib/logger/logg
 import chai from 'chai';
 import nock from 'nock';
 import sinon from 'sinon';
-import { ObjectStorageWrapper, BucketObject, maesterMaxSupportedCountOfHeaders } from '../src/ObjectStorageWrapper';
+import { ObjectStorageWrapper, BucketObject, MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS } from '../src/ObjectStorageWrapper';
 
 const { expect } = chai;
 
@@ -111,7 +111,7 @@ describe('ObjectStorageWrapper', () => {
             .matchHeader('x-query-key4', 'value4')
             .matchHeader('x-eio-ttl', '-1')
             .reply(201, createObjectWithQueriableField);
-          await objectStorageWrapper.createObject(data, genHeaders(maesterMaxSupportedCountOfHeaders), ttl);
+          await objectStorageWrapper.createObject(data, genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS), ttl);
         });
       });
       describe('Without queriable fields', () => {
@@ -147,11 +147,11 @@ describe('ObjectStorageWrapper', () => {
             });
         });
       });
-      describe(`Maester headers maximum amount is exceed (${maesterMaxSupportedCountOfHeaders} items)`, () => {
+      describe(`Maester headers maximum amount is exceed (${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS} items)`, () => {
         it('Should throw error', async () => {
-          await objectStorageWrapper.createObject(data, genHeaders(maesterMaxSupportedCountOfHeaders + 1), ttl)
+          await objectStorageWrapper.createObject(data, genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS + 1), ttl)
             .catch((error: { message: any; }) => {
-              expect(error.message).to.equal(`maximum available amount of headers is ${maesterMaxSupportedCountOfHeaders}`);
+              expect(error.message).to.equal(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
             });
         });
       });
