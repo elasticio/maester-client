@@ -1,16 +1,7 @@
 import ObjectStorage from './ObjectStorage';
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
-
-export interface BucketObject {
-  objectId: string;
-  lastSeenTime: Date;
-  objectData: any;
-}
-
-export interface Bucket {
-  objects: Array<BucketObject>;
-}
+export const TTL_HEADER = 'x-eio-ttl';
 
 export interface Scope {
   logger: object;
@@ -19,6 +10,9 @@ export interface Scope {
 export interface Header {
   key: string,
   value: string
+}
+export interface KeyIndexer {
+  [key: string]: string
 }
 
 export class ObjectStorageWrapper {
@@ -42,20 +36,18 @@ export class ObjectStorageWrapper {
 
   async createObject(data: object, headers?: Header[], ttl?: number) {
     this.logger.debug('Going to create an object...');
-    let resultHeaders = {};
-    if (headers && headers.length > MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS) {
-      throw new Error(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
-    }
+    ObjectStorageWrapper.validateHeaders(headers);
+    const resultHeaders: KeyIndexer = {};
+
     if (headers) {
       // eslint-disable-next-line no-restricted-syntax
       for (const { key, value } of headers) {
-        if (key && !value) throw new Error('header "value" is mandatory if header "key" passed');
-        if (value && !key) throw new Error('header "key" is mandatory if header "value" passed');
-        if (resultHeaders.hasOwnProperty(`x-query-${key}`)) throw new Error(`header key "${key}" was already added`);
-        if (key && value) resultHeaders = ObjectStorageWrapper.buildQueryHeader(resultHeaders, key, value);
+        const header = `x-query-${key}`;
+        if (resultHeaders.hasOwnProperty(header)) throw new Error(`header key "${key}" was already added`);
+        resultHeaders[header] = value;
       }
     }
-    if (ttl) resultHeaders = ObjectStorageWrapper.buildTtlHeader(resultHeaders, ttl);
+    if (ttl) resultHeaders[TTL_HEADER] = ttl.toString();
     return this.objectStorage.postObject(data, resultHeaders);
   }
 
@@ -72,10 +64,18 @@ export class ObjectStorageWrapper {
     return resultString;
   }
 
-  async lookupObjectByQueryParameter(key: string, value: string) {
-    const queryKey = 'query['.concat(key, ']');
-    this.logger.debug(`Going to find an object by query '${queryKey}': '${value}'...`);
-    const result = await this.objectStorage.getAllByParams({ [queryKey]: value });
+  async lookupObjectByQueryParameters(headers: Header[]) {
+    this.logger.debug('Going to find an object by query parameters');
+    ObjectStorageWrapper.validateHeaders(headers);
+    const resultParams: KeyIndexer = {};
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { key, value } of headers) {
+      const queryKey: string = `query[${key}]`;
+      if (resultParams.hasOwnProperty(queryKey)) throw new Error(`header key "${key}" was already added`);
+      resultParams[queryKey] = value;
+    }
+    const result = await this.objectStorage.getAllByParams(resultParams);
     this.logger.debug(`Trying to parse the response to JSON: ${JSON.stringify(result)}`);
     return ObjectStorageWrapper.parseJson(result);
   }
@@ -89,18 +89,17 @@ export class ObjectStorageWrapper {
     return this.objectStorage.updateOne(id, data);
   }
 
-  private static buildQueryHeader(headers: object, queryKey: string, queryValue: string) {
-    const xQueryKey = 'x-query-'.concat(queryKey);
-    return ObjectStorageWrapper.buildHeader(headers, xQueryKey, queryValue);
-  }
+  private static validateHeaders(headers: Header[]) {
+    if (!headers) return;
 
-  private static buildTtlHeader(headers: any, ttl: number) {
-    return ObjectStorageWrapper.buildHeader(headers, 'x-eio-ttl', ttl);
-  }
-
-  private static buildHeader(headers: any, key: string, value: string|number) {
-    headers = { ...headers, [key]: value };
-    return headers;
+    if (headers.length > MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS) {
+      throw new Error(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
+    }
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { key, value } of headers) {
+      if (key && !value) throw new Error('header "value" is mandatory if header "key" passed');
+      if (value && !key) throw new Error('header "key" is mandatory if header "value" passed');
+    }
   }
 
   private static parseJson(source: string) {
