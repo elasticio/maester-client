@@ -77,8 +77,10 @@ Using Maester REST API you can find this object by:
 ```
 Using the library:
 ```
-const obj = await objectStorage.lookupObjectByQueryParameters([{ key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue' },
-{ key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue' }]);
+const obj = await objectStorage.lookupObjectByQueryParameters([
+  { key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue' },
+  { key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue' }
+]);
 ```
 The method returns a JSON array. It either is empty in case no objects found or contains objects
 
