@@ -1,3 +1,6 @@
+# 3.2.0 (July 5, 2021)
+* createObject method now supports up to 5 query headers
+
 # 3.1.0 (July 1, 2021)
 * lookupObjectByQueryParameter method now returns JSON array instead of its string representation
 
