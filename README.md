@@ -23,14 +23,14 @@ async createObject(data: object, headers?: Header[], ttl?: number)
 ```
 where
 - data - object data to create. *Required*
-- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameter` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Optional*
+- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameters` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Optional*
 - ttl - configurable object's time to live, milliseconds. *Optional*
 
 ```
 const obj = await objectStorage.createObject(data);
 const obj = await objectStorage.createObject(data, [], 100000);
-const obj = await objectStorage.createObject(data, [{key: 'someQueriableFieldKey', value: 'someQueriableFieldValue'}], 60000);
-const obj = await objectStorage.createObject(data, [{key: 'anotherQueriableFieldKey', value: 'anotherQueriableFieldValue'}], 60000);
+const obj = await objectStorage.createObject(data, [{key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue'}], 60000);
+const obj = await objectStorage.createObject(data, [{key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue'}], 60000);
 ```
 
 ### Read operations
@@ -55,28 +55,32 @@ The following errors can be thrown:
 - Object Not Found
 - Invalid object id
 
-#### Get objects by query parameter:
+#### Get objects by query parameters:
 
 The method has the following signature:
 ```
-async lookupObjectByQueryParameter(key: string, value: string)
+async lookupObjectByQueryParameters(headers: Header[])
 ```
 where
-- key, value - searchable field. *Required*
+- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Required*
 
-If you create an object with a queriable header, internally it looks like this:
+If you create an object with a queriable headers, internally it looks like this:
 ```
-x-query-somequeriablefieldKey: somequeriablefieldValue
+x-query-somequeriablefieldkey: somequeriablefieldvalue
+x-query-anotherqueriablefieldkey: anotherqueriablefieldvalue
 ```
 where 'x-query-' is a default prefix.
 
 Using Maester REST API you can find this object by:
 ```
-/objects?query[somequeriablefieldkey]=somequeriablefieldValue
+/objects?query[somequeriablefieldkey]=somequeriablefieldvalue&query[anotherqueriablefieldkey]=anotherqueriablefieldvalue
 ```
 Using the library:
 ```
-const obj = await objectStorage.lookupObjectByQueryParameter('somequeriablefieldKey', 'somequeriablefieldValue');
+const obj = await objectStorage.lookupObjectByQueryParameters([
+  { key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue' },
+  { key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue' }
+]);
 ```
 The method returns a JSON array. It either is empty in case no objects found or contains objects
 
