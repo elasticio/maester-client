@@ -64,7 +64,7 @@ export class ObjectStorageWrapper {
     return resultString;
   }
 
-  async lookupObjectByQueryParameters(headers: Header[]) {
+  async lookupObjectsByQueryParameters(headers: Header[]) {
     this.logger.debug('Going to find an object by query parameters');
     ObjectStorageWrapper.validateHeaders(headers);
     const resultParams: KeyIndexer = {};

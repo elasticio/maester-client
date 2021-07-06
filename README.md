@@ -59,7 +59,7 @@ The following errors can be thrown:
 
 The method has the following signature:
 ```
-async lookupObjectByQueryParameters(headers: Header[])
+async lookupObjectsByQueryParameters(headers: Header[])
 ```
 where
 - headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Required*
@@ -77,12 +77,12 @@ Using Maester REST API you can find this object by:
 ```
 Using the library:
 ```
-const obj = await objectStorage.lookupObjectByQueryParameters([
+const obj = await objectStorage.lookupObjectsByQueryParameters([
   { key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue' },
   { key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue' }
 ]);
 ```
-The method returns a JSON array. It either is empty in case no objects found or contains objects
+The method returns an array of items. It either is empty in case no objects found or contains objects
 
 ### Update object
 

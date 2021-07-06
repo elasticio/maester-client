@@ -197,7 +197,7 @@ describe('ObjectStorageWrapper', () => {
         nock(maesterUri)
           .get(`/objects?query[${queryKey}]=${queryValue}`)
           .reply(200, []);
-        const result = await objectStorageWrapper.lookupObjectByQueryParameters([{ key: queryKey, value: queryValue }]);
+        const result = await objectStorageWrapper.lookupObjectsByQueryParameters([{ key: queryKey, value: queryValue }]);
         expect(result).to.deep.equal([]);
       });
     });
@@ -207,21 +207,21 @@ describe('ObjectStorageWrapper', () => {
           nock(maesterUri)
             .get('/objects')
             .reply(200, []);
-          const result = await objectStorageWrapper.lookupObjectByQueryParameters([]);
+          const result = await objectStorageWrapper.lookupObjectsByQueryParameters([]);
           expect(result).to.deep.equal([]);
         });
         it('Should successfully return an empty stringified array', async () => {
           nock(maesterUri)
             .get('/objects?query[key0]=value0')
             .reply(200, []);
-          const result = await objectStorageWrapper.lookupObjectByQueryParameters(genHeaders(1));
+          const result = await objectStorageWrapper.lookupObjectsByQueryParameters(genHeaders(1));
           expect(result).to.deep.equal([]);
         });
         it('Should successfully return an empty stringified array', async () => {
           nock(maesterUri)
             .get('/objects?query[key0]=value0&query[key1]=value1&query[key2]=value2&query[key3]=value3&query[key4]=value4')
             .reply(200, []);
-          const result = await objectStorageWrapper.lookupObjectByQueryParameters(genHeaders(5));
+          const result = await objectStorageWrapper.lookupObjectsByQueryParameters(genHeaders(5));
           expect(result).to.deep.equal([]);
         });
         describe('One object found in Maester', () => {
@@ -229,7 +229,7 @@ describe('ObjectStorageWrapper', () => {
             nock(maesterUri)
               .get('/objects?query[key0]=value0&query[key1]=value1')
               .reply(200, [createObjectWithQueriableField]);
-            const result = await objectStorageWrapper.lookupObjectByQueryParameters(genHeaders(2));
+            const result = await objectStorageWrapper.lookupObjectsByQueryParameters(genHeaders(2));
             expect(result).to.deep.equal([createObjectWithQueriableField]);
           });
         });
@@ -238,7 +238,7 @@ describe('ObjectStorageWrapper', () => {
             nock(maesterUri)
               .get('/objects?query[key0]=value0&query[key1]=value1&query[key2]=value2')
               .reply(200, [createObjectWithQueriableField, anotherCreateObjectWithQueriableField]);
-            const result = await objectStorageWrapper.lookupObjectByQueryParameters(genHeaders(3));
+            const result = await objectStorageWrapper.lookupObjectsByQueryParameters(genHeaders(3));
             expect(result).to.deep.equal([createObjectWithQueriableField, anotherCreateObjectWithQueriableField]);
           });
         });
@@ -246,7 +246,7 @@ describe('ObjectStorageWrapper', () => {
       describe('invalid input', () => {
         describe('Query key set, query value undefined', () => {
           it('Should throw error', async () => {
-            await objectStorageWrapper.lookupObjectByQueryParameters([{ key: 'key0', value: 'value0' }, { key: 'key1' }], ttl)
+            await objectStorageWrapper.lookupObjectsByQueryParameters([{ key: 'key0', value: 'value0' }, { key: 'key1' }], ttl)
               .catch((error: { message: any; }) => {
                 expect(error.message).to.equal('header "value" is mandatory if header "key" passed');
               });
@@ -254,7 +254,7 @@ describe('ObjectStorageWrapper', () => {
         });
         describe('Query value set, query key undefined', () => {
           it('Should throw error', async () => {
-            await objectStorageWrapper.lookupObjectByQueryParameters([{ value: 'value1' }], ttl)
+            await objectStorageWrapper.lookupObjectsByQueryParameters([{ value: 'value1' }], ttl)
               .catch((error: { message: any; }) => {
                 expect(error.message).to.equal('header "key" is mandatory if header "value" passed');
               });
@@ -262,7 +262,7 @@ describe('ObjectStorageWrapper', () => {
         });
         describe(`Maester headers maximum amount is exceed (${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS} items)`, () => {
           it('Should throw error', async () => {
-            await objectStorageWrapper.lookupObjectByQueryParameters(genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS + 1), ttl)
+            await objectStorageWrapper.lookupObjectsByQueryParameters(genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS + 1), ttl)
               .catch((error: { message: any; }) => {
                 expect(error.message).to.equal(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
               });
@@ -270,7 +270,7 @@ describe('ObjectStorageWrapper', () => {
         });
         describe('Header used more than one time', () => {
           it('Should throw error', async () => {
-            await objectStorageWrapper.lookupObjectByQueryParameters([{ key: 'key0', value: 'value0' }, { key: 'key0', value: 'value0' }], ttl)
+            await objectStorageWrapper.lookupObjectsByQueryParameters([{ key: 'key0', value: 'value0' }, { key: 'key0', value: 'value0' }], ttl)
               .catch((error: { message: any; }) => {
                 expect(error.message).to.equal('header key "key0" was already added');
               });
