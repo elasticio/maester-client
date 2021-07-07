@@ -1,7 +1,7 @@
-import ObjectStorage from './ObjectStorage';
+import ObjectStorage from "./ObjectStorage";
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
-export const TTL_HEADER = 'x-eio-ttl';
+export const TTL_HEADER = "x-eio-ttl";
 
 export interface Scope {
   logger: object;
@@ -27,7 +27,7 @@ export class ObjectStorageWrapper {
   constructor(context: Scope) {
     this.logger = context.logger;
     if (!process.env.ELASTICIO_OBJECT_STORAGE_TOKEN || !process.env.ELASTICIO_OBJECT_STORAGE_URI) {
-      throw new Error('Can not find storage token or storage uri values... Check environment variables');
+      throw new Error("Can not find storage token or storage uri values... Check environment variables");
     }
     this.token = process.env.ELASTICIO_OBJECT_STORAGE_TOKEN;
     this.url = process.env.ELASTICIO_OBJECT_STORAGE_URI;
@@ -35,7 +35,7 @@ export class ObjectStorageWrapper {
   }
 
   async createObject(data: object, headers?: Header[], ttl?: number) {
-    this.logger.debug('Going to create an object...');
+    this.logger.debug("Going to create an object...");
     ObjectStorageWrapper.validateHeaders(headers);
     const resultHeaders: KeyIndexer = {};
 
@@ -59,13 +59,13 @@ export class ObjectStorageWrapper {
   async lookupObjectById(id: string) {
     this.logger.debug(`Going to find an object by id ${id}...`);
     const resultString = await this.objectStorage.getById(id);
-    if (resultString === 'Object Not Found') throw new Error('Object Not Found');
-    if (resultString === 'Invalid object id') throw new Error('Invalid object id');
+    if (resultString === "Object Not Found") throw new Error("Object Not Found");
+    if (resultString === "Invalid object id") throw new Error("Invalid object id");
     return resultString;
   }
 
   async lookupObjectsByQueryParameters(headers: Header[]) {
-    this.logger.debug('Going to find an object by query parameters');
+    this.logger.debug("Going to find an object by query parameters");
     ObjectStorageWrapper.validateHeaders(headers);
     const resultParams: KeyIndexer = {};
 
@@ -81,10 +81,10 @@ export class ObjectStorageWrapper {
   }
 
   async updateObject(id: string, data: object) {
-    this.logger.debug('Going to find an object by id...');
+    this.logger.debug("Going to find an object by id...");
     const findObject = await this.objectStorage.getById(id);
-    if (findObject === 'Object Not Found') throw new Error(`No objects found with id ${id}`);
-    if (findObject === 'Invalid object id') throw new Error(`Invalid object id ${id}`);
+    if (findObject === "Object Not Found") throw new Error(`No objects found with id ${id}`);
+    if (findObject === "Invalid object id") throw new Error(`Invalid object id ${id}`);
     this.logger.debug(`Going to update and object with id ${id}...`);
     return this.objectStorage.updateOne(id, data);
   }
@@ -97,8 +97,8 @@ export class ObjectStorageWrapper {
     }
     // eslint-disable-next-line no-restricted-syntax
     for (const { key, value } of headers) {
-      if (key && !value) throw new Error('header "value" is mandatory if header "key" passed');
-      if (value && !key) throw new Error('header "key" is mandatory if header "value" passed');
+      if (key && !value) throw new Error("header \"value\" is mandatory if header \"key\" passed");
+      if (value && !key) throw new Error("header \"key\" is mandatory if header \"value\" passed");
     }
   }
 
@@ -107,7 +107,7 @@ export class ObjectStorageWrapper {
     try {
       parsedJson = JSON.parse(source);
     } catch (parseError) {
-      throw new Error('Could not parse Maester object as it is not a JSON object');
+      throw new Error("Could not parse Maester object as it is not a JSON object");
     }
     return parsedJson;
   }
