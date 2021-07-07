@@ -1,6 +1,6 @@
-import { Readable, Duplex } from "stream";
-import getStream from "get-stream";
-import StorageClient from "./StorageClient";
+import { Readable, Duplex } from 'stream';
+import getStream from 'get-stream';
+import StorageClient from './StorageClient';
 
 export type TransformMiddleware = () => Duplex;
 

@@ -16,7 +16,7 @@ module.exports = {
   },
   plugins: ["@typescript-eslint"],
   rules: {
-    quotes: ["error", "double"],
+    quotes: ["error", "single"],
     "no-plusplus": 0,
     "no-await-in-loop": 0,
     "prefer-default-export": 0,

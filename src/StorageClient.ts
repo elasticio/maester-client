@@ -1,9 +1,9 @@
 /* eslint-disable no-continue */
-import axios, { AxiosInstance, AxiosResponse } from "axios";
-import http from "http";
-import https from "https";
-import { Readable } from "stream";
-import log from "./logger";
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import http from 'http';
+import https from 'https';
+import { Readable } from 'stream';
+import log from './logger';
 
 interface RequestHeaders {
   [index: string]: string | number;
@@ -60,7 +60,7 @@ export default class StorageClient {
       }
       // last attempt error should not be logged
       if ((err || res.status >= 400) && attempts < maxAttempts) {
-        log.warn("Error during object request: %s", err || `${res.status} (${res.statusText})`);
+        log.warn('Error during object request: %s', err || `${res.status} (${res.statusText})`);
         await new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, delay));
         continue;
       }
@@ -79,7 +79,7 @@ export default class StorageClient {
   public async readStream(objectId: string, params?: object): Promise<AxiosResponse> {
     const res = await this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.get(`/objects/${objectId}`, {
-        responseType: "stream",
+        responseType: 'stream',
         headers: await this.getHeaders(),
         params,
       }),
@@ -89,8 +89,8 @@ export default class StorageClient {
 
   public async readAllByParamsAsStream(params: object): Promise<AxiosResponse> {
     const res = await this.requestRetry(
-      async (): Promise<AxiosResponse> => this.api.get("/objects", {
-        responseType: "stream",
+      async (): Promise<AxiosResponse> => this.api.get('/objects', {
+        responseType: 'stream',
         headers: await this.getHeaders(),
         params,
       }),
@@ -100,11 +100,11 @@ export default class StorageClient {
 
   public async writeStream(stream: () => Readable, customHeaders: object): Promise<AxiosResponse> {
     const headers: RequestHeaders = {
-      "content-type": "application/octet-stream",
+      'content-type': 'application/octet-stream',
       ...customHeaders,
     };
     const res = await this.requestRetry(
-      async (): Promise<AxiosResponse> => this.api.post("/objects", stream(), {
+      async (): Promise<AxiosResponse> => this.api.post('/objects', stream(), {
         headers: await this.getHeaders(headers),
       }),
     );
@@ -114,7 +114,7 @@ export default class StorageClient {
   public async deleteOne(objectId: string): Promise<AxiosResponse> {
     const res = await this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.delete(`/objects/${objectId}`, {
-        responseType: "stream",
+        responseType: 'stream',
         headers: await this.getHeaders(),
       }),
     );
