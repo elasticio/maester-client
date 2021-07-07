@@ -51,10 +51,6 @@ You may want to parse JSON or do any other data processing according to object's
 ```
 const parsedObject = JSON.parse(obj);
 ```
-The following errors can be thrown:
-- Object Not Found
-- Invalid object id
-
 #### Get objects by query parameters:
 
 The method has the following signature:
