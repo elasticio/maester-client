@@ -27,8 +27,6 @@ describe("ObjectStorageWrapper", () => {
     }
     return resultHeaders;
   };
-  const objectNotFoundResponse = "Object Not Found";
-  const invalidIdResponse = "Invalid object id";
   const data = {
     foo: "bar",
   };
@@ -159,22 +157,6 @@ describe("ObjectStorageWrapper", () => {
     });
   });
   describe("Lookup object by ID", () => {
-    describe("Object not found in Maester", () => {
-      it("Should throw \"Object not found\"", async () => {
-        nock(maesterUri).get(`/objects/${id}`).reply(200, objectNotFoundResponse);
-        await objectStorageWrapper.lookupObjectById(id).catch((error: { message: any }) => {
-          expect(error.message).to.equal("Object Not Found");
-        });
-      });
-    });
-    describe("ID is invalid", () => {
-      it("Should throw \"Invalid object id\"", async () => {
-        nock(maesterUri).get(`/objects/${id}`).reply(200, invalidIdResponse);
-        await objectStorageWrapper.lookupObjectById(id).catch((error: { message: any }) => {
-          expect(error.message).to.equal("Invalid object id");
-        });
-      });
-    });
     describe("Lookup with valid ID", () => {
       it("Should successfully return a JSON object", async () => {
         nock(maesterUri).get(`/objects/${id}`).reply(200, data);
@@ -277,45 +259,14 @@ describe("ObjectStorageWrapper", () => {
     });
   });
   describe("Update object", () => {
-    describe("Object not found in Maester", () => {
-      it("Should return \"object not found\"", async () => {
-        nock(maesterUri).get(`/objects/${id}`).reply(200, objectNotFoundResponse);
-        await objectStorageWrapper.updateObject(id, data).catch((error: { message: any }) => {
-          expect(error.message).to.equal("No objects found with id id123");
-        });
-      });
-    });
-    describe("ID is invalid", () => {
-      it("Should return \"invalid object id\"", async () => {
-        nock(maesterUri).get(`/objects/${id}`).reply(200, invalidIdResponse);
-        await objectStorageWrapper.updateObject(id, data).catch((error: { message: any }) => {
-          expect(error.message).to.equal("Invalid object id id123");
-        });
-      });
-    });
     describe("Valid update request", () => {
       it("Should successfully update an object", async () => {
-        nock(maesterUri).get(`/objects/${id}`).reply(200, data);
         nock(maesterUri).put(`/objects/${id}`).reply(200, updatedData);
         const result = await objectStorageWrapper.updateObject(id, updatedData);
         expect(result).to.deep.equal(updatedData);
       });
     });
     describe("Delete object", () => {
-      describe("Object not found in Maester", () => {
-        it("Should return \"object not found\"", async () => {
-          nock(maesterUri).delete(`/objects/${id}`).reply(200, objectNotFoundResponse);
-          const result = await objectStorageWrapper.deleteObjectById(id);
-          expect(result).to.equal(objectNotFoundResponse);
-        });
-      });
-      describe("ID is invalid", () => {
-        it("Should return \"invalid object id\"", async () => {
-          nock(maesterUri).delete(`/objects/${id}`).reply(200, invalidIdResponse);
-          const result = await objectStorageWrapper.deleteObjectById(id);
-          expect(result).to.equal(invalidIdResponse);
-        });
-      });
       describe("ID is valid", () => {
         it("Should delete an object", async () => {
           nock(maesterUri).delete(`/objects/${id}`).reply(204);

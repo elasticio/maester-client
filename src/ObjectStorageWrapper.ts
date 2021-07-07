@@ -58,10 +58,7 @@ export class ObjectStorageWrapper {
 
   async lookupObjectById(id: string) {
     this.logger.debug(`Going to find an object by id ${id}...`);
-    const resultString = await this.objectStorage.getById(id);
-    if (resultString === "Object Not Found") throw new Error("Object Not Found");
-    if (resultString === "Invalid object id") throw new Error("Invalid object id");
-    return resultString;
+    return this.objectStorage.getById(id);
   }
 
   async lookupObjectsByQueryParameters(headers: Header[]) {
@@ -81,10 +78,6 @@ export class ObjectStorageWrapper {
   }
 
   async updateObject(id: string, data: object) {
-    this.logger.debug("Going to find an object by id...");
-    const findObject = await this.objectStorage.getById(id);
-    if (findObject === "Object Not Found") throw new Error(`No objects found with id ${id}`);
-    if (findObject === "Invalid object id") throw new Error(`Invalid object id ${id}`);
     this.logger.debug(`Going to update and object with id ${id}...`);
     return this.objectStorage.updateOne(id, data);
   }
