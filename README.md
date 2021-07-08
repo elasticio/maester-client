@@ -25,7 +25,7 @@ where
 - data - object data to create. *Required*
 - queryHeaders - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameters` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Optional*
 - metaHeaders - array of objects `{ key: string, value: string }`, where `key` - meta field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - meta field value, if specified - `key` must be specified as well. *Optional*
-- ttl - configurable object's time to live, milliseconds. *Optional*
+- ttl - configurable object's time to live, seconds. *Optional*
 
 ```
 const obj = await objectStorage.createObject(data);
