@@ -34,19 +34,13 @@ export class ObjectStorageWrapper {
     this.objectStorage = new ObjectStorage({ uri: this.url, jwtSecret: this.token });
   }
 
-  async createObject(data: object, headers?: Header[], ttl?: number) {
+  async createObject(data: object, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number) {
     this.logger.debug('Going to create an object...');
-    ObjectStorageWrapper.validateHeaders(headers);
-    const resultHeaders: KeyIndexer = {};
-
-    if (headers) {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const { key, value } of headers) {
-        const header = `x-query-${key}`;
-        if (resultHeaders.hasOwnProperty(header)) throw new Error(`header key "${key}" was already added`);
-        resultHeaders[header] = value;
-      }
-    }
+    ObjectStorageWrapper.validateHeaders(queryHeaders);
+    const resultHeaders: KeyIndexer = {
+      ...ObjectStorageWrapper.getHeaders(queryHeaders, 'query'),
+      ...ObjectStorageWrapper.getHeaders(metaHeaders, 'meta'),
+    };
     if (ttl) resultHeaders[TTL_HEADER] = ttl.toString();
     return this.objectStorage.postObject(data, resultHeaders);
   }
@@ -93,6 +87,21 @@ export class ObjectStorageWrapper {
       if (key && !value) throw new Error('header "value" is mandatory if header "key" passed');
       if (value && !key) throw new Error('header "key" is mandatory if header "value" passed');
     }
+  }
+
+  private static getHeaders(headers: Header[], headerName: string): any {
+    const resultHeaders: KeyIndexer = {};
+    if (!headers) return;
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { key, value } of headers) {
+      const header = `x-${headerName}-${key}`;
+      if (resultHeaders.hasOwnProperty(header)) throw new Error(`${headerName} header key "${key}" was already added`);
+      resultHeaders[header] = value;
+    }
+
+    // eslint-disable-next-line consistent-return
+    return resultHeaders;
   }
 
   private static parseJson(source: string) {
