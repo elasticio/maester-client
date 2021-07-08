@@ -123,10 +123,22 @@ describe('ObjectStorageWrapper', () => {
               expect(error.message).to.equal('header "value" is mandatory if header "key" passed');
             });
         });
+        it('Should throw error', async () => {
+          await objectStorageWrapper
+            .createObject(data, [], [{ key: 'key0', value: 'value0' }, { key: 'key1' }], ttl)
+            .catch((error: { message: any }) => {
+              expect(error.message).to.equal('header "value" is mandatory if header "key" passed');
+            });
+        });
       });
       describe('Query value set, query key undefined', () => {
         it('Should throw error', async () => {
           await objectStorageWrapper.createObject(data, [{ value: 'value1' }], [], ttl).catch((error: { message: any }) => {
+            expect(error.message).to.equal('header "key" is mandatory if header "value" passed');
+          });
+        });
+        it('Should throw error', async () => {
+          await objectStorageWrapper.createObject(data, [], [{ value: 'value1' }], ttl).catch((error: { message: any }) => {
             expect(error.message).to.equal('header "key" is mandatory if header "value" passed');
           });
         });
@@ -153,7 +165,22 @@ describe('ObjectStorageWrapper', () => {
               ttl,
             )
             .catch((error: { message: any }) => {
-              expect(error.message).to.equal('query header key "key0" was already added');
+              expect(error.message).to.equal('header key "key0" was already added');
+            });
+        });
+        it('Should throw error', async () => {
+          await objectStorageWrapper
+            .createObject(
+              data,
+              [],
+              [
+                { key: 'key0', value: 'value0' },
+                { key: 'key0', value: 'value0' },
+              ],
+              ttl,
+            )
+            .catch((error: { message: any }) => {
+              expect(error.message).to.equal('header key "key0" was already added');
             });
         });
       });

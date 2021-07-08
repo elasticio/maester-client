@@ -36,7 +36,9 @@ export class ObjectStorageWrapper {
 
   async createObject(data: object, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number) {
     this.logger.debug('Going to create an object...');
-    ObjectStorageWrapper.validateHeaders(queryHeaders);
+    ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
+    ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
+
     const resultHeaders: KeyIndexer = {
       ...ObjectStorageWrapper.getHeaders(queryHeaders, 'query'),
       ...ObjectStorageWrapper.getHeaders(metaHeaders, 'meta'),
@@ -57,7 +59,7 @@ export class ObjectStorageWrapper {
 
   async lookupObjectsByQueryParameters(headers: Header[]) {
     this.logger.debug('Going to find an object by query parameters');
-    ObjectStorageWrapper.validateHeaders(headers);
+    ObjectStorageWrapper.validateQueryHeaders(headers);
     const resultParams: KeyIndexer = {};
 
     // eslint-disable-next-line no-restricted-syntax
@@ -76,12 +78,23 @@ export class ObjectStorageWrapper {
     return this.objectStorage.updateOne(id, data);
   }
 
-  private static validateHeaders(headers: Header[]) {
+  private static validateQueryHeaders(headers: Header[]) {
     if (!headers) return;
 
     if (headers.length > MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS) {
       throw new Error(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
     }
+
+    ObjectStorageWrapper.validateHeadersFormat(headers);
+  }
+
+  private static validateMetaHeaders(headers: Header[]) {
+    ObjectStorageWrapper.validateHeadersFormat(headers);
+  }
+
+  private static validateHeadersFormat(headers: Header[]) {
+    if (!headers) return;
+
     // eslint-disable-next-line no-restricted-syntax
     for (const { key, value } of headers) {
       if (key && !value) throw new Error('header "value" is mandatory if header "key" passed');
@@ -96,7 +109,7 @@ export class ObjectStorageWrapper {
     // eslint-disable-next-line no-restricted-syntax
     for (const { key, value } of headers) {
       const header = `x-${headerName}-${key}`;
-      if (resultHeaders.hasOwnProperty(header)) throw new Error(`${headerName} header key "${key}" was already added`);
+      if (resultHeaders.hasOwnProperty(header)) throw new Error(`header key "${key}" was already added`);
       resultHeaders[header] = value;
     }
 
