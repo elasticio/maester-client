@@ -19,18 +19,29 @@ const objectStorage = new ObjectStorageWrapper(this);
 
 The method has the following signature:
 ```
-async createObject(data: object, headers?: Header[], ttl?: number)
+async createObject(data: object, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number)
 ```
 where
 - data - object data to create. *Required*
-- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameters` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Optional*
-- ttl - configurable object's time to live, milliseconds. *Optional*
+- queryHeaders - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameters` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Optional*
+- metaHeaders - array of objects `{ key: string, value: string }`, where `key` - meta field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - meta field value, if specified - `key` must be specified as well. *Optional*
+- ttl - configurable object's time to live, seconds. *Optional*
 
 ```
 const obj = await objectStorage.createObject(data);
-const obj = await objectStorage.createObject(data, [], 100000);
-const obj = await objectStorage.createObject(data, [{key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue'}], 60000);
-const obj = await objectStorage.createObject(data, [{key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue'}], 60000);
+const obj = await objectStorage.createObject(data, [], [], 100000);
+const obj = await objectStorage.createObject(
+  data,
+  [{key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue'}],
+  [{key: 'somemetakey', value: 'somemetavalue'}],
+  60000
+);
+const obj = await objectStorage.createObject(
+  data,
+  [{key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue'}, {key: 'anotherqueriablefieldkey2', value: 'anotherqueriablefieldvalue2'}],
+  [{key: 'somemetakey', value: 'somemetavalue'}],
+  60000
+);
 ```
 
 ### Read operations
