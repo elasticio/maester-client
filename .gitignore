@@ -8,3 +8,4 @@ node_modules
 *.js.map
 *.map
 *.d.ts
+.nyc_output
