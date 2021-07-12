@@ -54,11 +54,10 @@ export default class ObjectStorage {
     return getStream(stream);
   }
 
-  // TODO not needed?
-  public async addOne(data: object, headers: object): Promise<string> {
-    const resultStream = () => this.applyMiddlewares(this.formStream(data), this.forwards);
-    const res = await this.client.writeStream(resultStream, headers);
-    return res.data.objectId;
+  public async deleteMany(params: object): Promise<string> {
+    const { data } = await this.client.deleteMany(params);
+    const stream = this.applyMiddlewares(data, this.reverses);
+    return getStream(stream);
   }
 
   public async postObject(data: object, headers: object): Promise<string> {
