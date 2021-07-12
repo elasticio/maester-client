@@ -1,6 +1,6 @@
 {
   "name": "@elastic.io/maester-client",
-  "version": "3.2.2",
+  "version": "3.3.0",
   "description": "The official object-storage client for sailor-nodejs.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -54,6 +54,7 @@
     "@types/sinon": "10.0.0",
     "axios": "0.21.1",
     "get-stream": "6.0.1",
+    "nyc": "15.1.0",
     "sinon": "10.0.0"
   }
 }

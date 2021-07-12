@@ -79,14 +79,14 @@ describe('ObjectStorageWrapper', () => {
 
   describe('Create object', () => {
     describe('valid inputs', () => {
-      describe('With queriable fields', () => {
+      describe('With queriable and meta fields', () => {
         it('Should save the data correctly', async () => {
           nock(maesterUri)
             .post('/objects')
             .matchHeader('x-query-key0', 'value0')
             .matchHeader('x-eio-ttl', '-1')
             .reply(201, createObjectWithQueriableField);
-          await objectStorageWrapper.createObject(data, genHeaders(1), ttl);
+          await objectStorageWrapper.createObject(data, genHeaders(1), [], ttl);
         });
         it('Should save the data correctly', async () => {
           nock(maesterUri)
@@ -96,15 +96,17 @@ describe('ObjectStorageWrapper', () => {
             .matchHeader('x-query-key2', 'value2')
             .matchHeader('x-query-key3', 'value3')
             .matchHeader('x-query-key4', 'value4')
+            .matchHeader('x-meta-key0', 'value0')
+            .matchHeader('x-meta-key1', 'value1')
             .matchHeader('x-eio-ttl', '-1')
             .reply(201, createObjectWithQueriableField);
-          await objectStorageWrapper.createObject(data, genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS), ttl);
+          await objectStorageWrapper.createObject(data, genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS), genHeaders(2), ttl);
         });
       });
       describe('Without queriable fields', () => {
         it('Should save the data correctly', async () => {
           nock(maesterUri).post('/objects').matchHeader('x-eio-ttl', '-1').reply(201, createObjectWithQueriableField);
-          await objectStorageWrapper.createObject(data, [], ttl);
+          await objectStorageWrapper.createObject(data, [], [], ttl);
         });
         it('Should save the data correctly', async () => {
           nock(maesterUri).post('/objects').reply(201, createObjectWithQueriableField);
@@ -116,7 +118,14 @@ describe('ObjectStorageWrapper', () => {
       describe('Query key set, query value undefined', () => {
         it('Should throw error', async () => {
           await objectStorageWrapper
-            .createObject(data, [{ key: 'key0', value: 'value0' }, { key: 'key1' }], ttl)
+            .createObject(data, [{ key: 'key0', value: 'value0' }, { key: 'key1' }], [], ttl)
+            .catch((error: { message: any }) => {
+              expect(error.message).to.equal('header "value" is mandatory if header "key" passed');
+            });
+        });
+        it('Should throw error', async () => {
+          await objectStorageWrapper
+            .createObject(data, [], [{ key: 'key0', value: 'value0' }, { key: 'key1' }], ttl)
             .catch((error: { message: any }) => {
               expect(error.message).to.equal('header "value" is mandatory if header "key" passed');
             });
@@ -124,7 +133,12 @@ describe('ObjectStorageWrapper', () => {
       });
       describe('Query value set, query key undefined', () => {
         it('Should throw error', async () => {
-          await objectStorageWrapper.createObject(data, [{ value: 'value1' }], ttl).catch((error: { message: any }) => {
+          await objectStorageWrapper.createObject(data, [{ value: 'value1' }], [], ttl).catch((error: { message: any }) => {
+            expect(error.message).to.equal('header "key" is mandatory if header "value" passed');
+          });
+        });
+        it('Should throw error', async () => {
+          await objectStorageWrapper.createObject(data, [], [{ value: 'value1' }], ttl).catch((error: { message: any }) => {
             expect(error.message).to.equal('header "key" is mandatory if header "value" passed');
           });
         });
@@ -132,7 +146,7 @@ describe('ObjectStorageWrapper', () => {
       describe(`Maester headers maximum amount is exceed (${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS} items)`, () => {
         it('Should throw error', async () => {
           await objectStorageWrapper
-            .createObject(data, genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS + 1), ttl)
+            .createObject(data, genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS + 1), [], ttl)
             .catch((error: { message: any }) => {
               expect(error.message).to.equal(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
             });
@@ -143,6 +157,22 @@ describe('ObjectStorageWrapper', () => {
           await objectStorageWrapper
             .createObject(
               data,
+              [
+                { key: 'key0', value: 'value0' },
+                { key: 'key0', value: 'value0' },
+              ],
+              [],
+              ttl,
+            )
+            .catch((error: { message: any }) => {
+              expect(error.message).to.equal('header key "key0" was already added');
+            });
+        });
+        it('Should throw error', async () => {
+          await objectStorageWrapper
+            .createObject(
+              data,
+              [],
               [
                 { key: 'key0', value: 'value0' },
                 { key: 'key0', value: 'value0' },
