@@ -200,8 +200,8 @@ describe('ObjectStorageWrapper', () => {
       });
     });
   });
-  describe('Lookup object by query parameter', () => {
-    describe('Object not found in Maester', () => {
+  describe('Lookup objects by query parameters', () => {
+    describe('Objects not found in Maester', () => {
       it('Should successfully return an empty stringified array', async () => {
         nock(maesterUri).get(`/objects?query[${queryKey}]=${queryValue}`).reply(200, []);
         const result = await objectStorageWrapper.lookupObjectsByQueryParameters([{ key: queryKey, value: queryValue }]);
@@ -210,11 +210,6 @@ describe('ObjectStorageWrapper', () => {
     });
     describe('Different amount of search params', () => {
       describe('valid input', () => {
-        it('Should successfully return an empty stringified array', async () => {
-          nock(maesterUri).get('/objects').reply(200, []);
-          const result = await objectStorageWrapper.lookupObjectsByQueryParameters([]);
-          expect(result).to.deep.equal([]);
-        });
         it('Should successfully return an empty stringified array', async () => {
           nock(maesterUri).get('/objects?query[key0]=value0').reply(200, []);
           const result = await objectStorageWrapper.lookupObjectsByQueryParameters(genHeaders(1));
@@ -302,6 +297,70 @@ describe('ObjectStorageWrapper', () => {
           nock(maesterUri).delete(`/objects/${id}`).reply(204);
           const result = await objectStorageWrapper.deleteObjectById(id);
           expect(result).to.equal('');
+        });
+      });
+    });
+  });
+  describe('Delete object by query parameter', () => {
+    describe('Different amount of search params', () => {
+      describe('valid input', () => {
+        it('Should successfully delete objects (one param)', async () => {
+          nock(maesterUri).delete('/objects?query[key0]=value0').reply(200);
+          await objectStorageWrapper.deleteObjectsByQueryParameters(genHeaders(1));
+        });
+        it('Should successfully delete objects (two params)', async () => {
+          nock(maesterUri)
+            .delete('/objects?query[key0]=value0&query[key1]=value1&query[key2]=value2')
+            .reply(200, [createObjectWithQueriableField, anotherCreateObjectWithQueriableField]);
+          await objectStorageWrapper.deleteObjectsByQueryParameters(genHeaders(3));
+        });
+        it('Should successfully delete objects (five params)', async () => {
+          nock(maesterUri)
+            .delete('/objects?query[key0]=value0&query[key1]=value1&query[key2]=value2&query[key3]=value3&query[key4]=value4')
+            .reply(200, []);
+          await objectStorageWrapper.deleteObjectsByQueryParameters(genHeaders(5));
+        });
+      });
+      describe('invalid input', () => {
+        describe('Query key set, query value undefined', () => {
+          it('Should throw error', async () => {
+            await objectStorageWrapper
+              .deleteObjectsByQueryParameters([{ key: 'key0', value: 'value0' }, { key: 'key1' }], ttl)
+              .catch((error: { message: any }) => {
+                expect(error.message).to.equal('header "value" is mandatory if header "key" passed');
+              });
+          });
+        });
+        describe('Query value set, query key undefined', () => {
+          it('Should throw error', async () => {
+            await objectStorageWrapper.deleteObjectsByQueryParameters([{ value: 'value1' }], ttl).catch((error: { message: any }) => {
+              expect(error.message).to.equal('header "key" is mandatory if header "value" passed');
+            });
+          });
+        });
+        describe(`Maester headers maximum amount is exceed (${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS} items)`, () => {
+          it('Should throw error', async () => {
+            await objectStorageWrapper
+              .deleteObjectsByQueryParameters(genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS + 1), ttl)
+              .catch((error: { message: any }) => {
+                expect(error.message).to.equal(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
+              });
+          });
+        });
+        describe('Header used more than one time', () => {
+          it('Should throw error', async () => {
+            await objectStorageWrapper
+              .deleteObjectsByQueryParameters(
+                [
+                  { key: 'key0', value: 'value0' },
+                  { key: 'key0', value: 'value0' },
+                ],
+                ttl,
+              )
+              .catch((error: { message: any }) => {
+                expect(error.message).to.equal('header key "key0" was already added');
+              });
+          });
         });
       });
     });

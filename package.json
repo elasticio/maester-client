@@ -1,14 +1,14 @@
 {
   "name": "@elastic.io/maester-client",
-  "version": "3.3.0",
-  "description": "The official object-storage client for sailor-nodejs.",
+  "version": "3.4.0-dev.1",
+  "description": "The official object-storage client",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
     "lint": "eslint '*/**/*.ts' --quiet --fix",
     "pretest": "npm run lint",
     "license-check": "license-checker --excludePrivatePackages --excludePackages \"$(node ../../../.ignored-licenses.js)\" --onlyAllow \"$(node ../../../.allowed-licenses.js)\"",
-    "test": "NODE_ENV=test mocha -r ts-node/register --recursive ./spec/**/*.ts",
+    "test": "NODE_ENV=test nyc mocha -r ts-node/register --recursive ./spec/**/*.ts",
     "build": "tsc",
     "prepare": "npm run build",
     "prepublishOnly": "npm run lint && npm run test"
@@ -54,6 +54,7 @@
     "@types/sinon": "10.0.0",
     "axios": "0.21.1",
     "get-stream": "6.0.1",
+    "nyc": "15.1.0",
     "sinon": "10.0.0"
   }
 }

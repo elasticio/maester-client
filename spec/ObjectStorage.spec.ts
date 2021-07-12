@@ -100,7 +100,7 @@ describe('Object Storage', () => {
         expect(response).to.be.deep.equal(responseString);
       });
 
-      it('should throw an error on put request connection error', async () => {
+      it('should throw an error on post request connection error', async () => {
         const objectStorage = new ObjectStorage(config);
 
         const objectStorageCalls = nock(config.uri)
@@ -115,7 +115,7 @@ describe('Object Storage', () => {
 
         let err;
         try {
-          await objectStorage.addOne(postData, {});
+          await objectStorage.postObject(postData, {});
         } catch (e) {
           err = e;
         }
@@ -124,7 +124,7 @@ describe('Object Storage', () => {
         expect(err.code).to.be.equal('ECONNREFUSED');
       });
 
-      it('should throw an error on put request http error', async () => {
+      it('should throw an error on post request http error', async () => {
         const objectStorage = new ObjectStorage(config);
 
         const objectStorageCalls = nock(config.uri)
@@ -139,7 +139,7 @@ describe('Object Storage', () => {
 
         let err;
         try {
-          await objectStorage.addOne(postData, {});
+          await objectStorage.postObject(postData, {});
         } catch (e) {
           err = e;
         }
@@ -147,7 +147,7 @@ describe('Object Storage', () => {
         expect(err.toString()).to.include('409');
       });
 
-      it('should put successfully', async () => {
+      it('should post successfully', async () => {
         const objectStorage = new ObjectStorage(config);
 
         const objectStorageCalls = nock(config.uri)
@@ -156,10 +156,10 @@ describe('Object Storage', () => {
           .post('/objects')
           .reply(200);
 
-        const objectId = await objectStorage.addOne(postData, {});
+        const response: any = await objectStorage.postObject(postData, {});
 
         expect(objectStorageCalls.isDone()).to.be.true;
-        expect(objectId).to.match(/^[0-9a-z-]+$/);
+        expect(response.objectId).to.match(/^[0-9a-z-]+$/);
       });
     });
   });
@@ -215,7 +215,7 @@ describe('Object Storage', () => {
         expect(response).to.be.deep.equal(responseString);
       });
 
-      it('should throw an error on put request connection error', async () => {
+      it('should throw an error on post request connection error', async () => {
         const objectStorageWithMiddlewares = new ObjectStorage(config);
         objectStorageWithMiddlewares.use(encryptStream, decryptStream);
         objectStorageWithMiddlewares.use(zip, unzip);
@@ -231,7 +231,7 @@ describe('Object Storage', () => {
 
         let err;
         try {
-          await objectStorageWithMiddlewares.addOne(postData, {});
+          await objectStorageWithMiddlewares.postObject(postData, {});
         } catch (e) {
           err = e;
         }
@@ -240,7 +240,7 @@ describe('Object Storage', () => {
         expect(err.code).to.be.equal('ECONNREFUSED');
       });
 
-      it('should throw an error on put request http error', async () => {
+      it('should throw an error on post request http error', async () => {
         const objectStorageWithMiddlewares = new ObjectStorage(config);
         objectStorageWithMiddlewares.use(encryptStream, decryptStream);
         objectStorageWithMiddlewares.use(zip, unzip);
@@ -256,7 +256,7 @@ describe('Object Storage', () => {
 
         let err;
         try {
-          await objectStorageWithMiddlewares.addOne(postData, {});
+          await objectStorageWithMiddlewares.postObject(postData, {});
         } catch (e) {
           err = e;
         }
@@ -274,10 +274,10 @@ describe('Object Storage', () => {
           .post('/objects')
           .reply(200, { objectId: '1' });
 
-        const objectId = await objectStorageWithMiddlewares.addOne(postData, {});
+        const response:any = await objectStorageWithMiddlewares.postObject(postData, {});
 
         expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-        expect(objectId).to.be.equal('1');
+        expect(response.objectId).to.be.equal('1');
       });
 
       it('should add 2 objects successfully', async () => {
@@ -292,11 +292,11 @@ describe('Object Storage', () => {
           .post('/objects')
           .reply(200, { objectId: '2' });
 
-        const objectIdFirst = await objectStorageWithMiddlewares.addOne(postData, {});
-        const objectIdSecond = await objectStorageWithMiddlewares.addOne(postData, {});
+        const response1: any = await objectStorageWithMiddlewares.postObject(postData, {});
+        const response2: any = await objectStorageWithMiddlewares.postObject(postData, {});
         expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-        expect(objectIdFirst).to.be.equal('1');
-        expect(objectIdSecond).to.be.equal('2');
+        expect(response1.objectId).to.be.equal('1');
+        expect(response2.objectId).to.be.equal('2');
       });
 
       it('should get 2 objects successfully', async () => {
@@ -335,10 +335,10 @@ describe('Object Storage', () => {
           .post('/objects')
           .reply(200);
 
-        const objectId = await objectStorageWithMiddlewares.addOne(postData, {});
+        const response:any = await objectStorageWithMiddlewares.postObject(postData, {});
 
         expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-        expect(objectId).to.match(/^[0-9a-z-]+$/);
+        expect(response.objectId).to.match(/^[0-9a-z-]+$/);
       });
     });
   });

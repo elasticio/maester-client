@@ -121,6 +121,17 @@ export default class StorageClient {
     return res;
   }
 
+  public async deleteMany(params: object): Promise<AxiosResponse> {
+    const res = await this.requestRetry(
+      async (): Promise<AxiosResponse> => this.api.delete('/objects', {
+        responseType: 'stream',
+        headers: await this.getHeaders(),
+        params,
+      }),
+    );
+    return res;
+  }
+
   public async updateAsStream(objectId: string, stream: () => Readable): Promise<AxiosResponse> {
     const res = await this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), {

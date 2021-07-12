@@ -40,8 +40,8 @@ export class ObjectStorageWrapper {
     ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
 
     const resultHeaders: KeyIndexer = {
-      ...ObjectStorageWrapper.getHeaders(queryHeaders, 'query'),
-      ...ObjectStorageWrapper.getHeaders(metaHeaders, 'meta'),
+      ...ObjectStorageWrapper.getPostHeaders(queryHeaders, 'query'),
+      ...ObjectStorageWrapper.getPostHeaders(metaHeaders, 'meta'),
     };
     if (ttl) resultHeaders[TTL_HEADER] = ttl.toString();
     return this.objectStorage.postObject(data, resultHeaders);
@@ -52,6 +52,13 @@ export class ObjectStorageWrapper {
     return this.objectStorage.deleteOne(id);
   }
 
+  async deleteObjectsByQueryParameters(headers: Header[]) {
+    this.logger.debug('Going to delete objects by query parameters...');
+    ObjectStorageWrapper.validateQueryHeaders(headers);
+    const resultParams = ObjectStorageWrapper.getQueryParams(headers);
+    return this.objectStorage.deleteMany(resultParams);
+  }
+
   async lookupObjectById(id: string) {
     this.logger.debug(`Going to find an object by id ${id}...`);
     return this.objectStorage.getById(id);
@@ -60,14 +67,7 @@ export class ObjectStorageWrapper {
   async lookupObjectsByQueryParameters(headers: Header[]) {
     this.logger.debug('Going to find an object by query parameters');
     ObjectStorageWrapper.validateQueryHeaders(headers);
-    const resultParams: KeyIndexer = {};
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const { key, value } of headers) {
-      const queryKey: string = `query[${key}]`;
-      if (resultParams.hasOwnProperty(queryKey)) throw new Error(`header key "${key}" was already added`);
-      resultParams[queryKey] = value;
-    }
+    const resultParams = ObjectStorageWrapper.getQueryParams(headers);
     const result = await this.objectStorage.getAllByParams(resultParams);
     this.logger.debug(`Trying to parse the response to JSON: ${JSON.stringify(result)}`);
     return ObjectStorageWrapper.parseJson(result);
@@ -102,7 +102,7 @@ export class ObjectStorageWrapper {
     }
   }
 
-  private static getHeaders(headers: Header[], headerName: string): any {
+  private static getPostHeaders(headers: Header[], headerName: string): any {
     const resultHeaders: KeyIndexer = {};
     if (!headers) return;
 
@@ -115,6 +115,20 @@ export class ObjectStorageWrapper {
 
     // eslint-disable-next-line consistent-return
     return resultHeaders;
+  }
+
+  private static getQueryParams(headers: Header[]) {
+    if (!headers) return {};
+    const resultParams: KeyIndexer = {};
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { key, value } of headers) {
+      const queryKey: string = `query[${key}]`;
+      if (resultParams.hasOwnProperty(queryKey)) throw new Error(`header key "${key}" was already added`);
+      resultParams[queryKey] = value;
+    }
+
+    return resultParams;
   }
 
   private static parseJson(source: string) {

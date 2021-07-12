@@ -45,7 +45,7 @@ const obj = await objectStorage.createObject(
 ```
 
 ### Read operations
-#### Get object by ID:
+#### Get object by ID
 
 The method has the following signature:
 ```
@@ -62,7 +62,7 @@ You may want to parse JSON or do any other data processing according to object's
 ```
 const parsedObject = JSON.parse(obj);
 ```
-#### Get objects by query parameters:
+#### Get objects by query parameters
 
 The method has the following signature:
 ```
@@ -105,7 +105,9 @@ where
 const obj = await objectStorage.updateObject(id, data);
 ```
 
-### Delete object
+
+### Delete operations
+#### Delete object by ID
 
 The method has the following signature:
 ```
@@ -116,4 +118,15 @@ where
 
 ```
 const obj = await objectStorage.deleteObjectById(id);
+```
+
+#### Delete objects by query parameters
+The method has the following signature:
+```
+async deleteObjectsByQueryParameters(headers: Header[])
+```
+where
+- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Required*
+```
+const obj = await objectStorage.deleteObjectsByQueryParameters([{key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue'}]);
 ```
