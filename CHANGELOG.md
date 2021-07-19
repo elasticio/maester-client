@@ -1,4 +1,4 @@
-# 3.3.0 (July XX, 2021)
+# 3.4.0 (July 19, 2021)
 * added deleteMany method
 * added ability to use custom axios config
 
