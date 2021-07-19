@@ -27,9 +27,9 @@ export default class StorageClient {
 
   private static httpsAgent = new https.Agent({ keepAlive: true });
 
-  public constructor(config: { uri: string; jwtSecret: string }) {
-    this.api = axios.create({
-      baseURL: `${config.uri}/`,
+  public constructor(config: { uri: string; jwtSecret: string }, axiosCfg?: object) {
+    this.api = axios.create(axiosCfg || {
+      baseURL: config.uri,
       httpAgent: StorageClient.httpAgent,
       httpsAgent: StorageClient.httpsAgent,
       validateStatus: null,
