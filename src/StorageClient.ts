@@ -18,8 +18,6 @@ export interface RequestOptions {
   onResponse?: (err: Error, res: AxiosResponse) => boolean;
 }
 
-const validateStatus = (status: number) => status < 300;
-
 export class StorageClient {
   private api: AxiosInstance;
 
@@ -34,7 +32,6 @@ export class StorageClient {
       baseURL: config.uri,
       httpAgent: StorageClient.httpAgent,
       httpsAgent: StorageClient.httpsAgent,
-      validateStatus: null,
       maxContentLength: Infinity,
       maxRedirects: 0,
     });
@@ -84,7 +81,6 @@ export class StorageClient {
         responseType: 'stream',
         headers: await this.getHeaders(),
         params,
-        validateStatus,
       }),
     );
   }
@@ -95,7 +91,6 @@ export class StorageClient {
         responseType: 'stream',
         headers: await this.getHeaders(),
         params,
-        validateStatus,
       }),
     );
   }
@@ -108,7 +103,6 @@ export class StorageClient {
     return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.post('/objects', stream(), {
         headers: await this.getHeaders(headers),
-        validateStatus,
       }),
     );
   }
@@ -118,7 +112,6 @@ export class StorageClient {
       async (): Promise<AxiosResponse> => this.api.delete(`/objects/${objectId}`, {
         responseType: 'stream',
         headers: await this.getHeaders(),
-        validateStatus,
       }),
     );
   }
@@ -129,7 +122,6 @@ export class StorageClient {
         responseType: 'stream',
         headers: await this.getHeaders(),
         params,
-        validateStatus,
       }),
     );
   }
@@ -141,7 +133,6 @@ export class StorageClient {
     return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), {
         headers: await this.getHeaders(headers),
-        validateStatus,
       }),
     );
   }
