@@ -3,6 +3,7 @@
 * Added ability to use custom axios config
 * Added ability to add/modify `query` and `meta` headers when updating an object
 * Fixed a bug when 4XX, 5XX codes where not thrown as errors
+* Fixed exports
 
 # 3.2.0 (July 5, 2021)
 * createObject method now supports up to 5 query headers
