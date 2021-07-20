@@ -18,6 +18,7 @@ export interface RequestOptions {
   onResponse?: (err: Error, res: AxiosResponse) => boolean;
 }
 
+const validateStatus = (status: number) => status < 300;
 export default class StorageClient {
   private api: AxiosInstance;
 
@@ -77,25 +78,25 @@ export default class StorageClient {
   }
 
   public async readStream(objectId: string, params?: object): Promise<AxiosResponse> {
-    const res = await this.requestRetry(
+    return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.get(`/objects/${objectId}`, {
         responseType: 'stream',
         headers: await this.getHeaders(),
         params,
+        validateStatus,
       }),
     );
-    return res;
   }
 
   public async readAllByParamsAsStream(params: object): Promise<AxiosResponse> {
-    const res = await this.requestRetry(
+    return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.get('/objects', {
         responseType: 'stream',
         headers: await this.getHeaders(),
         params,
+        validateStatus,
       }),
     );
-    return res;
   }
 
   public async writeStream(stream: () => Readable, customHeaders: object): Promise<AxiosResponse> {
@@ -103,44 +104,44 @@ export default class StorageClient {
       'content-type': 'application/octet-stream',
       ...customHeaders,
     };
-    const res = await this.requestRetry(
+    return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.post('/objects', stream(), {
         headers: await this.getHeaders(headers),
+        validateStatus,
       }),
     );
-    return res;
   }
 
   public async deleteOne(objectId: string): Promise<AxiosResponse> {
-    const res = await this.requestRetry(
+    return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.delete(`/objects/${objectId}`, {
         responseType: 'stream',
         headers: await this.getHeaders(),
+        validateStatus,
       }),
     );
-    return res;
   }
 
   public async deleteMany(params: object): Promise<AxiosResponse> {
-    const res = await this.requestRetry(
+    return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.delete('/objects', {
         responseType: 'stream',
         headers: await this.getHeaders(),
         params,
+        validateStatus,
       }),
     );
-    return res;
   }
 
   public async updateAsStream(objectId: string, stream: () => Readable, customHeaders?: object): Promise<AxiosResponse> {
     const headers: RequestHeaders = {
       ...customHeaders,
     };
-    const res = await this.requestRetry(
+    return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), {
         headers: await this.getHeaders(headers),
+        validateStatus,
       }),
     );
-    return res;
   }
 }
