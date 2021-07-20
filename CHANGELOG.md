@@ -1,6 +1,7 @@
-# 3.4.0 (July 19, 2021)
+# 3.4.0 (July 23, 2021)
 * added deleteMany method
 * added ability to use custom axios config
+* added ability to add/modify `query` and `meta` headers when updating an object
 
 # 3.2.0 (July 5, 2021)
 * createObject method now supports up to 5 query headers

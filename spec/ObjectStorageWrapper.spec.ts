@@ -290,14 +290,59 @@ describe('ObjectStorageWrapper', () => {
         const result = await objectStorageWrapper.updateObject(id, updatedData);
         expect(result).to.deep.equal(updatedData);
       });
+      it('Should successfully update an object with headers', async () => {
+        nock(maesterUri)
+          .put(`/objects/${id}`)
+          .matchHeader('x-query-key0', 'value0')
+          .reply(200, updatedData);
+        const result = await objectStorageWrapper.updateObject(id, updatedData, genHeaders(1));
+        expect(result).to.deep.equal(updatedData);
+      });
+      it('Should successfully update an object with headers', async () => {
+        nock(maesterUri).put(`/objects/${id}`)
+          .matchHeader('x-query-key0', 'value0')
+          .matchHeader('x-query-key1', 'value1')
+          .matchHeader('x-query-key2', 'value2')
+          .matchHeader('x-query-key3', 'value3')
+          .matchHeader('x-query-key4', 'value4')
+          .reply(200, updatedData);
+        const result = await objectStorageWrapper.updateObject(id, updatedData, genHeaders(5));
+        expect(result).to.deep.equal(updatedData);
+      });
+      it('Should successfully update an object with headers', async () => {
+        nock(maesterUri).put(`/objects/${id}`)
+          .matchHeader('x-query-key0', 'value0')
+          .matchHeader('x-query-key1', 'value1')
+          .matchHeader('x-meta-key0', 'value0')
+          .matchHeader('x-meta-key1', 'value1')
+          .reply(200, updatedData);
+        const result = await objectStorageWrapper.updateObject(id, updatedData, genHeaders(5), genHeaders(2));
+        expect(result).to.deep.equal(updatedData);
+      });
     });
-    describe('Delete object', () => {
-      describe('ID is valid', () => {
-        it('Should delete an object', async () => {
-          nock(maesterUri).delete(`/objects/${id}`).reply(204);
-          const result = await objectStorageWrapper.deleteObjectById(id);
-          expect(result).to.equal('');
-        });
+    describe('Invalid update request', () => {
+      it('Should throw an error', async () => {
+        await objectStorageWrapper
+          .updateObject(
+            id,
+            updatedData,
+            [
+              { key: 'key0', value: 'value0' },
+              { key: 'key0', value: 'value0' },
+            ],
+          )
+          .catch((error: { message: any }) => {
+            expect(error.message).to.equal('header key "key0" was already added');
+          });
+      });
+    });
+  });
+  describe('Delete object by ID', () => {
+    describe('ID is valid', () => {
+      it('Should delete an object', async () => {
+        nock(maesterUri).delete(`/objects/${id}`).reply(204);
+        const result = await objectStorageWrapper.deleteObjectById(id);
+        expect(result).to.equal('');
       });
     });
   });

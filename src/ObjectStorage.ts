@@ -66,9 +66,9 @@ export default class ObjectStorage {
     return res.data;
   }
 
-  public async updateOne(objectId: string, data: object): Promise<string> {
+  public async updateOne(objectId: string, data: object, headers?: object): Promise<string> {
     const resultStream = () => this.applyMiddlewares(this.formStream(data), this.forwards);
-    const res = await this.client.updateAsStream(objectId, resultStream);
+    const res = await this.client.updateAsStream(objectId, resultStream, headers);
     return res.data;
   }
 }

@@ -1,17 +1,19 @@
 {
   "name": "@elastic.io/maester-client",
-  "version": "3.4.0-dev.3",
+  "version": "3.4.0-dev.4",
   "description": "The official object-storage client",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
+    "tsc": "rm -fr dist && tsc",
     "lint": "eslint '*/**/*.ts' --quiet --fix",
-    "pretest": "npm run lint",
-    "license-check": "license-checker --excludePrivatePackages --excludePackages \"$(node ../../../.ignored-licenses.js)\" --onlyAllow \"$(node ../../../.allowed-licenses.js)\"",
     "test": "NODE_ENV=test nyc mocha -r ts-node/register --recursive ./spec/**/*.ts",
-    "build": "tsc",
+    "pretest": "npm run lint && find src spec -name \"*.js\" -type f -delete",
+    "posttest": "npm run tsc",
+    "build": "npm run tsc",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run lint && npm run test"
+    "prepublishOnly": "npm run lint && npm run test",
+    "license-check": "license-checker --excludePrivatePackages --excludePackages \"$(node ../../../.ignored-licenses.js)\" --onlyAllow \"$(node ../../../.allowed-licenses.js)\""
   },
   "repository": {
     "type": "git",
