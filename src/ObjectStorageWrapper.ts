@@ -1,4 +1,4 @@
-import ObjectStorage from './ObjectStorage';
+import { ObjectStorage } from './ObjectStorage';
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
 export const TTL_HEADER = 'x-eio-ttl';

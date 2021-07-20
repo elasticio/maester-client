@@ -5,7 +5,7 @@ import https from 'https';
 import { Readable } from 'stream';
 import log from './logger';
 
-interface RequestHeaders {
+export interface RequestHeaders {
   [index: string]: string | number;
 }
 
@@ -19,7 +19,8 @@ export interface RequestOptions {
 }
 
 const validateStatus = (status: number) => status < 300;
-export default class StorageClient {
+
+export class StorageClient {
   private api: AxiosInstance;
 
   private readonly jwtSecret: string;

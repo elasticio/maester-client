@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import {
   describe, beforeEach, afterEach, it,
 } from 'mocha';
-import ObjectStorage from '../src/ObjectStorage';
+import { ObjectStorage } from '../src/ObjectStorage';
 import logging from '../src/logger';
 import {
   streamResponse, encryptStream, decryptStream, zip, unzip,
