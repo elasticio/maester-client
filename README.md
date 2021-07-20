@@ -95,14 +95,27 @@ The method returns an array of items. It either is empty in case no objects foun
 
 The method has the following signature:
 ```
-async updateObject(id: string, data: object)
+async updateObject(id: string, data: object, queryHeaders?: Header[], metaHeaders?: Header[])
 ```
 where
 - id - Maester internal id of the object to update. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
 - data - object to update. *Required*
+- queryHeaders - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameters` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. Note: queryHeaders could be added to an existing object and modified as well, but they can not be deleted. *Optional*
+- metaHeaders - array of objects `{ key: string, value: string }`, where `key` - meta field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - meta field value, if specified - `key` must be specified as well. Note: metaHeaders could be added to an existing object and modified as well, but they can not be deleted. *Optional*
 
 ```
 const obj = await objectStorage.updateObject(id, data);
+const obj = await objectStorage.updateObject(
+  id,
+  data,
+  [{ key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue' }, { key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue' }]
+);
+const obj = await objectStorage.updateObject(
+  id,
+  data,
+  [{key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue'}, {key: 'anotherqueriablefieldkey2', value: 'anotherqueriablefieldvalue2'}],
+  [{key: 'somemetakey', value: 'somemetavalue'}]
+);
 ```
 
 
