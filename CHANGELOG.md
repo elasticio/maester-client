@@ -1,12 +1,12 @@
 # 3.4.0 (July 23, 2021)
-* added deleteMany method
-* added ability to use custom axios config
-* added ability to add/modify `query` and `meta` headers when updating an object
-* throw real error object on errors
+* Added deleteMany method
+* Added ability to use custom axios config
+* Added ability to add/modify `query` and `meta` headers when updating an object
+* Fixed a bug when 4XX, 5XX codes where not thrown as errors
 
 # 3.2.0 (July 5, 2021)
 * createObject method now supports up to 5 query headers
-* rename lookupObjectByQueryParameter method to lookupObjectsByQueryParameters
+* Rename lookupObjectByQueryParameter method to lookupObjectsByQueryParameters
 * lookupObjectsByQueryParameters method now now supports up to 5 query parameters
 
 # 3.1.0 (July 1, 2021)
