@@ -1,10 +1,10 @@
 import { Readable, Duplex } from 'stream';
 import getStream from 'get-stream';
-import StorageClient from './StorageClient';
+import { StorageClient } from './StorageClient';
 
 export type TransformMiddleware = () => Duplex;
 
-export default class ObjectStorage {
+export class ObjectStorage {
   private client: StorageClient;
 
   private forwards: TransformMiddleware[];
