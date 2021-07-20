@@ -132,10 +132,13 @@ export default class StorageClient {
     return res;
   }
 
-  public async updateAsStream(objectId: string, stream: () => Readable): Promise<AxiosResponse> {
+  public async updateAsStream(objectId: string, stream: () => Readable, customHeaders?: object): Promise<AxiosResponse> {
+    const headers: RequestHeaders = {
+      ...customHeaders,
+    };
     const res = await this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), {
-        headers: await this.getHeaders(),
+        headers: await this.getHeaders(headers),
       }),
     );
     return res;
