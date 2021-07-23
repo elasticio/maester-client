@@ -1,4 +1,4 @@
-import { ObjectStorage } from './ObjectStorage';
+import { ObjectStorage, ResponseType } from './ObjectStorage';
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
 export const TTL_HEADER = 'x-eio-ttl';
@@ -52,18 +52,16 @@ export class ObjectStorageWrapper {
     return this.objectStorage.deleteMany(resultParams);
   }
 
-  async lookupObjectById(id: string) {
+  async lookupObjectById(id: string, responseType: ResponseType = 'string') {
     this.logger.debug(`Going to find an object by id ${id}...`);
-    return this.objectStorage.getById(id);
+    return this.objectStorage.getById(id, responseType);
   }
 
   async lookupObjectsByQueryParameters(headers: Header[]) {
     this.logger.debug('Going to find an object by query parameters');
     ObjectStorageWrapper.validateQueryHeaders(headers);
     const resultParams = ObjectStorageWrapper.getQueryParams(headers);
-    const result = await this.objectStorage.getAllByParams(resultParams);
-    this.logger.debug(`Trying to parse the response to JSON: ${JSON.stringify(result)}`);
-    return ObjectStorageWrapper.parseJson(result);
+    return this.objectStorage.getAllByParams(resultParams);
   }
 
   async updateObject(id: string, data: object, queryHeaders?: Header[], metaHeaders?: Header[]) {

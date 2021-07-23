@@ -341,8 +341,7 @@ describe('ObjectStorageWrapper', () => {
     describe('ID is valid', () => {
       it('Should delete an object', async () => {
         nock(maesterUri).delete(`/objects/${id}`).reply(204);
-        const result = await objectStorageWrapper.deleteObjectById(id);
-        expect(result).to.equal('');
+        await objectStorageWrapper.deleteObjectById(id);
       });
     });
   });

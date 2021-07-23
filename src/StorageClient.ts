@@ -27,7 +27,7 @@ export class StorageClient {
 
   private static httpsAgent = new https.Agent({ keepAlive: true });
 
-  public constructor(config: { uri: string; jwtSecret: string }, axiosInstance?: AxiosInstance) {
+  public constructor(config: { uri: string; jwtSecret: string }) {
     this.api = axios.create({
       baseURL: config.uri,
       httpAgent: StorageClient.httpAgent,
@@ -88,7 +88,6 @@ export class StorageClient {
   public async readAllByParamsAsStream(params: object): Promise<AxiosResponse> {
     return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.get('/objects', {
-        responseType: 'stream',
         headers: await this.getHeaders(),
         params,
       }),
@@ -102,7 +101,6 @@ export class StorageClient {
     };
     return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.post('/objects', stream(), {
-        responseType: 'stream',
         headers: await this.getHeaders(headers),
       }),
     );
@@ -111,7 +109,6 @@ export class StorageClient {
   public async deleteOne(objectId: string): Promise<AxiosResponse> {
     return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.delete(`/objects/${objectId}`, {
-        responseType: 'stream',
         headers: await this.getHeaders(),
       }),
     );
@@ -120,7 +117,6 @@ export class StorageClient {
   public async deleteMany(params: object): Promise<AxiosResponse> {
     return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.delete('/objects', {
-        responseType: 'stream',
         headers: await this.getHeaders(),
         params,
       }),
@@ -133,7 +129,6 @@ export class StorageClient {
     };
     return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), {
-        responseType: 'stream',
         headers: await this.getHeaders(headers),
       }),
     );
