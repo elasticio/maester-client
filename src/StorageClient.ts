@@ -28,7 +28,7 @@ export class StorageClient {
   private static httpsAgent = new https.Agent({ keepAlive: true });
 
   public constructor(config: { uri: string; jwtSecret: string }, axiosInstance?: AxiosInstance) {
-    this.api = axiosInstance || axios.create({
+    this.api = axios.create({
       baseURL: config.uri,
       httpAgent: StorageClient.httpAgent,
       httpsAgent: StorageClient.httpsAgent,
@@ -102,6 +102,7 @@ export class StorageClient {
     };
     return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.post('/objects', stream(), {
+        responseType: 'stream',
         headers: await this.getHeaders(headers),
       }),
     );
@@ -132,6 +133,7 @@ export class StorageClient {
     };
     return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.put(`/objects/${objectId}`, stream(), {
+        responseType: 'stream',
         headers: await this.getHeaders(headers),
       }),
     );
