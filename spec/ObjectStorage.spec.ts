@@ -5,11 +5,20 @@ import { expect } from 'chai';
 import {
   describe, beforeEach, afterEach, it,
 } from 'mocha';
+import { Readable } from 'stream';
 import { ObjectStorage } from '../src/ObjectStorage';
 import logging from '../src/logger';
 import {
   streamResponse, encryptStream, decryptStream, zip, unzip,
 } from './helpers';
+
+
+const formStream = (dataString: string): Readable => {
+  const stream = new Readable();
+  stream.push(dataString);
+  stream.push(null);
+  return stream;
+};
 
 describe('Object Storage', () => {
   const config = {
@@ -51,6 +60,49 @@ describe('Object Storage', () => {
 
         await objectStorage.getAllByParams({ foo: 'bar' });
 
+        expect(objectStorageCalls.isDone()).to.be.true;
+      });
+
+      it('should getById (stream)', async () => {
+        const objectStorage = new ObjectStorage(config);
+
+        const objectStorageCalls = nock(config.uri)
+        // @ts-ignore: Nock .d.ts are outdated.
+          .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
+          .get('/objects/objectId')
+          .reply(200, formStream('i`m a stream'));
+
+        const result = await objectStorage.getById('objectId', 'stream');
+        expect(result.toString('base64')).to.be.equal(formStream('i`m a stream').toString());
+        expect(objectStorageCalls.isDone()).to.be.true;
+      });
+
+      it('should getById (json)', async () => {
+        const objectStorage = new ObjectStorage(config);
+
+        const objectStorageCalls = nock(config.uri)
+        // @ts-ignore: Nock .d.ts are outdated.
+          .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
+          .get('/objects/objectId')
+          .reply(200, formStream('i`m a stream'));
+
+        const result = await objectStorage.getById('objectId', 'json');
+        expect(result).to.be.deep.equal('i`m a stream');
+        expect(objectStorageCalls.isDone()).to.be.true;
+      });
+
+      it('should getById (arraybuffer)', async () => {
+        const objectStorage = new ObjectStorage(config);
+
+        const objectStorageCalls = nock(config.uri)
+        // @ts-ignore: Nock .d.ts are outdated.
+          .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
+          .get('/objects/objectId')
+          .reply(200, formStream('i`m a stream'));
+
+        const result = await objectStorage.getById('objectId', 'arraybuffer');
+        const encodedResult = Buffer.from('i`m a stream', 'binary').toString('base64');
+        expect(result.toString('base64')).to.be.equal(encodedResult);
         expect(objectStorageCalls.isDone()).to.be.true;
       });
     });
