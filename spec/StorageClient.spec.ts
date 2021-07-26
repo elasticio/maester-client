@@ -61,7 +61,7 @@ describe('Storage Client', () => {
 
     let err;
     try {
-      await storageClient.readStream('1', {});
+      await storageClient.readStream('1');
     } catch (e) {
       err = e;
     }
@@ -84,7 +84,7 @@ describe('Storage Client', () => {
       .get('/objects/1')
       .reply(200, streamResponse(data));
 
-    const response = await storageClient.readStream('1', {});
+    const response = await storageClient.readStream('1');
 
     expect(storageClientCalls.isDone()).to.be.true;
     expect(response.data).to.be.instanceOf(Readable);

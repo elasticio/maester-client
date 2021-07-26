@@ -1,4 +1,5 @@
-import { ObjectStorage, ResponseType } from './ObjectStorage';
+import { ObjectStorage, ResponseType, DEFAULT_RESPONSE_TYPE } from './ObjectStorage';
+
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
 export const TTL_HEADER = 'x-eio-ttl';
@@ -52,7 +53,7 @@ export class ObjectStorageWrapper {
     return this.objectStorage.deleteMany(resultParams);
   }
 
-  async lookupObjectById(id: string, responseType: ResponseType = 'string') {
+  async lookupObjectById(id: string, responseType: ResponseType = DEFAULT_RESPONSE_TYPE) {
     this.logger.debug(`Going to find an object by id ${id}...`);
     return this.objectStorage.getById(id, responseType);
   }

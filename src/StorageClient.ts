@@ -75,12 +75,11 @@ export class StorageClient {
     return { Authorization: `Bearer ${this.jwtSecret}`, ...override };
   }
 
-  public async readStream(objectId: string, params?: object): Promise<AxiosResponse> {
+  public async readStream(objectId: string): Promise<AxiosResponse> {
     return this.requestRetry(
       async (): Promise<AxiosResponse> => this.api.get(`/objects/${objectId}`, {
         responseType: 'stream',
         headers: await this.getHeaders(),
-        params,
       }),
     );
   }

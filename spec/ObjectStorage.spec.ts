@@ -41,7 +41,7 @@ describe('Object Storage', () => {
   describe('basic', () => {
     describe('data mode', () => {
       it('should getAllByParams', async () => {
-        const objectStorage = new ObjectStorage({ uri: config.uri, jwtSecret: config.jwtSecret });
+        const objectStorage = new ObjectStorage(config);
 
         const objectStorageCalls = nock(config.uri)
         // @ts-ignore: Nock .d.ts are outdated.

@@ -3,7 +3,8 @@ import getStream from 'get-stream';
 import { StorageClient } from './StorageClient';
 
 export type TransformMiddleware = () => Duplex;
-export type ResponseType = 'stream' | 'string' | 'buffer';
+export type ResponseType = 'stream' | 'json' | 'arraybuffer';
+export const DEFAULT_RESPONSE_TYPE: ResponseType = 'json';
 
 export class ObjectStorage {
   private client: StorageClient;
@@ -37,7 +38,7 @@ export class ObjectStorage {
     return this;
   }
 
-  public async getById(objectId: string, responseType: ResponseType = 'string'): Promise<any> {
+  public async getById(objectId: string, responseType: ResponseType = DEFAULT_RESPONSE_TYPE): Promise<any> {
     const { data } = await this.client.readStream(objectId);
     const stream = this.applyMiddlewares(data, this.reverses);
     return ObjectStorage.getDataByResponseType(stream, responseType);
@@ -71,8 +72,8 @@ export class ObjectStorage {
   private static getDataByResponseType(data: Stream, responseType: ResponseType) {
     switch (responseType) {
       case 'stream': return data;
-      case 'string': return getStream(data);
-      case 'buffer': return getStream.buffer(data);
+      case 'json': return getStream(data);
+      case 'arraybuffer': return getStream.buffer(data);
       default: throw new Error(`Response type "${responseType}" is not supported`);
     }
   }
