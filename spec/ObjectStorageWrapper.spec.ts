@@ -106,7 +106,7 @@ describe('ObjectStorageWrapper', () => {
       describe('Without queriable fields', () => {
         it('Should save the data correctly', async () => {
           nock(maesterUri).post('/objects').matchHeader('x-eio-ttl', '-1').reply(201, createObjectWithQueriableField);
-          await objectStorageWrapper.createObject(data, [], [], ttl);
+          await objectStorageWrapper.createObject(data, genHeaders(1), [], ttl);
         });
         it('Should save the data correctly', async () => {
           nock(maesterUri).post('/objects').reply(201, createObjectWithQueriableField);
@@ -125,7 +125,7 @@ describe('ObjectStorageWrapper', () => {
         });
         it('Should throw error', async () => {
           await objectStorageWrapper
-            .createObject(data, [], [{ key: 'key0', value: 'value0' }, { key: 'key1' }], ttl)
+            .createObject(data, genHeaders(1), [{ key: 'key0', value: 'value0' }, { key: 'key1' }], ttl)
             .catch((error: { message: any }) => {
               expect(error.message).to.equal('header "value" is mandatory if header "key" passed');
             });
@@ -138,7 +138,7 @@ describe('ObjectStorageWrapper', () => {
           });
         });
         it('Should throw error', async () => {
-          await objectStorageWrapper.createObject(data, [], [{ value: 'value1' }], ttl).catch((error: { message: any }) => {
+          await objectStorageWrapper.createObject(data, genHeaders(1), [{ value: 'value1' }], ttl).catch((error: { message: any }) => {
             expect(error.message).to.equal('header "key" is mandatory if header "value" passed');
           });
         });
@@ -172,7 +172,7 @@ describe('ObjectStorageWrapper', () => {
           await objectStorageWrapper
             .createObject(
               data,
-              [],
+              genHeaders(1),
               [
                 { key: 'key0', value: 'value0' },
                 { key: 'key0', value: 'value0' },
@@ -183,6 +183,13 @@ describe('ObjectStorageWrapper', () => {
               expect(error.message).to.equal('header key "key0" was already added');
             });
         });
+      });
+      it('At least one header must be present', async () => {
+        try {
+          await objectStorageWrapper.createObject(data, [], [], ttl);
+        } catch (error) {
+          expect(error.message).to.be.equal('At least one query header must be present');
+        }
       });
     });
   });
@@ -243,7 +250,7 @@ describe('ObjectStorageWrapper', () => {
         describe('Query key set, query value undefined', () => {
           it('Should throw error', async () => {
             await objectStorageWrapper
-              .lookupObjectsByQueryParameters([{ key: 'key0', value: 'value0' }, { key: 'key1' }], ttl)
+              .lookupObjectsByQueryParameters([{ key: 'key0', value: 'value0' }, { key: 'key1' }])
               .catch((error: { message: any }) => {
                 expect(error.message).to.equal('header "value" is mandatory if header "key" passed');
               });
@@ -251,7 +258,7 @@ describe('ObjectStorageWrapper', () => {
         });
         describe('Query value set, query key undefined', () => {
           it('Should throw error', async () => {
-            await objectStorageWrapper.lookupObjectsByQueryParameters([{ value: 'value1' }], ttl).catch((error: { message: any }) => {
+            await objectStorageWrapper.lookupObjectsByQueryParameters([{ value: 'value1' }]).catch((error: { message: any }) => {
               expect(error.message).to.equal('header "key" is mandatory if header "value" passed');
             });
           });
@@ -259,7 +266,7 @@ describe('ObjectStorageWrapper', () => {
         describe(`Maester headers maximum amount is exceed (${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS} items)`, () => {
           it('Should throw error', async () => {
             await objectStorageWrapper
-              .lookupObjectsByQueryParameters(genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS + 1), ttl)
+              .lookupObjectsByQueryParameters(genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS + 1))
               .catch((error: { message: any }) => {
                 expect(error.message).to.equal(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
               });
@@ -273,12 +280,18 @@ describe('ObjectStorageWrapper', () => {
                   { key: 'key0', value: 'value0' },
                   { key: 'key0', value: 'value0' },
                 ],
-                ttl,
               )
               .catch((error: { message: any }) => {
                 expect(error.message).to.equal('header key "key0" was already added');
               });
           });
+        });
+        it('At least one header must be present', async () => {
+          try {
+            await objectStorageWrapper.lookupObjectsByQueryParameters([]);
+          } catch (error) {
+            expect(error.message).to.be.equal('At least one query header must be present');
+          }
         });
       });
     });
@@ -334,6 +347,13 @@ describe('ObjectStorageWrapper', () => {
           .catch((error: { message: any }) => {
             expect(error.message).to.equal('header key "key0" was already added');
           });
+      });
+      it('At least one header must be present', async () => {
+        try {
+          await objectStorageWrapper.updateObject('id', data, []);
+        } catch (error) {
+          expect(error.message).to.be.equal('At least one query header must be present');
+        }
       });
     });
   });

@@ -36,7 +36,9 @@ export class ObjectStorageWrapper {
 
   async createObject(data: object, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number) {
     this.logger.debug('Going to create an object...');
-    const resultHeaders = ObjectStorageWrapper.formAndValidateHeadersToAdd(queryHeaders, metaHeaders);
+    if (queryHeaders) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
+    if (metaHeaders) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
+    const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
     if (ttl) resultHeaders[TTL_HEADER] = ttl.toString();
     return this.objectStorage.postObject(data, resultHeaders);
   }
@@ -67,12 +69,16 @@ export class ObjectStorageWrapper {
 
   async updateObject(id: string, data: object, queryHeaders?: Header[], metaHeaders?: Header[]) {
     this.logger.debug(`Going to update and object with id ${id}...`);
-    const resultHeaders = ObjectStorageWrapper.formAndValidateHeadersToAdd(queryHeaders, metaHeaders);
+    if (queryHeaders) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
+    if (metaHeaders) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
+    const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
     return this.objectStorage.updateOne(id, data, resultHeaders);
   }
 
   private static validateQueryHeaders(headers: Header[]) {
-    if (!headers) return;
+    if (headers.length === 0) {
+      throw new Error('At least one query header must be present');
+    }
     if (headers.length > MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS) {
       throw new Error(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
     }
@@ -92,16 +98,14 @@ export class ObjectStorageWrapper {
     }
   }
 
-  private static formAndValidateHeadersToAdd(queryHeaders: Header[], metaHeaders: Header[]): KeyIndexer {
-    ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
-    ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
+  private static formHeadersToAdd(queryHeaders: Header[], metaHeaders: Header[]): KeyIndexer {
     return {
-      ...ObjectStorageWrapper.getHeadersToAdd(queryHeaders, 'query'),
-      ...ObjectStorageWrapper.getHeadersToAdd(metaHeaders, 'meta'),
+      ...ObjectStorageWrapper.formHeadersToAddByType(queryHeaders, 'query'),
+      ...ObjectStorageWrapper.formHeadersToAddByType(metaHeaders, 'meta'),
     };
   }
 
-  private static getHeadersToAdd(headers: Header[], headerName: string): any {
+  private static formHeadersToAddByType(headers: Header[], headerName: string): any {
     const resultHeaders: KeyIndexer = {};
     if (!headers) return;
     // eslint-disable-next-line no-restricted-syntax
@@ -124,15 +128,5 @@ export class ObjectStorageWrapper {
       resultParams[queryKey] = value;
     }
     return resultParams;
-  }
-
-  private static parseJson(source: string) {
-    let parsedJson;
-    try {
-      parsedJson = JSON.parse(source);
-    } catch (parseError) {
-      throw new Error('Could not parse Maester object as it is not a JSON object');
-    }
-    return parsedJson;
   }
 }

@@ -1,6 +1,7 @@
 # 3.4.1 (July 28, 2021)
 * `ObjectStorage` method `getById` now supports content-types
 * `ObjectStorageWrapper` method `lookupObjectById` now supports content-types
+* Added additional validation for headers
 
 # 3.4.0 (July 22, 2021)
 * Added deleteMany method
