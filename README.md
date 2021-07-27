@@ -49,16 +49,17 @@ const obj = await objectStorage.createObject(
 
 The method has the following signature:
 ```
-async lookupObjectById(id: string)
+async lookupObjectById(id: string, responseType: ResponseType)
 ```
 where
 - id - Maester internal id of the object to update. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
+- responseType - One of response-types [`json`, `stream`, `arraybuffer`]. Data will be returned in an appropriate format. Defaults to `json`. *Optional*
 
 ```
 const obj = await objectStorage.lookupObjectById(id);
+const obj = await objectStorage.lookupObjectById(id, 'stream');
 ```
-As Maester is able to store any data type, the method returns **a raw string**.
-You may want to parse JSON or do any other data processing according to object's expected data type:
+By default method returns **a raw string**, you may want to parse JSON or do any other data processing according to object's expected data type:
 ```
 const parsedObject = JSON.parse(obj);
 ```
