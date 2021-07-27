@@ -3,6 +3,7 @@ import { ObjectStorage, ResponseType, DEFAULT_RESPONSE_TYPE } from './ObjectStor
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
 export const TTL_HEADER = 'x-eio-ttl';
+const isHeaders = (headers?: Header[]): boolean => headers && headers.length > 0;
 
 export interface Scope {
   logger: object;
@@ -36,8 +37,8 @@ export class ObjectStorageWrapper {
 
   async createObject(data: object, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number) {
     this.logger.debug('Going to create an object...');
-    if (queryHeaders) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
-    if (metaHeaders) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
+    if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
+    if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
     const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
     if (ttl) resultHeaders[TTL_HEADER] = ttl.toString();
     return this.objectStorage.postObject(data, resultHeaders);
@@ -69,8 +70,8 @@ export class ObjectStorageWrapper {
 
   async updateObject(id: string, data: object, queryHeaders?: Header[], metaHeaders?: Header[]) {
     this.logger.debug(`Going to update and object with id ${id}...`);
-    if (queryHeaders) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
-    if (metaHeaders) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
+    if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
+    if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
     const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
     return this.objectStorage.updateOne(id, data, resultHeaders);
   }

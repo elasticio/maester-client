@@ -1,4 +1,7 @@
-# 3.4.1 (July 28, 2021)
+# 3.4.2 (July 27, 2021)
+* Update headers validation
+
+# 3.4.1 (July 27, 2021)
 * `ObjectStorage` method `getById` now supports content-types
 * `ObjectStorageWrapper` method `lookupObjectById` now supports content-types
 * Added additional validation for headers

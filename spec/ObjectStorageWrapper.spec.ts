@@ -91,6 +91,24 @@ describe('ObjectStorageWrapper', () => {
         it('Should save the data correctly', async () => {
           nock(maesterUri)
             .post('/objects')
+            .reply(201, createObjectWithQueriableField);
+          await objectStorageWrapper.createObject(data);
+        });
+        it('Should save the data correctly', async () => {
+          nock(maesterUri)
+            .post('/objects')
+            .reply(201, createObjectWithQueriableField);
+          await objectStorageWrapper.createObject(data, []);
+        });
+        it('Should save the data correctly', async () => {
+          nock(maesterUri)
+            .post('/objects')
+            .reply(201, createObjectWithQueriableField);
+          await objectStorageWrapper.createObject(data, null);
+        });
+        it('Should save the data correctly', async () => {
+          nock(maesterUri)
+            .post('/objects')
             .matchHeader('x-query-key0', 'value0')
             .matchHeader('x-query-key1', 'value1')
             .matchHeader('x-query-key2', 'value2')
@@ -183,13 +201,6 @@ describe('ObjectStorageWrapper', () => {
               expect(error.message).to.equal('header key "key0" was already added');
             });
         });
-      });
-      it('At least one header must be present', async () => {
-        try {
-          await objectStorageWrapper.createObject(data, [], [], ttl);
-        } catch (error) {
-          expect(error.message).to.be.equal('At least one query header must be present');
-        }
       });
     });
   });
@@ -303,6 +314,16 @@ describe('ObjectStorageWrapper', () => {
         const result = await objectStorageWrapper.updateObject(id, updatedData);
         expect(result).to.deep.equal(updatedData);
       });
+      it('Should successfully update an object', async () => {
+        nock(maesterUri).put(`/objects/${id}`).reply(200, updatedData);
+        const result = await objectStorageWrapper.updateObject(id, updatedData, []);
+        expect(result).to.deep.equal(updatedData);
+      });
+      it('Should successfully update an object', async () => {
+        nock(maesterUri).put(`/objects/${id}`).reply(200, updatedData);
+        const result = await objectStorageWrapper.updateObject(id, updatedData, null);
+        expect(result).to.deep.equal(updatedData);
+      });
       it('Should successfully update an object with headers', async () => {
         nock(maesterUri)
           .put(`/objects/${id}`)
@@ -347,13 +368,6 @@ describe('ObjectStorageWrapper', () => {
           .catch((error: { message: any }) => {
             expect(error.message).to.equal('header key "key0" was already added');
           });
-      });
-      it('At least one header must be present', async () => {
-        try {
-          await objectStorageWrapper.updateObject('id', data, []);
-        } catch (error) {
-          expect(error.message).to.be.equal('At least one query header must be present');
-        }
       });
     });
   });
