@@ -59,8 +59,7 @@ where
 const obj = await objectStorage.lookupObjectById(id);
 const obj = await objectStorage.lookupObjectById(id, 'stream');
 ```
-By default method returns **a raw string**.
-You may want to parse JSON or do any other data processing according to object's expected data type:
+By default method returns **a raw string**, you may want to parse JSON or do any other data processing according to object's expected data type:
 ```
 const parsedObject = JSON.parse(obj);
 ```
