@@ -9,3 +9,4 @@ node_modules
 *.map
 *.d.ts
 .nyc_output
+.vscode
