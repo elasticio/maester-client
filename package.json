@@ -25,7 +25,11 @@
     "ipaas",
     "nodejs"
   ],
-  "author": "Elastic.io",
+  "author": {
+    "name": "Elastic.io GmbH",
+    "email": "support@elastic.io",
+    "url": "https://www.elastic.io/"
+  },
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/elasticio/maester-client/issues"
