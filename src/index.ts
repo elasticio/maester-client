@@ -1,3 +1,3 @@
-export * from './client';
-export * from './bucket';
-export * from './object';
+export * from './StorageClient';
+export * from './ObjectStorage';
+export * from './ObjectStorageWrapper';
