@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import 'mocha';
-import { getLogger } from '@elastic.io/component-commons-library/lib/logger/logger';
+import { getLogger } from '@elastic.io/component-commons-library/dist/src/logger/logger';
 import chai from 'chai';
 import nock from 'nock';
 import sinon from 'sinon';
