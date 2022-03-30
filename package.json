@@ -1,6 +1,6 @@
 {
   "name": "@elastic.io/maester-client",
-  "version": "3.4.3-dev.1",
+  "version": "3.4.3-dev.2",
   "description": "The official object-storage client",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -52,7 +52,6 @@
   },
   "dependencies": {
     "@elastic.io/bunyan-logger": "1.0.6",
-    "@elastic.io/component-commons-library": "2.0.1-dev.10",
     "@types/sinon": "10.0.0",
     "axios": "0.26.1",
     "get-stream": "6.0.1",
