@@ -1,3 +1,5 @@
+# 3.4.3 (April 8, 2022)
+* Fix dependencies
 # 3.4.2 (July 27, 2021)
 * Update headers validation
 
