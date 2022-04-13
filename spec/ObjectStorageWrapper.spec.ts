@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 import 'mocha';
-// import { getLogger } from '@elastic.io/component-commons-library/dist/src/logger/logger';
 import chai from 'chai';
 import nock from 'nock';
 import sinon from 'sinon';
+import bunyan from '@elastic.io/bunyan-logger';
 import { ObjectStorageWrapper, MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS } from '../src/ObjectStorageWrapper';
 
 const { expect } = chai;
@@ -61,7 +61,7 @@ describe('ObjectStorageWrapper', () => {
 
   before(async () => {
     context = {
-      logger: { info: () => { }, debug: () => { } },
+      logger: bunyan.createLogger({ name: 'dummy' }),
       emit: sinon.spy(),
     };
     objectStorageWrapper = new ObjectStorageWrapper(context);
