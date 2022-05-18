@@ -23,8 +23,8 @@ async createObject(data: object, queryHeaders?: Header[], metaHeaders?: Header[]
 ```
 where
 - data - object data to create. *Required*
-- queryHeaders - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameters` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Optional*
-- metaHeaders - array of objects `{ key: string, value: string }`, where `key` - meta field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - meta field value, if specified - `key` must be specified as well. *Optional*
+- queryHeaders - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` (must be lowercase) - searchable field name (see below in `Get objects by query parameters` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Optional*
+- metaHeaders - array of objects `{ key: string, value: string }`, where `key` (must be lowercase) - meta field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - meta field value, if specified - `key` must be specified as well. *Optional*
 - ttl - configurable object's time to live, seconds. *Optional*
 
 ```
@@ -70,7 +70,7 @@ The method has the following signature:
 async lookupObjectsByQueryParameters(headers: Header[])
 ```
 where
-- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Required*
+- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` (must be lowercase) - searchable field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Required*
 
 If you create an object with a queriable headers, internally it looks like this:
 ```
@@ -101,8 +101,8 @@ async updateObject(id: string, data: object, queryHeaders?: Header[], metaHeader
 where
 - id - Maester internal id of the object to update. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
 - data - object to update. *Required*
-- queryHeaders - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name (see below in `Get objects by query parameters` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. Note: queryHeaders could be added to an existing object and modified as well, but they can not be deleted. *Optional*
-- metaHeaders - array of objects `{ key: string, value: string }`, where `key` - meta field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - meta field value, if specified - `key` must be specified as well. Note: metaHeaders could be added to an existing object and modified as well, but they can not be deleted. *Optional*
+- queryHeaders - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` (must be lowercase) - searchable field name (see below in `Get objects by query parameters` section), must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. Note: queryHeaders could be added to an existing object and modified as well, but they can not be deleted. *Optional*
+- metaHeaders - array of objects `{ key: string, value: string }`, where `key` (must be lowercase) - meta field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - meta field value, if specified - `key` must be specified as well. Note: metaHeaders could be added to an existing object and modified as well, but they can not be deleted. *Optional*
 
 ```
 const obj = await objectStorage.updateObject(id, data);
@@ -140,7 +140,7 @@ The method has the following signature:
 async deleteObjectsByQueryParameters(headers: Header[])
 ```
 where
-- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` - searchable field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Required*
+- headers - array of objects `{ key: string, value: string }`, current maximum - 5 items. Where `key` (must be lowercase) - searchable field name, must be unique for whole array, if specified - `value` must be specified as well; `value` - searchable field value, if specified - `key` must be specified as well. *Required*
 ```
 const obj = await objectStorage.deleteObjectsByQueryParameters([{key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue'}]);
 ```
