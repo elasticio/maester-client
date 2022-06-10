@@ -1,5 +1,5 @@
-import { ObjectStorage, ResponseType, DEFAULT_RESPONSE_TYPE } from './ObjectStorage';
-
+import { ObjectStorage } from './ObjectStorage';
+import { ResponseType, DEFAULT_RESPONSE_TYPE } from './interfaces';
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
 export const TTL_HEADER = 'x-eio-ttl';
