@@ -57,10 +57,10 @@ export class ObjectStorage {
     return ObjectStorage.getDataByResponseType(stream, reqOptions.responseType);
   }
 
-  // public async getAllByParams(params: object): Promise<string> {
-  //   const res = await this.client.readAllByParamsAsStream(params);
-  //   return res.data;
-  // }
+  public async getByParams(params: object, reqOptions: ReqOptions = {}) {
+    const { data } = await this.client.get(params, reqOptions);
+    return data;
+  }
 
   public async deleteOne(objectId: string, reqOptions: ReqOptions = {}) {
     return this.client.delete(objectId, reqOptions);

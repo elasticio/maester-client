@@ -74,4 +74,18 @@ describe('addAsStream', () => {
       await expect(objectStorage.get(objectId)).to.be.rejectedWith('Object Not Found');
     });
   });
+  describe('getByParams', () => {
+    it.only('should getByParams', async () => {
+      const getAttachAsStream = async () => streamFromObject({ a: 4 });
+      const objectStorage = new ObjectStorage(creds);
+      const objId1 = await objectStorage.addAsStream(getAttachAsStream, { override: { 'x-query-w': '123' } });
+      const objId2 = await objectStorage.addAsStream(getAttachAsStream, { override: { 'x-query-w': '123' } });
+      const objId3 = await objectStorage.addAsStream(getAttachAsStream, { override: { 'x-query-w': '1234' } });
+      const result = await objectStorage.getByParams({ 'query[w]': '123' });
+      await objectStorage.deleteOne(objId1);
+      await objectStorage.deleteOne(objId2);
+      await objectStorage.deleteOne(objId3);
+      expect(result.length).to.be.equal(2);
+    });
+  });
 });
