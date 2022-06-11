@@ -13,11 +13,11 @@ export enum ObjectHeaders {
 export interface reqWithBodyHeaders {
   ttl?: number;
   contentType?: string;
+  override?: object
 }
 
 export interface reqHeaders {
-  params?: object;
-  responseType?: string;
+  responseType?: ResponseType;
 }
 
 export interface ReqOptions extends reqHeaders {
@@ -46,6 +46,8 @@ export interface JWTPayload {
 export interface RequestHeaders {
   [index: string]: string | number;
 }
+
+export type searchObjectCriteria = string | object;
 
 export type TransformMiddleware = () => Duplex;
 export type ResponseType = 'stream' | 'json' | 'arraybuffer';

@@ -8,7 +8,7 @@
     "tsc": "rm -fr dist && tsc",
     "lint": "eslint '*/**/*.ts' --quiet --fix",
     "test": "NODE_ENV=test mocha -r ts-node/register --recursive spec/**/*.ts",
-    "integration-test": "npm run pretest && mocha --exit --r ts-node/register spec-integration/**/*.ts --timeout 100000",
+    "integration-test": "npm run pretest && mocha --exit --r ts-node/register spec-integration/**/*.ts --timeout 1000000",
     "pretest": "eslint --ext .ts --quiet --fix && find src spec spec-integration -name \"*.js\" -type f -delete",
     "posttest": "npm run tsc",
     "build": "npm run tsc",
@@ -60,7 +60,9 @@
   "dependencies": {
     "@elastic.io/bunyan-logger": "1.0.8",
     "@types/sinon": "10.0.0",
+    "aws-sdk": "2.1152.0",
     "axios": "0.26.1",
+    "form-data": "4.0.0",
     "get-stream": "6.0.1",
     "jsonwebtoken": "8.5.1",
     "sinon": "10.0.0"

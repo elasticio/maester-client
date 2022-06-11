@@ -1,11 +1,9 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable class-methods-use-this */
 /* eslint-disable no-continue */
 import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
 import { promisify } from 'util';
 import http from 'http';
 import https from 'https';
-import { Readable, Duplex } from 'stream';
+import { Readable } from 'stream';
 import { sign } from 'jsonwebtoken';
 import log from './logger';
 import {
@@ -16,7 +14,10 @@ import {
   ServerTransportError,
 } from './errors';
 import { isEmptyObject, sleep } from './utils';
-import { JWTPayload, RequestHeaders, RetryOptions, ReqWithBodyOptions, ObjectHeaders, StreamBasedRequestConfig } from './interfaces';
+import {
+  JWTPayload, RequestHeaders, RetryOptions, ReqWithBodyOptions, ObjectHeaders,
+  StreamBasedRequestConfig, ReqOptions, searchObjectCriteria
+} from './interfaces';
 
 const REQUEST_MAX_RETRY = process.env.REQUEST_MAX_RETRY ? parseInt(process.env.REQUEST_MAX_RETRY, 10) : 5;
 const REQUEST_RETRY_DELAY = process.env.REQUEST_RETRY_DELAY ? parseInt(process.env.REQUEST_RETRY_DELAY, 10) : 5000; // 5s
@@ -58,7 +59,6 @@ export class StorageClient {
         const bodyAsStreamInstance = await getFreshStream();
         res = await this.api.request({ ...axiosReqConfig, data: bodyAsStreamInstance });
       } catch (e) {
-        console.log('---------------------------------------------------------------------------------------------', currentRetries);
         if (e instanceof ObjectStorageClientError) {
           throw e;
         }
@@ -78,13 +78,12 @@ export class StorageClient {
         throw new InternalError('Internal library error', err);
       }
       if (err || res?.status >= 500) {
-        console.log(11, err?.message);
         throw new ServerTransportError('Server error during request', {
           code: res?.status,
           cause: err
         });
       } else {
-        throw new ClientTransportError(`Client error during request: ${res.data}`, res.status);
+        throw new ClientTransportError(`Client error during request: ${JSON.stringify(res.data)}`, res.status);
       }
     }
     return res;
@@ -100,12 +99,16 @@ export class StorageClient {
     return { Authorization: `Bearer ${token}`, ...override };
   }
 
+  // wrap for 'post' and 'put' methods
   private async reqWithBody(
     getFreshStream: () => Promise<Readable>,
-    { contentType, ttl, jwtPayload = {}, retryOptions = {} }: ReqWithBodyOptions,
+    { contentType, ttl, override = {}, jwtPayload = {}, retryOptions = {} }: ReqWithBodyOptions = {},
     objectId?: string
   ) {
-    const headers: RequestHeaders = { 'content-type': contentType || 'application/octet-stream' };
+    const headers: RequestHeaders = {
+      'content-type': contentType || 'application/json',
+      ...override
+    };
     if (ttl) headers[ObjectHeaders.ttl] = ttl;
     return this.requestRetry({
       getFreshStream,
@@ -132,10 +135,39 @@ export class StorageClient {
     return this.reqWithBody(getFreshStream, reqWithBodyOptions, objectId);
   }
 
-  // public async get(objectId: string, reqOptions: ReqOptions) {
-  //   const res = await this.requestRetry({
+  /**
+   * fetches object(s) from maester by id/params
+   * @param searchCriteria objectId/request-params
+   */
+  public async get(
+    searchCriteria: searchObjectCriteria,
+    { jwtPayload = {}, retryOptions = {} }: ReqOptions
+  ) {
+    const axiosReqConfig: AxiosRequestConfig = {
+      method: 'get',
+      url: '/objects',
+      // responseType: 'stream',
+      params: {},
+      headers: await this.formHeaders(jwtPayload)
+    };
+    if (typeof searchCriteria === 'string') {
+      axiosReqConfig.url += `/${searchCriteria}`;
+    } else {
+      axiosReqConfig.params = searchCriteria;
+    }
+    return this.requestRetry({ axiosReqConfig }, retryOptions);
+  }
 
-  //   });
-  //   return res;
-  // }
+  public async delete(
+    objectId: string,
+    { jwtPayload = {}, retryOptions = {} }: ReqOptions
+  ) {
+    return this.requestRetry({
+      axiosReqConfig: {
+        method: 'delete',
+        url: `/objects/${objectId}`,
+        headers: await this.formHeaders(jwtPayload)
+      }
+    }, retryOptions);
+  }
 }
