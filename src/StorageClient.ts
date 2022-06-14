@@ -40,13 +40,12 @@ export class StorageClient {
       validateStatus: null,
       maxContentLength: Infinity,
       maxRedirects: 0,
-      timeout: REQUEST_TIMEOUT,
     });
     this.jwtSecret = config.jwtSecret;
   }
 
   private async requestRetry(
-    requestConfig: StreamBasedRequestConfig, { retriesCount = REQUEST_MAX_RETRY, retryDelay = REQUEST_RETRY_DELAY }: RetryOptions
+    requestConfig: StreamBasedRequestConfig, { retriesCount = REQUEST_MAX_RETRY, retryDelay = REQUEST_RETRY_DELAY, requestTimeout = REQUEST_TIMEOUT }: RetryOptions
   ): Promise<AxiosResponse> {
     let currentRetries = 0;
     let res;
@@ -57,7 +56,7 @@ export class StorageClient {
       try {
         const { axiosReqConfig, getFreshStream = async () => { } } = requestConfig;
         const bodyAsStreamInstance = await getFreshStream();
-        res = await this.api.request({ ...axiosReqConfig, data: bodyAsStreamInstance });
+        res = await this.api.request({ ...axiosReqConfig, data: bodyAsStreamInstance, timeout: requestTimeout });
       } catch (e) {
         if (e instanceof ObjectStorageClientError) {
           throw e;
@@ -66,7 +65,7 @@ export class StorageClient {
       }
       // last attempt error should not be logged
       if ((err || res.status >= 500) && currentRetries < retriesCount) {
-        log.warn({ err, status: res?.status, statusText: res?.statusText }, 'Error during object request, retrying');
+        log.warn({ err, status: res?.status, statusText: res?.statusText }, `Error during object request, retrying (${currentRetries + 1})`);
         await sleep(retryDelay);
         currentRetries++;
         continue;
@@ -78,6 +77,7 @@ export class StorageClient {
         throw new InternalError('Internal library error', err);
       }
       if (err || res?.status >= 500) {
+        console.log(err?.message);
         throw new ServerTransportError('Server error during request', {
           code: res?.status,
           cause: err
@@ -146,7 +146,7 @@ export class StorageClient {
     const axiosReqConfig: AxiosRequestConfig = {
       method: 'get',
       url: '/objects',
-      // responseType: 'stream',
+      responseType: 'stream',
       params: {},
       headers: await this.formHeaders(jwtPayload)
     };

@@ -33,6 +33,7 @@ export interface ReqWithBodyOptions extends reqWithBodyHeaders {
 export interface RetryOptions {
   retryDelay?: number;
   retriesCount?: number;
+  requestTimeout?: number;
 }
 
 export interface JWTPayload {
