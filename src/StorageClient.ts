@@ -148,7 +148,7 @@ export class StorageClient {
       axiosReqConfig: {
         method: 'get',
         url: byId ? `/objects/${searchCriteria}` : '/objects',
-        // responseType: 'stream',
+        responseType: 'stream',
         params: byId ? {} : searchCriteria,
         headers: await this.formHeaders(jwtPayload)
       }
