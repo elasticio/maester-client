@@ -51,13 +51,43 @@ export class ObjectStorage {
     return res.data.objectId;
   }
 
+  public async putAsStream(
+    objectId: string, getFreshStream: () => Promise<Readable>, reqWithBodyOptions?: ReqWithBodyOptions
+  ) {
+    const getResultStream = async () => this.applyMiddlewares(getFreshStream, this.forwards);
+    const { data } = await this.client.put(objectId, getResultStream, reqWithBodyOptions);
+    return data;
+  }
+
+  public async putAsJSON(
+    objectId: string, data: object, reqWithBodyOptions?: ReqWithBodyOptions
+  ) {
+    const getResultStream = async () => this.applyMiddlewares(streamFromObject.bind({}, data), this.forwards);
+    const res = await this.client.put(objectId, getResultStream, reqWithBodyOptions);
+    return res.data;
+  }
+
+  public async put(
+    objectId: string, dataOrFunc: object | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions
+  ) {
+    let getFreshStream;
+    if (typeof dataOrFunc === 'function') {
+      getFreshStream = dataOrFunc as () => Promise<Readable>;
+    } else {
+      getFreshStream = streamFromObject.bind({}, dataOrFunc as object);
+    }
+    const getResultStream = async () => this.applyMiddlewares(getFreshStream, this.forwards);
+    const { data } = await this.client.put(objectId, getResultStream, reqWithBodyOptions);
+    return data;
+  }
+
   public async get(objectId: string, reqOptions: ReqOptions = {}): Promise<any> {
     const getFreshStream = async () => (await this.client.get(objectId, reqOptions)).data;
     const stream = await this.applyMiddlewares(getFreshStream, this.reverses);
     return ObjectStorage.getDataByResponseType(stream, reqOptions.responseType);
   }
 
-  public async getByParams(params: object, reqOptions: ReqOptions = {}) {
+  public async getAllByParams(params: object, reqOptions: ReqOptions = {}) {
     const { data } = await this.client.get(params, reqOptions);
     return data;
   }
@@ -65,29 +95,4 @@ export class ObjectStorage {
   public async deleteOne(objectId: string, reqOptions: ReqOptions = {}) {
     return this.client.delete(objectId, reqOptions);
   }
-
-  // public async deleteMany(params: object): Promise<any> {
-  //   return this.client.deleteMany(params);
-  // }
-
-  // public async postObject(data: object, headers: object): Promise<string> {
-  //   const resultStream = () => this.applyMiddlewares(this.formStream(data), this.forwards);
-  //   const res = await this.client.writeStream(resultStream, headers);
-  //   return res.data;
-  // }
-
-  // public async updateOne(objectId: string, data: object, headers?: object): Promise<string> {
-  //   const resultStream = () => this.applyMiddlewares(this.formStream(data), this.forwards);
-  //   const res = await this.client.updateAsStream(objectId, resultStream, headers);
-  //   return res.data;
-  // }
-
-  // private static getDataByResponseType(data: Stream, responseType: ResponseType) {
-  //   switch (responseType) {
-  //     case 'stream': return data;
-  //     case 'json': return getStream(data);
-  //     case 'arraybuffer': return getStream.buffer(data);
-  //     default: throw new Error(`Response type "${responseType}" is not supported`);
-  //   }
-  // }
 }
