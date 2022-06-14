@@ -88,7 +88,7 @@ describe.only('objectStorage', () => {
       expect(result.length).to.be.equal(2);
     });
   });
-  describe('putAsJSON', () => {
+  xdescribe('putAsJSON', () => {
     it('should putAsJSON', async () => {
       const objectStorage = new ObjectStorage(creds);
       const objId = await objectStorage.addAsJSON({ a: 3 });
@@ -105,7 +105,7 @@ describe.only('objectStorage', () => {
       expect(object).to.be.deep.equal({ a: 2 });
     });
   });
-  describe('putAsStream', () => {
+  xdescribe('putAsStream', () => {
     it('should putAsStream', async () => {
       const objectStorage = new ObjectStorage(creds);
       const dataAsStream = async () => streamFromObject({ a: 2 });
