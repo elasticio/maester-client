@@ -1,17 +1,12 @@
-import sinon from 'sinon';
-import fs, { existsSync } from 'fs';
-import { config } from 'dotenv';
 import chai, { expect } from 'chai';
-import { Readable } from 'stream';
-import FormData from 'form-data';
 import axios from 'axios';
 import { ObjectStorage } from '../src/ObjectStorage';
 import { creds } from './common';
-import { sleep, streamFromObject } from '../src/utils';
+import { streamFromObject } from '../src/utils';
 
 chai.use(require('chai-as-promised'));
 
-describe.only('objectStorage', () => {
+describe('objectStorage', () => {
   describe('add', () => {
     it('should add (stream) (image)', async () => {
       const getAttachAsStream = async () => (await axios.get('https://if0s.info/files/1.jpg', { responseType: 'stream' })).data;
@@ -128,13 +123,28 @@ describe.only('objectStorage', () => {
       await expect(objectStorage.get(objectId)).to.be.rejectedWith('Object Not Found');
     });
   });
+  xdescribe('deleteAllByParams', () => {
+    it('should deleteAllByParams', async () => {
+      const objectStorage = new ObjectStorage(creds);
+      await objectStorage.add({}, { override: { 'x-query-w': '123' } });
+      await objectStorage.add({}, { override: { 'x-query-w': '123' } });
+      const aliveId = await objectStorage.add({}, { override: { 'x-query-w': '1234' } });
+      const resultBeforeDelete = await objectStorage.getAllByParams({ 'query[w]': '123' });
+      expect(resultBeforeDelete.length).to.be.equal(2);
+      await await objectStorage.deleteAllByParams({ 'query[w]': '123' });
+      const resultAfterDelete = await objectStorage.getAllByParams({ 'query[w]': '123' });
+      expect(resultAfterDelete.length).to.be.equal(0);
+      const aliveObject = await objectStorage.get(aliveId);
+      expect(aliveObject).to.be.deep.equal({});
+    });
+  });
   xdescribe('getByParams', () => {
     it('should getByParams', async () => {
-      const getAttachAsStream = async () => streamFromObject({ a: 4 });
+      const jsonAsStream = async () => streamFromObject({ a: 4 });
       const objectStorage = new ObjectStorage(creds);
-      const objId1 = await objectStorage.add(getAttachAsStream, { override: { 'x-query-w': '123' } });
-      const objId2 = await objectStorage.add(getAttachAsStream, { override: { 'x-query-w': '123' } });
-      const objId3 = await objectStorage.add(getAttachAsStream, { override: { 'x-query-w': '1234' } });
+      const objId1 = await objectStorage.add(jsonAsStream, { override: { 'x-query-w': '123' } });
+      const objId2 = await objectStorage.add(jsonAsStream, { override: { 'x-query-w': '123' } });
+      const objId3 = await objectStorage.add(jsonAsStream, { override: { 'x-query-w': '1234' } });
       const result = await objectStorage.getAllByParams({ 'query[w]': '123' });
       await objectStorage.deleteOne(objId1);
       await objectStorage.deleteOne(objId2);

@@ -73,4 +73,8 @@ export class ObjectStorage {
   public async deleteOne(objectId: string, reqOptions: ReqOptions = {}) {
     return this.client.delete(objectId, reqOptions);
   }
+
+  public async deleteAllByParams(params: object, reqOptions: ReqOptions = {}) {
+    return this.client.delete(params, reqOptions);
+  }
 }

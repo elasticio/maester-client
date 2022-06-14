@@ -143,29 +143,32 @@ export class StorageClient {
     searchCriteria: searchObjectCriteria,
     { jwtPayload = {}, retryOptions = {} }: ReqOptions
   ) {
-    const axiosReqConfig: AxiosRequestConfig = {
-      method: 'get',
-      url: '/objects',
-      responseType: 'stream',
-      params: {},
-      headers: await this.formHeaders(jwtPayload)
-    };
-    if (typeof searchCriteria === 'string') {
-      axiosReqConfig.url += `/${searchCriteria}`;
-    } else {
-      axiosReqConfig.params = searchCriteria;
-    }
-    return this.requestRetry({ axiosReqConfig }, retryOptions);
+    const byId = typeof searchCriteria === 'string';
+    return this.requestRetry({
+      axiosReqConfig: {
+        method: 'get',
+        url: byId ? `/objects/${searchCriteria}` : '/objects',
+        // responseType: 'stream',
+        params: byId ? {} : searchCriteria,
+        headers: await this.formHeaders(jwtPayload)
+      }
+    }, retryOptions);
   }
 
+  /**
+   * delete object(s) from maester by id/params
+   * @param searchCriteria objectId/request-params
+   */
   public async delete(
-    objectId: string,
+    searchCriteria: searchObjectCriteria,
     { jwtPayload = {}, retryOptions = {} }: ReqOptions
   ) {
+    const byId = typeof searchCriteria === 'string';
     return this.requestRetry({
       axiosReqConfig: {
         method: 'delete',
-        url: `/objects/${objectId}`,
+        url: byId ? `/objects/${searchCriteria}` : '/objects',
+        params: byId ? {} : searchCriteria,
         headers: await this.formHeaders(jwtPayload)
       }
     }, retryOptions);

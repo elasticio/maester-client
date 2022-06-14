@@ -41,19 +41,19 @@ export class ObjectStorageWrapper {
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
     const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
     if (ttl) resultHeaders[TTL_HEADER] = ttl.toString();
-    return this.objectStorage.postObject(data, resultHeaders);
+    return this.objectStorage.add(data, resultHeaders);
   }
 
   async deleteObjectById(id: string) {
     this.logger.debug(`Going to delete an object with id ${id}...`);
-    return this.objectStorage.deleteOne(id);
+    return this.objectStorage.delete(id);
   }
 
   async deleteObjectsByQueryParameters(headers: Header[]) {
     this.logger.debug('Going to delete objects by query parameters...');
     ObjectStorageWrapper.validateQueryHeaders(headers);
     const resultParams = ObjectStorageWrapper.getQueryParams(headers);
-    return this.objectStorage.deleteMany(resultParams);
+    return this.objectStorage.deleteAllByParams(resultParams);
   }
 
   async lookupObjectById(id: string, responseType: ResponseType = DEFAULT_RESPONSE_TYPE) {
