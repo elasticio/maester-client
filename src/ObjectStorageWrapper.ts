@@ -41,12 +41,12 @@ export class ObjectStorageWrapper {
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
     const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
     if (ttl) resultHeaders[TTL_HEADER] = ttl.toString();
-    return this.objectStorage.add(data, resultHeaders);
+    return this.objectStorage.add(data, { override: resultHeaders });
   }
 
   async deleteObjectById(id: string) {
     this.logger.debug(`Going to delete an object with id ${id}...`);
-    return this.objectStorage.delete(id);
+    return this.objectStorage.deleteOne(id);
   }
 
   async deleteObjectsByQueryParameters(headers: Header[]) {
@@ -58,7 +58,7 @@ export class ObjectStorageWrapper {
 
   async lookupObjectById(id: string, responseType: ResponseType = DEFAULT_RESPONSE_TYPE) {
     this.logger.debug(`Going to find an object by id ${id}...`);
-    return this.objectStorage.getById(id, responseType);
+    return this.objectStorage.getOne(id, responseType);
   }
 
   async lookupObjectsByQueryParameters(headers: Header[]) {
@@ -73,7 +73,7 @@ export class ObjectStorageWrapper {
     if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
     const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
-    return this.objectStorage.updateOne(id, data, resultHeaders);
+    return this.objectStorage.update(id, data, { override: resultHeaders });
   }
 
   private static validateQueryHeaders(headers: Header[]) {
@@ -112,6 +112,7 @@ export class ObjectStorageWrapper {
     // eslint-disable-next-line no-restricted-syntax
     for (const { key, value } of headers) {
       const header = `x-${headerName}-${key}`;
+      // eslint-disable-next-line no-prototype-builtins
       if (resultHeaders.hasOwnProperty(header)) throw new Error(`header key "${key}" was already added`);
       resultHeaders[header] = value;
     }
@@ -125,6 +126,7 @@ export class ObjectStorageWrapper {
     // eslint-disable-next-line no-restricted-syntax
     for (const { key, value } of headers) {
       const queryKey: string = `query[${key}]`;
+      // eslint-disable-next-line no-prototype-builtins
       if (resultParams.hasOwnProperty(queryKey)) throw new Error(`header key "${key}" was already added`);
       resultParams[queryKey] = value;
     }

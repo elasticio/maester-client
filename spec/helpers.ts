@@ -1,6 +1,13 @@
 import { Readable, Duplex } from 'stream';
 import * as crypto from 'crypto';
 import * as zlib from 'zlib';
+import getLogger from '@elastic.io/component-logger';
+import sinon from 'sinon';
+
+export const getContext = () => ({
+  logger: getLogger(),
+  emit: sinon.spy(),
+});
 
 const MESSAGE_CRYPTO_PASSWORD = 'testCryptoPassword';
 const MESSAGE_CRYPTO_IV = 'iv=any16_symbols';

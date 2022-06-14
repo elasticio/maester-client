@@ -36,7 +36,7 @@ describe('objectStorage', () => {
       const objectStorage = new ObjectStorage(creds);
       const objectId = await objectStorage.add(getJSONAsStream);
       expect(typeof objectId).to.be.equal('string');
-      const object = await objectStorage.get(objectId);
+      const object = await objectStorage.getOne(objectId);
       expect(object).to.be.deep.equal({ a: 4 });
     });
     xit('should add (JSON)', async () => {
@@ -44,7 +44,7 @@ describe('objectStorage', () => {
       const objectStorage = new ObjectStorage(creds);
       const objectId = await objectStorage.add(data);
       expect(typeof objectId).to.be.equal('string');
-      const object = await objectStorage.get(objectId);
+      const object = await objectStorage.getOne(objectId);
       expect(object).to.be.deep.equal(data);
     });
     xit('should add (JSON) (default "content-type" - application/json)', async () => {
@@ -52,7 +52,7 @@ describe('objectStorage', () => {
       const objectStorage = new ObjectStorage(creds);
       const objectId = await objectStorage.add(data);
       expect(typeof objectId).to.be.equal('string');
-      const object = await objectStorage.get(objectId);
+      const object = await objectStorage.getOne(objectId);
       expect(object.name).to.be.equal('jsonata-transform-component');
     });
   });
@@ -71,7 +71,7 @@ describe('objectStorage', () => {
       const dataAsStream = async () => streamFromObject({ a: 2 });
       const objId = await objectStorage.add({ a: 3 });
       const resUpdate = await objectStorage.update(objId, dataAsStream);
-      const object = await objectStorage.get(objId);
+      const object = await objectStorage.getOne(objId);
       expect(object).to.be.deep.equal({ a: 2 });
       expect(resUpdate.contentType).to.be.equal('application/json');
     });
@@ -79,7 +79,7 @@ describe('objectStorage', () => {
       const objectStorage = new ObjectStorage(creds);
       const objId = await objectStorage.add({ a: 3 });
       const resUpdate = await objectStorage.update(objId, { a: 2 });
-      const object = await objectStorage.get(objId);
+      const object = await objectStorage.getOne(objId);
       expect(object).to.be.deep.equal({ a: 2 });
       expect(resUpdate.contentType).to.be.equal('application/json');
     });
@@ -89,7 +89,7 @@ describe('objectStorage', () => {
       const dataAsStream2 = async () => streamFromObject({ a: 2 });
       const objId = await objectStorage.add(dataAsStream);
       await objectStorage.update(objId, dataAsStream2);
-      const object = await objectStorage.get(objId);
+      const object = await objectStorage.getOne(objId);
       expect(object).to.be.deep.equal({ a: 2 });
     });
     it('should update (addAsStream, update as json)', async () => {
@@ -97,7 +97,7 @@ describe('objectStorage', () => {
       const dataAsStream = async () => streamFromObject({ a: 4 });
       const objId = await objectStorage.add(dataAsStream);
       await objectStorage.update(objId, { a: 2 });
-      const object = await objectStorage.get(objId);
+      const object = await objectStorage.getOne(objId);
       expect(object).to.be.deep.equal({ a: 2 });
     });
     it('should update pdf', async () => {
@@ -108,7 +108,6 @@ describe('objectStorage', () => {
       const objId = await objectStorage.add(getAttachAsStream, { contentType: 'application/pdf' });
       const getAttachAsStream2 = async () => (await axios.get('http://www.africau.edu/images/default/sample.pdf', { responseType: 'stream' })).data;
       const resUpd = await objectStorage.update(objId, getAttachAsStream2, { contentType: 'application/pdf' });
-      await objectStorage.get(objId);
       expect(resUpd.contentType).to.be.equal('application/pdf');
     });
   });
@@ -120,7 +119,7 @@ describe('objectStorage', () => {
       const deletedObject = await objectStorage.deleteOne(objectId);
       expect(deletedObject.data).to.be.equal('');
       // @ts-ignore
-      await expect(objectStorage.get(objectId)).to.be.rejectedWith('Object Not Found');
+      await expect(objectStorage.getOne(objectId)).to.be.rejectedWith('Object Not Found');
     });
   });
   xdescribe('deleteAllByParams', () => {
@@ -134,7 +133,7 @@ describe('objectStorage', () => {
       await await objectStorage.deleteAllByParams({ 'query[w]': '123' });
       const resultAfterDelete = await objectStorage.getAllByParams({ 'query[w]': '123' });
       expect(resultAfterDelete.length).to.be.equal(0);
-      const aliveObject = await objectStorage.get(aliveId);
+      const aliveObject = await objectStorage.getOne(aliveId);
       expect(aliveObject).to.be.deep.equal({});
     });
   });
