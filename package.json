@@ -2,8 +2,8 @@
   "name": "@elastic.io/maester-client",
   "version": "4.0.0-dev.1",
   "description": "The official object-storage client",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
   "scripts": {
     "tsc": "rm -fr dist && tsc",
     "lint": "eslint '*/**/*[^.d$].ts' --quiet --fix",
