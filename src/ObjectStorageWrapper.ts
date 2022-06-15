@@ -61,6 +61,11 @@ export class ObjectStorageWrapper {
     return this.objectStorage.getOne(id, responseType);
   }
 
+  async getObjectHeaders(id: string) {
+    this.logger.debug(`Going to fetch object headers by id ${id}...`);
+    return this.objectStorage.getHeaders(id);
+  }
+
   async lookupObjectsByQueryParameters(headers: Header[]) {
     this.logger.debug('Going to find an object by query parameters');
     ObjectStorageWrapper.validateQueryHeaders(headers);
@@ -68,7 +73,7 @@ export class ObjectStorageWrapper {
     return this.objectStorage.getAllByParams(resultParams);
   }
 
-  async updateObject(id: string, data: object, queryHeaders?: Header[], metaHeaders?: Header[]) {
+  async updateObjectById(id: string, data: object, queryHeaders?: Header[], metaHeaders?: Header[]) {
     this.logger.debug(`Going to update and object with id ${id}...`);
     if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);

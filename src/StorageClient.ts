@@ -1,5 +1,5 @@
 /* eslint-disable no-continue */
-import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { promisify } from 'util';
 import http from 'http';
 import https from 'https';
@@ -7,8 +7,6 @@ import { Readable } from 'stream';
 import { sign } from 'jsonwebtoken';
 import log from './logger';
 import {
-  ClientTransportError,
-  InternalError,
   JwtNotProvidedError,
   ObjectStorageClientError,
   ServerTransportError,
@@ -37,7 +35,6 @@ export class StorageClient {
       baseURL: config.uri,
       httpAgent: StorageClient.httpAgent,
       httpsAgent: StorageClient.httpsAgent,
-      validateStatus: null,
       maxContentLength: Infinity,
       maxRedirects: 0,
     });
@@ -56,14 +53,15 @@ export class StorageClient {
       try {
         const { axiosReqConfig, getFreshStream = async () => { } } = requestConfig;
         const bodyAsStreamInstance = await getFreshStream();
+        if (process.env.NODE_ENV === 'test') log.debug(bodyAsStreamInstance); // to insure it's new stream on each call (in unit tests only)
         res = await this.api.request({ ...axiosReqConfig, data: bodyAsStreamInstance, timeout: requestTimeout });
       } catch (e) {
         if (e instanceof ObjectStorageClientError) {
           throw e;
         }
         err = e;
+        if (err?.response?.status < 500) throw e; // The request was made and the server responded with a status code
       }
-      // last attempt error should not be logged
       if ((err || res.status >= 500) && currentRetries < retriesCount) {
         log.warn({ err, status: res?.status, statusText: res?.statusText }, `Error during object request, retrying (${currentRetries + 1})`);
         await sleep(retryDelay);
@@ -72,19 +70,11 @@ export class StorageClient {
       }
       break;
     }
-    if (err || res.status >= 400) {
-      if (err && !err.isAxiosError) {
-        throw new InternalError('Internal library error', err);
-      }
-      if (err || res?.status >= 500) {
-        console.log(err?.message);
-        throw new ServerTransportError('Server error during request', {
-          code: res?.status,
-          cause: err
-        });
-      } else {
-        throw new ClientTransportError(`Client error during request: ${JSON.stringify(res.data)}`, res.status);
-      }
+    if (err || res?.status >= 500) {
+      throw new ServerTransportError('Server error during request', {
+        code: res?.status,
+        cause: err
+      });
     }
     return res;
   }
@@ -142,7 +132,7 @@ export class StorageClient {
   public async get(
     searchCriteria: searchObjectCriteria,
     { jwtPayload = {}, retryOptions = {} }: ReqOptions
-  ) {
+  ): Promise<any> {
     const byId = typeof searchCriteria === 'string';
     return this.requestRetry({
       axiosReqConfig: {

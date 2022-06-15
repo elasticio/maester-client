@@ -1,24 +1,18 @@
 /* eslint-disable max-len */
 import 'mocha';
 import chai, { expect } from 'chai';
-import nock from 'nock';
 import sinon from 'sinon';
-import { Readable } from 'stream';
+import getStream from 'get-stream';
 import chaiAsPromised from 'chai-as-promised';
-import bunyan from '@elastic.io/bunyan-logger';
-import { getContext } from './helpers';
+import { getContext, streamFromObject } from './helpers';
 import { ObjectStorageWrapper, StorageClient, MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS } from '../src';
 
 chai.use(chaiAsPromised);
 
 process.env.ELASTICIO_OBJECT_STORAGE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6I';
-process.env.ELASTICIO_WORKSPACE_ID = 'test';
-process.env.ELASTICIO_FLOW_ID = 'test';
-process.env.ELASTICIO_API_URI = 'https://api.hostname';
 process.env.ELASTICIO_OBJECT_STORAGE_URI = 'https://ma.estr';
-process.env.ELASTICIO_STEP_ID = 'step_id';
 
-describe.only('ObjectStorageWrapper', () => {
+describe('ObjectStorageWrapper', () => {
   const objectStorageWrapper = new ObjectStorageWrapper(getContext());
   const genHeaders = (amount: number) => {
     const resultHeaders = [];
@@ -34,25 +28,14 @@ describe.only('ObjectStorageWrapper', () => {
     foo: 'bar',
     bap: 'baz',
   };
-  const rawData = '{"foo":"bar"}';
   const queryKey = 'baz';
   const queryValue = 'bap';
   const ttl = 10;
   const id = 'id123';
-  const maesterUri = 'https://ma.estr';
   const createObjectWithQueriableField = {
     contentType: 'application/json',
     createdAt: 1622811501107,
     objectId: '2bd48165-119f-489d-8842-8d07b2c7cc1b',
-    metadata: {},
-    queriableFields: {
-      demosearchfield: 'qwerty',
-    },
-  };
-  const anotherCreateObjectWithQueriableField = {
-    contentType: 'application/json',
-    createdAt: 1622811501108,
-    objectId: '78asdas87-ss77-77ss-7888-8d07b2c7cc2a',
     metadata: {},
     queriableFields: {
       demosearchfield: 'qwerty',
@@ -74,7 +57,7 @@ describe.only('ObjectStorageWrapper', () => {
         const { firstArg, lastArg } = finalReqCfg.getCall(0);
         expect(lastArg).to.be.deep.equal({});
         const stream = await firstArg.getFreshStream();
-        expect(stream instanceof Readable).to.be.equal(true);
+        expect(await getStream(stream)).to.be.equal(JSON.stringify(data));
         expect(firstArg.axiosReqConfig).to.be.deep.equal({
           method: 'post',
           url: '/objects',
@@ -92,7 +75,7 @@ describe.only('ObjectStorageWrapper', () => {
         const { firstArg, lastArg } = finalReqCfg.getCall(0);
         expect(lastArg).to.be.deep.equal({});
         const stream = await firstArg.getFreshStream();
-        expect(stream instanceof Readable).to.be.equal(true);
+        expect(await getStream(stream)).to.be.equal(JSON.stringify(data));
         expect(firstArg.axiosReqConfig).to.be.deep.equal({
           method: 'post',
           url: '/objects',
@@ -113,7 +96,7 @@ describe.only('ObjectStorageWrapper', () => {
         const { firstArg, lastArg } = finalReqCfg.getCall(0);
         expect(lastArg).to.be.deep.equal({});
         const stream = await firstArg.getFreshStream();
-        expect(stream instanceof Readable).to.be.equal(true);
+        expect(await getStream(stream)).to.be.equal(JSON.stringify(data));
         expect(firstArg.axiosReqConfig).to.be.deep.equal({
           method: 'post',
           url: '/objects',
@@ -129,7 +112,7 @@ describe.only('ObjectStorageWrapper', () => {
         const { firstArg, lastArg } = finalReqCfg.getCall(0);
         expect(lastArg).to.be.deep.equal({});
         const stream = await firstArg.getFreshStream();
-        expect(stream instanceof Readable).to.be.equal(true);
+        expect(await getStream(stream)).to.be.equal(JSON.stringify(data));
         expect(firstArg.axiosReqConfig).to.be.deep.equal({
           method: 'post',
           url: '/objects',
@@ -178,11 +161,11 @@ describe.only('ObjectStorageWrapper', () => {
   });
   describe('Lookup object by ID', () => {
     beforeEach(async () => {
-      finalReqCfg = sinon.stub(StorageClient.prototype, <any>'requestRetry').callsFake(async () => ({ data }));
+      finalReqCfg = sinon.stub(StorageClient.prototype, <any>'requestRetry').callsFake(async () => ({ data: streamFromObject(data) }));
     });
     it('Should successfully return object', async () => {
       const result = await objectStorageWrapper.lookupObjectById(id);
-      expect(result).to.be.equal(data);
+      expect(JSON.parse(result)).to.be.deep.equal(data);
       const { firstArg, lastArg } = finalReqCfg.getCall(0);
       expect(lastArg).to.be.deep.equal({});
       expect(firstArg.getFreshStream).to.be.equal(undefined);
@@ -197,12 +180,13 @@ describe.only('ObjectStorageWrapper', () => {
   });
   describe('Lookup objects by query parameters', () => {
     beforeEach(async () => {
-      finalReqCfg = sinon.stub(StorageClient.prototype, <any>'requestRetry').callsFake(async () => ({ data: [createObjectWithQueriableField, createObjectWithQueriableField] }));
+      finalReqCfg = sinon.stub(StorageClient.prototype, <any>'requestRetry').callsFake(async () => ({
+        data: streamFromObject([createObjectWithQueriableField, createObjectWithQueriableField])
+      }));
     });
     it('Should return 2 objects', async () => {
-      // nock(maesterUri).get(`/objects?query[${queryKey}]=${queryValue}`).reply(200, []);
       const result = await objectStorageWrapper.lookupObjectsByQueryParameters([{ key: queryKey, value: queryValue }]);
-      expect(result).to.deep.equal([createObjectWithQueriableField, createObjectWithQueriableField]);
+      expect(JSON.parse(result)).to.deep.equal([createObjectWithQueriableField, createObjectWithQueriableField]);
       const { firstArg, lastArg } = finalReqCfg.getCall(0);
       expect(lastArg).to.be.deep.equal({});
       expect(firstArg.getFreshStream).to.be.equal(undefined);
@@ -220,45 +204,6 @@ describe.only('ObjectStorageWrapper', () => {
         objectStorageWrapper.lookupObjectsByQueryParameters([{ key: 'key0', value: 'value0' }, { key: 'key1' }])
       ).to.be.rejectedWith('header "value" is mandatory if header "key" passed');
     });
-    //     describe('Query value set, query key undefined', () => {
-    //       it('Should throw error', async () => {
-    //         await objectStorageWrapper.lookupObjectsByQueryParameters([{ value: 'value1' }]).catch((error: { message: any }) => {
-    //           expect(error.message).to.equal('header "key" is mandatory if header "value" passed');
-    //         });
-    //       });
-    //     });
-    //     describe(`Maester headers maximum amount is exceed (${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS} items)`, () => {
-    //       it('Should throw error', async () => {
-    //         await objectStorageWrapper
-    //           .lookupObjectsByQueryParameters(genHeaders(MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS + 1))
-    //           .catch((error: { message: any }) => {
-    //             expect(error.message).to.equal(`maximum available amount of headers is ${MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS}`);
-    //           });
-    //       });
-    //     });
-    //     describe('Header used more than one time', () => {
-    //       it('Should throw error', async () => {
-    //         await objectStorageWrapper
-    //           .lookupObjectsByQueryParameters(
-    //             [
-    //               { key: 'key0', value: 'value0' },
-    //               { key: 'key0', value: 'value0' },
-    //             ],
-    //           )
-    //           .catch((error: { message: any }) => {
-    //             expect(error.message).to.equal('header key "key0" was already added');
-    //           });
-    //       });
-    //     });
-    //     it('At least one header must be present', async () => {
-    //       try {
-    //         await objectStorageWrapper.lookupObjectsByQueryParameters([]);
-    //       } catch (error) {
-    //         expect(error.message).to.be.equal('At least one query header must be present');
-    //       }
-    //     });
-    //   });
-    // });
   });
   describe('Update object', () => {
     beforeEach(async () => {
@@ -266,12 +211,12 @@ describe.only('ObjectStorageWrapper', () => {
     });
     describe('Valid update request', () => {
       it('Should successfully update an object', async () => {
-        const result = await objectStorageWrapper.updateObject(id, updatedData);
+        const result = await objectStorageWrapper.updateObjectById(id, updatedData);
         expect(result).to.deep.equal(createObjectWithQueriableField);
         const { firstArg, lastArg } = finalReqCfg.getCall(0);
         expect(lastArg).to.be.deep.equal({});
         const stream = await firstArg.getFreshStream();
-        expect(stream instanceof Readable).to.be.equal(true);
+        expect(await getStream(stream)).to.be.equal(JSON.stringify(updatedData));
         expect(firstArg.axiosReqConfig).to.be.deep.equal({
           method: 'put',
           url: '/objects/id123',
@@ -282,12 +227,12 @@ describe.only('ObjectStorageWrapper', () => {
         });
       });
       it('Should successfully update an object with headers', async () => {
-        const result = await objectStorageWrapper.updateObject(id, updatedData, genHeaders(3), genHeaders(2));
+        const result = await objectStorageWrapper.updateObjectById(id, updatedData, genHeaders(3), genHeaders(2));
         expect(result).to.deep.equal(createObjectWithQueriableField);
         const { firstArg, lastArg } = finalReqCfg.getCall(0);
         expect(lastArg).to.be.deep.equal({});
         const stream = await firstArg.getFreshStream();
-        expect(stream instanceof Readable).to.be.equal(true);
+        expect(await getStream(stream)).to.be.equal(JSON.stringify(updatedData));
         expect(firstArg.axiosReqConfig).to.be.deep.equal({
           method: 'put',
           url: '/objects/id123',
@@ -307,7 +252,7 @@ describe.only('ObjectStorageWrapper', () => {
       it('Should throw an error', async () => {
         await expect(
           // @ts-ignore
-          objectStorageWrapper.updateObject(
+          objectStorageWrapper.updateObjectById(
             id,
             updatedData,
             [

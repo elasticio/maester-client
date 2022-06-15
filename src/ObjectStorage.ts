@@ -23,7 +23,7 @@ export class ObjectStorage {
     return middlewares.reduce((_stream, middleware) => _stream.pipe(middleware()), stream);
   }
 
-  private getDataByResponseType(data: Stream, responseType: ResponseType = 'stream') {
+  private getDataByResponseType(data: Stream, responseType: ResponseType = 'json') {
     switch (responseType) {
       case 'stream': return data;
       case 'json': return getStream(data);
@@ -65,9 +65,15 @@ export class ObjectStorage {
     return this.getDataByResponseType(stream, reqOptions.responseType);
   }
 
-  public async getAllByParams(params: object, reqOptions: ReqOptions = {}) {
-    const { data } = await this.client.get(params, reqOptions);
-    return data;
+  public async getAllByParams(params: object, reqOptions: ReqOptions = {}): Promise<any> {
+    const getFreshStream = async () => (await this.client.get(params, reqOptions)).data;
+    const stream = await this.applyMiddlewares(getFreshStream, this.reverses);
+    return this.getDataByResponseType(stream, reqOptions.responseType);
+  }
+
+  public async getHeaders(objectId: string, reqOptions: ReqOptions = {}) {
+    const { headers } = await this.client.get(objectId, reqOptions);
+    return headers;
   }
 
   public async deleteOne(objectId: string, reqOptions: ReqOptions = {}) {
