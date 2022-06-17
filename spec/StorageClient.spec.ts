@@ -7,7 +7,7 @@ import { StorageClient } from '../src/StorageClient';
 import logging from '../src/logger';
 import { streamFromObject } from './helpers';
 
-describe('Storage Client', () => {
+xdescribe('Storage Client', () => {
   const config = {
     uri: 'https://ma.es.ter',
     jwtSecret: 'jwt',

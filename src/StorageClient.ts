@@ -5,6 +5,7 @@ import http from 'http';
 import https from 'https';
 import { Readable } from 'stream';
 import { sign } from 'jsonwebtoken';
+import { getMimeType } from 'stream-mime-type';
 import log from './logger';
 import {
   JwtNotProvidedError,
@@ -20,6 +21,11 @@ import {
 const REQUEST_MAX_RETRY = process.env.REQUEST_MAX_RETRY ? parseInt(process.env.REQUEST_MAX_RETRY, 10) : 5;
 const REQUEST_RETRY_DELAY = process.env.REQUEST_RETRY_DELAY ? parseInt(process.env.REQUEST_RETRY_DELAY, 10) : 5000; // 5s
 const REQUEST_TIMEOUT = process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : 10000; // 10s
+
+export const getStreamContentType = async (stream: Readable): Promise<string> => {
+  const { mime } = await getMimeType(stream);
+  return mime === 'application/octet-stream' ? 'application/json' : mime;
+};
 
 export class StorageClient {
   private api: AxiosInstance;
@@ -51,10 +57,14 @@ export class StorageClient {
       err = null;
       res = null;
       try {
-        const { axiosReqConfig, getFreshStream = async () => { } } = requestConfig;
-        const bodyAsStreamInstance = await getFreshStream();
-        if (process.env.NODE_ENV === 'test') log.debug(bodyAsStreamInstance); // to insure it's new stream on each call (in unit tests only)
-        res = await this.api.request({ ...axiosReqConfig, data: bodyAsStreamInstance, timeout: requestTimeout });
+        const { axiosReqConfig, getFreshStream } = requestConfig;
+        let bodyAsStream;
+        if (getFreshStream) {
+          bodyAsStream = await getFreshStream();
+          axiosReqConfig.headers['content-type'] = await getStreamContentType(bodyAsStream);
+          if (process.env.NODE_ENV === 'test') log.debug(bodyAsStream); // to insure it's new stream on each call (in unit tests only)
+        }
+        res = await this.api.request({ ...axiosReqConfig, data: bodyAsStream, timeout: requestTimeout });
       } catch (e) {
         if (e instanceof ObjectStorageClientError) {
           throw e;
@@ -92,20 +102,16 @@ export class StorageClient {
   // wrap for 'post' and 'put' methods
   private async reqWithBody(
     getFreshStream: () => Promise<Readable>,
-    { contentType, ttl, override = {}, jwtPayload = {}, retryOptions = {} }: ReqWithBodyOptions = {},
+    { ttl, override = {}, jwtPayload = {}, retryOptions = {} }: ReqWithBodyOptions = {},
     objectId?: string
   ) {
-    const headers: RequestHeaders = {
-      'content-type': contentType || 'application/json',
-      ...override
-    };
-    if (ttl) headers[ObjectHeaders.ttl] = ttl;
+    if (ttl) override[ObjectHeaders.ttl] = ttl;
     return this.requestRetry({
       getFreshStream,
       axiosReqConfig: {
         method: objectId ? 'put' : 'post',
         url: objectId ? `/objects/${objectId}` : '/objects',
-        headers: await this.formHeaders(jwtPayload, headers)
+        headers: await this.formHeaders(jwtPayload, override)
       },
     }, retryOptions);
   }

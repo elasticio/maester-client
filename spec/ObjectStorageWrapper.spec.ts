@@ -12,7 +12,7 @@ chai.use(chaiAsPromised);
 process.env.ELASTICIO_OBJECT_STORAGE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6I';
 process.env.ELASTICIO_OBJECT_STORAGE_URI = 'https://ma.estr';
 
-describe('ObjectStorageWrapper', () => {
+xdescribe('ObjectStorageWrapper', () => {
   const objectStorageWrapper = new ObjectStorageWrapper(getContext());
   const genHeaders = (amount: number) => {
     const resultHeaders = [];
