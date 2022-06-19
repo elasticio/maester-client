@@ -36,13 +36,11 @@ describe('objectStorage', () => {
       const object = await objectStorage.getOne(objectId);
       expect(JSON.parse(object)).to.be.deep.equal({ a: 4 });
     });
-    it.only('should add (JSON)', async () => {
+    it('should add (JSON)', async () => {
       const objectId = await objectStorage.add({ a: 2 });
-      console.log(objectId);
       expect(typeof objectId).to.be.equal('string');
       const object = await objectStorage.getOne(objectId);
-      console.log(1, object);
-      // expect(JSON.parse(object)).to.be.deep.equal({ a: 2 });
+      expect(JSON.parse(object)).to.be.deep.equal({ a: 2 });
     });
   });
   describe('get', () => {

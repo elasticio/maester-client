@@ -8,7 +8,7 @@ import {
   encryptStream, decryptStream, zip, unzip, streamFromObject
 } from './helpers';
 
-xdescribe('Object Storage', () => {
+describe('Object Storage', () => {
   const config = {
     uri: 'https://ma.es.ter',
     jwtSecret: 'jwt',

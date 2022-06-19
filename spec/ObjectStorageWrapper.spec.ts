@@ -12,7 +12,7 @@ chai.use(chaiAsPromised);
 process.env.ELASTICIO_OBJECT_STORAGE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6I';
 process.env.ELASTICIO_OBJECT_STORAGE_URI = 'https://ma.estr';
 
-xdescribe('ObjectStorageWrapper', () => {
+describe('ObjectStorageWrapper', () => {
   const objectStorageWrapper = new ObjectStorageWrapper(getContext());
   const genHeaders = (amount: number) => {
     const resultHeaders = [];
@@ -63,7 +63,6 @@ xdescribe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'content-type': 'application/json',
             'x-query-key0': 'value0',
             'x-eio-ttl': '10'
           }
@@ -81,7 +80,6 @@ xdescribe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'content-type': 'application/json',
             'x-query-key0': 'value0',
             'x-query-key1': 'value1',
             'x-meta-key0': 'value0',
@@ -102,7 +100,6 @@ xdescribe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'content-type': 'application/json',
           }
         });
       });
@@ -118,7 +115,6 @@ xdescribe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'content-type': 'application/json',
           }
         });
       });
@@ -222,7 +218,6 @@ xdescribe('ObjectStorageWrapper', () => {
           url: '/objects/id123',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'content-type': 'application/json'
           }
         });
       });
@@ -238,7 +233,6 @@ xdescribe('ObjectStorageWrapper', () => {
           url: '/objects/id123',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'content-type': 'application/json',
             'x-query-key0': 'value0',
             'x-query-key1': 'value1',
             'x-query-key2': 'value2',
