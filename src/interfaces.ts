@@ -12,7 +12,7 @@ export enum ObjectHeaders {
 
 export interface reqWithBodyHeaders {
   ttl?: number;
-  override?: RequestHeaders
+  override?: RequestHeaders;
 }
 
 export interface reqHeaders {

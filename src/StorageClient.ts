@@ -22,9 +22,9 @@ const REQUEST_MAX_RETRY = process.env.REQUEST_MAX_RETRY ? parseInt(process.env.R
 const REQUEST_RETRY_DELAY = process.env.REQUEST_RETRY_DELAY ? parseInt(process.env.REQUEST_RETRY_DELAY, 10) : 5000; // 5s
 const REQUEST_TIMEOUT = process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : 10000; // 10s
 
-export const getStreamContentType = async (stream: Readable): Promise<string> => {
-  const { mime } = await getMimeType(stream);
-  return mime === 'application/octet-stream' ? 'application/json' : mime;
+export const getStreamWithContentType = async (getStream: () => Promise<Readable>): Promise<{ mime, stream }> => {
+  const { mime = 'application/json', stream } = await getMimeType(await getStream(), { strict: true });
+  return { mime, stream };
 };
 
 export class StorageClient {
@@ -60,8 +60,9 @@ export class StorageClient {
         const { axiosReqConfig, getFreshStream } = requestConfig;
         let bodyAsStream;
         if (getFreshStream) {
-          bodyAsStream = await getFreshStream();
-          axiosReqConfig.headers['content-type'] = await getStreamContentType(bodyAsStream);
+          const { mime, stream } = await getStreamWithContentType(getFreshStream);
+          axiosReqConfig.headers['content-type'] = mime;
+          bodyAsStream = stream;
           if (process.env.NODE_ENV === 'test') log.debug(bodyAsStream); // to insure it's new stream on each call (in unit tests only)
         }
         res = await this.api.request({ ...axiosReqConfig, data: bodyAsStream, timeout: requestTimeout });
