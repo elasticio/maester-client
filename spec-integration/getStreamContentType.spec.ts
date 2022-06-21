@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { expect } from 'chai';
 import { getStreamWithContentType } from '../src/StorageClient';
-import { streamFromObject } from '../src/utils';
+import { streamFromData } from '../src/utils';
 
 describe('getStreamWithContentType', () => {
   it('should getStreamWithContentType', async () => {
-    const getJsonAsStream = async () => streamFromObject({ a: 4 });
+    const getJsonAsStream = async () => streamFromData({ a: 4 });
     const { mime } = await getStreamWithContentType(getJsonAsStream);
     expect(mime).to.be.equal('application/json');
   });

@@ -2,8 +2,8 @@
 import { Readable, Stream } from 'stream';
 import getStream from 'get-stream';
 import { StorageClient, } from './StorageClient';
-import { streamFromObject } from './utils';
-import { TransformMiddleware, ReqWithBodyOptions, ReqOptions, ResponseType } from './interfaces';
+import { streamFromData } from './utils';
+import { TransformMiddleware, ReqWithBodyOptions, ReqOptions, ResponseType, uploadData } from './interfaces';
 
 export class ObjectStorage {
   private client: StorageClient;
@@ -32,11 +32,11 @@ export class ObjectStorage {
     }
   }
 
-  private payloadToStream(objOrFunc: object | (() => Promise<Readable>)): () => Promise<Readable> {
-    if (typeof objOrFunc === 'function') {
-      return objOrFunc as () => Promise<Readable>;
+  private payloadToStream(dataOrFunc: uploadData | (() => Promise<Readable>)): () => Promise<Readable> {
+    if (typeof dataOrFunc === 'function') {
+      return dataOrFunc as () => Promise<Readable>;
     }
-    return streamFromObject.bind({}, objOrFunc as object);
+    return streamFromData.bind({}, dataOrFunc as uploadData);
   }
 
   public use(forward: TransformMiddleware, reverse: TransformMiddleware): ObjectStorage {
@@ -45,16 +45,19 @@ export class ObjectStorage {
     return this;
   }
 
-  public async add(objOrFunc: object | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions) {
-    const getResultStream = async () => this.applyMiddlewares(this.payloadToStream(objOrFunc), this.forwards);
+  /**
+   * @param dataOrFunc async function returning stream OR any data (except 'undefined')
+   */
+  public async add(dataOrFunc: uploadData | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions) {
+    const getResultStream = async () => this.applyMiddlewares(this.payloadToStream(dataOrFunc), this.forwards);
     const { data } = await this.client.post(getResultStream, reqWithBodyOptions);
     return data.objectId;
   }
 
   public async update(
-    objectId: string, objOrFunc: object | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions
+    objectId: string, dataOrFunc: uploadData | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions
   ) {
-    const getResultStream = async () => this.applyMiddlewares(this.payloadToStream(objOrFunc), this.forwards);
+    const getResultStream = async () => this.applyMiddlewares(this.payloadToStream(dataOrFunc), this.forwards);
     const { data } = await this.client.put(objectId, getResultStream, reqWithBodyOptions);
     return data;
   }

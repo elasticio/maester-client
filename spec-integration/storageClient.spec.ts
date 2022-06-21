@@ -3,15 +3,15 @@ import axios from 'axios';
 import getStream from 'get-stream';
 import { StorageClient } from '../src';
 import { creds } from './common';
-import { streamFromObject } from '../src/utils';
+import { streamFromData } from '../src/utils';
 
 chai.use(require('chai-as-promised'));
 
-xdescribe('objectStorage', () => {
+describe('objectStorage', () => {
   const storageClient = new StorageClient(creds);
   describe('add & get', () => {
     it('should add (defaults to application/json)', async () => {
-      const getJSONAsStream = async () => streamFromObject({ a: 4 });
+      const getJSONAsStream = async () => streamFromData({ a: 4 });
       const { data } = await storageClient.post(getJSONAsStream);
       expect(data.contentType).to.be.equal('application/json');
       const response = await storageClient.get(data.objectId, {});
@@ -19,7 +19,7 @@ xdescribe('objectStorage', () => {
       expect(JSON.parse(rawResp)).to.be.deep.equal({ a: 4 });
     });
     it('should add (application/json)', async () => {
-      const getJSONAsStream = async () => streamFromObject({ a: 3 });
+      const getJSONAsStream = async () => streamFromData({ a: 3 });
       const { data } = await storageClient.post(getJSONAsStream);
       expect(data.contentType).to.be.equal('application/json');
       const response = await storageClient.get(data.objectId, { responseType: 'json' });

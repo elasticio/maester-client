@@ -3,44 +3,83 @@ import axios from 'axios';
 import fs from 'fs';
 import { ObjectStorage } from '../src';
 import { creds } from './common';
-import { streamFromObject } from '../src/utils';
+import { streamFromData } from '../src/utils';
 
 chai.use(require('chai-as-promised'));
 
 describe('objectStorage', () => {
   const objectStorage = new ObjectStorage(creds);
   describe('add', () => {
-    it('should add (image)', async () => {
-      const getAttachAsStream = async () => (await axios.get('https://if0s.info/files/1.jpg', { responseType: 'stream' })).data;
-      const objectId = await objectStorage.add(getAttachAsStream);
-      expect(typeof objectId).to.be.equal('string');
+    describe('as stream', () => {
+      it('should add (image)', async () => {
+        const getAttachAsStream = async () => (await axios.get('https://if0s.info/files/1.jpg', { responseType: 'stream' })).data;
+        const objectId = await objectStorage.add(getAttachAsStream);
+        expect(typeof objectId).to.be.equal('string');
+      });
+      it('should add (pdf)', async () => {
+        const getAttachAsStream = async () => (
+          await axios.get('http://environmentclearance.nic.in/writereaddata/FormB/Agenda/2201201642EWMJ8Bpdf18.pdf', { responseType: 'stream' })
+        ).data;
+        const objectId = await objectStorage.add(getAttachAsStream);
+        expect(typeof objectId).to.be.equal('string');
+      });
+      it('should add (json file)', async () => {
+        const getAttachAsStream = async () => (
+          await axios.get('https://raw.githubusercontent.com/elasticio/jsonata-transform-component/master/package-lock.json', { responseType: 'stream' })
+        ).data;
+        const objectId = await objectStorage.add(getAttachAsStream);
+        expect(typeof objectId).to.be.equal('string');
+      });
+      it('should add (json)', async () => {
+        const getJSONAsStream = async () => streamFromData({ a: 4 });
+        const objectId = await objectStorage.add(getJSONAsStream);
+        expect(typeof objectId).to.be.equal('string');
+        const object = await objectStorage.getOne(objectId);
+        expect(JSON.parse(object)).to.be.deep.equal({ a: 4 });
+      });
     });
-    it('should add (pdf)', async () => {
-      const getAttachAsStream = async () => (
-        await axios.get('http://environmentclearance.nic.in/writereaddata/FormB/Agenda/2201201642EWMJ8Bpdf18.pdf', { responseType: 'stream' })
-      ).data;
-      const objectId = await objectStorage.add(getAttachAsStream);
-      expect(typeof objectId).to.be.equal('string');
-    });
-    it('should add (json file)', async () => {
-      const getAttachAsStream = async () => (
-        await axios.get('https://raw.githubusercontent.com/elasticio/jsonata-transform-component/master/package-lock.json', { responseType: 'stream' })
-      ).data;
-      const objectId = await objectStorage.add(getAttachAsStream);
-      expect(typeof objectId).to.be.equal('string');
-    });
-    it('should add (as json)', async () => {
-      const getJSONAsStream = async () => streamFromObject({ a: 4 });
-      const objectId = await objectStorage.add(getJSONAsStream);
-      expect(typeof objectId).to.be.equal('string');
-      const object = await objectStorage.getOne(objectId);
-      expect(JSON.parse(object)).to.be.deep.equal({ a: 4 });
-    });
-    it('should add (JSON)', async () => {
-      const objectId = await objectStorage.add({ a: 2 });
-      expect(typeof objectId).to.be.equal('string');
-      const object = await objectStorage.getOne(objectId);
-      expect(JSON.parse(object)).to.be.deep.equal({ a: 2 });
+    describe('as any', () => {
+      it('should add (JSON)', async () => {
+        const objectId = await objectStorage.add({ a: 2 });
+        expect(typeof objectId).to.be.equal('string');
+        const object = await objectStorage.getOne(objectId);
+        expect(JSON.parse(object)).to.be.deep.equal({ a: 2 });
+      });
+      it('should add array', async () => {
+        const dataArray = [1, '2', null, { d: 2, a: 1 }];
+        const objectId = await objectStorage.add(dataArray);
+        expect(typeof objectId).to.be.equal('string');
+        const object = await objectStorage.getOne(objectId);
+        expect(JSON.parse(object)).to.be.deep.equal(dataArray);
+      });
+      it('should add string', async () => {
+        const dataString = 'hurray';
+        const objectId = await objectStorage.add(dataString);
+        expect(typeof objectId).to.be.equal('string');
+        const object = await objectStorage.getOne(objectId);
+        expect(JSON.parse(object)).to.be.deep.equal(dataString);
+      });
+      it('should add number', async () => {
+        const dataNumber = 56;
+        const objectId = await objectStorage.add(dataNumber);
+        expect(typeof objectId).to.be.equal('string');
+        const object = await objectStorage.getOne(objectId);
+        expect(JSON.parse(object)).to.be.deep.equal(dataNumber);
+      });
+      it('should add null', async () => {
+        const objectId = await objectStorage.add(null);
+        expect(typeof objectId).to.be.equal('string');
+        const object = await objectStorage.getOne(objectId);
+        expect(JSON.parse(object)).to.be.deep.equal(null);
+      });
+      it('BE AWARE (undefined turns into null, because of JSON.stringify)', async () => {
+        const dataArrayIn = [1, '2', undefined, null, { d: 2, a: 1 }];
+        const dataArrayOut = [1, '2', null, null, { d: 2, a: 1 }];
+        const objectId = await objectStorage.add(dataArrayIn);
+        expect(typeof objectId).to.be.equal('string');
+        const object = await objectStorage.getOne(objectId);
+        expect(JSON.parse(object)).to.be.deep.equal(dataArrayOut);
+      });
     });
   });
   describe('get', () => {
@@ -50,7 +89,7 @@ describe('objectStorage', () => {
       expect(JSON.parse(object)).to.be.deep.equal({ a: 2 });
     });
     it('should get (default responseType: json)', async () => {
-      const getJSONAsStream = async () => streamFromObject({ a: 4 });
+      const getJSONAsStream = async () => streamFromData({ a: 4 });
       const objectId = await objectStorage.add(getJSONAsStream);
       const object = await objectStorage.getOne(objectId);
       expect(JSON.parse(object)).to.be.deep.equal({ a: 4 });
@@ -64,7 +103,7 @@ describe('objectStorage', () => {
   });
   describe('update', () => {
     it('should update (addAsJSON, update as stream)', async () => {
-      const dataAsStream = async () => streamFromObject({ a: 2 });
+      const dataAsStream = async () => streamFromData({ a: 2 });
       const objId = await objectStorage.add({ a: 3 });
       const resUpdate = await objectStorage.update(objId, dataAsStream);
       const object = await objectStorage.getOne(objId);
@@ -79,15 +118,15 @@ describe('objectStorage', () => {
       expect(resUpdate.contentType).to.be.equal('application/json');
     });
     it('should update (addAsStream, update as stream)', async () => {
-      const dataAsStream = async () => streamFromObject({ a: 4 });
-      const dataAsStream2 = async () => streamFromObject({ a: 2 });
+      const dataAsStream = async () => streamFromData({ a: 4 });
+      const dataAsStream2 = async () => streamFromData({ a: 2 });
       const objId = await objectStorage.add(dataAsStream);
       await objectStorage.update(objId, dataAsStream2);
       const object = await objectStorage.getOne(objId);
       expect(JSON.parse(object)).to.be.deep.equal({ a: 2 });
     });
     it('should update (addAsStream, update as json)', async () => {
-      const dataAsStream = async () => streamFromObject({ a: 4 });
+      const dataAsStream = async () => streamFromData({ a: 4 });
       const objId = await objectStorage.add(dataAsStream);
       await objectStorage.update(objId, { a: 2 });
       const object = await objectStorage.getOne(objId);
@@ -105,7 +144,7 @@ describe('objectStorage', () => {
   });
   describe('deleteOne', () => {
     it('should deleteOne', async () => {
-      const getAttachAsStream = async () => streamFromObject({ a: 4 });
+      const getAttachAsStream = async () => streamFromData({ a: 4 });
       const objectId = await objectStorage.add(getAttachAsStream);
       const deletedObject = await objectStorage.deleteOne(objectId);
       expect(deletedObject.data).to.be.equal('');
@@ -128,7 +167,7 @@ describe('objectStorage', () => {
   });
   describe('getByParams', () => {
     it('should getByParams', async () => {
-      const jsonAsStream = async () => streamFromObject({ a: 4 });
+      const jsonAsStream = async () => streamFromData({ a: 4 });
       const objId1 = await objectStorage.add(jsonAsStream, { override: { 'x-query-x': '123' } });
       const objId2 = await objectStorage.add(jsonAsStream, { override: { 'x-query-x': '123' } });
       const objId3 = await objectStorage.add(jsonAsStream, { override: { 'x-query-x': '1234' } });

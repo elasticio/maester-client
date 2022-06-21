@@ -6,6 +6,7 @@ export interface StreamBasedRequestConfig {
   axiosReqConfig: AxiosRequestConfig;
 }
 
+
 export enum ObjectHeaders {
   ttl = 'x-eio-ttl'
 }
@@ -48,7 +49,7 @@ export interface RequestHeaders {
 }
 
 export type searchObjectCriteria = string | object;
-
+export type uploadData = string | object | number | [any] | null;
 export type TransformMiddleware = () => Duplex;
 export type ResponseType = 'stream' | 'json' | 'arraybuffer';
 export const DEFAULT_RESPONSE_TYPE: ResponseType = 'json';

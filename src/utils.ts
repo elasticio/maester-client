@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { JWTPayload } from './interfaces';
+import { JWTPayload, uploadData } from './interfaces';
 
 export const sleep = async (ms: number) => new Promise((resolve) => {
   setTimeout(resolve, ms);
@@ -7,7 +7,8 @@ export const sleep = async (ms: number) => new Promise((resolve) => {
 
 export const isEmptyObject = (object: JWTPayload): boolean => !Object.keys(object).length;
 
-export const streamFromObject = async (data: object): Promise<Readable> => {
+// 'undefined' throws error, but 'null' is ok (as an option - convert 'undefined' to 'null')
+export const streamFromData = async (data: uploadData): Promise<Readable> => {
   const dataString = JSON.stringify(data);
   const stream = new Readable();
   stream.push(dataString);
