@@ -58,7 +58,7 @@ The method has the following signature:
 async lookupObjectById(id: string, responseType: ResponseType)
 ```
 where
-- id - Maester internal id of the object to update. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
+- id - Maester internal id of the object to lookup. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
 - responseType - One of response-types [`json`, `stream`, `arraybuffer`]. Data will be returned in an appropriate format. Defaults to `json`. *Optional*
 
 ```
@@ -128,6 +128,7 @@ const obj = await objectStorageWrapper.updateObject(
 
 
 ### Delete operations
+
 #### Delete object by ID
 
 The method has the following signature:
@@ -135,7 +136,7 @@ The method has the following signature:
 async deleteObjectById(id: string)
 ```
 where
-- id - Maester internal id of the object to update. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
+- id - Maester internal id of the object to delete. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
 
 ```
 const obj = await objectStorageWrapper.deleteObjectById(id);
@@ -161,22 +162,97 @@ The method has the following signature:
 async add(dataOrFunc: uploadData | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions)
 ```
 where
-- dataOrFunc -async function returning stream OR any data (except 'undefined').
-- reqWithBodyOptions - [object describing options for](/src/interfaces.ts)
+- dataOrFunc - async function returning stream OR any data (except 'undefined').
+- [reqWithBodyOptions](/src/interfaces.ts#L27).
 
 ```
-const obj = await objectStorageWrapper.createObject(data);
-const obj = await objectStorageWrapper.createObject(data, [], [], 100000);
-const obj = await objectStorageWrapper.createObject(
-  data,
-  [{key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue'}],
-  [{key: 'somemetakey', value: 'somemetavalue'}],
-  60000
+const obj = await objectStorage.add(data, { override: {'x-query-somequeriablefieldkey': 'somequeriablefieldvalue'} });
+const getAttachAsStream = async () => (await axios.get('https://img.jpg', { responseType: 'stream' })).data;
+const obj = await objectStorage.add(getAttachAsStream, { retryOptions: { retriesCount: 5, retryDelay: 10000, requestTimeout: 60000 } });
 );
-const obj = await objectStorageWrapper.createObject(
-  data,
-  [{key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue'}, {key: 'anotherqueriablefieldkey2', value: 'anotherqueriablefieldvalue2'}],
-  [{key: 'somemetakey', value: 'somemetavalue'}],
-  60000
+```
+
+### Read operations
+
+#### Get object by ID
+
+The method has the following signature:
+```
+async getOne(objectId: string, reqOptions: ReqOptions = {})
+```
+where
+- id - Maester internal id of the object to lookup. E.g. '76380cae-aee3-457a-9029-d971f61e3731'.
+- [reqOptions](/src/interfaces.ts#L22).
+
+```
+const obj = await objectStorage.getOne(id);
+const obj = await objectStorage.getOne(id, { responseTYpe: 'stream'});
+```
+By default method returns **a raw string**, you may want to parse JSON or do any other data processing according to object's expected data type:
+```
+const parsedObject = JSON.parse(obj);
+```
+
+#### Get objects by query parameters
+
+The method has the following signature:
+```
+async getAllByParams(params: object, reqOptions: ReqOptions = {})
+```
+where
+- params - object of query params, current maximum - 5 items. 
+- [reqOptions](/src/interfaces.ts#L22).
+
+
+Examples:
+```
+const obj = await objectStorage.getAllByParams({ 'query[field]': 'value' });
+```
+The method returns an array of items. It either is empty in case no objects found or contains objects
+
+### Update Object
+
+The method has the following signature:
+```
+async update(objectId: string, dataOrFunc: uploadData | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions)
+```
+where
+- objectId - id of the object to update.
+- dataOrFunc - async function returning stream OR any data (except 'undefined').
+- [reqWithBodyOptions](/src/interfaces.ts#L27)
+
+```
+const obj = await objectStorage.update(data, { override: {'x-query-somequeriablefieldkey': 'somequeriablefieldvalue'} });
+const getAttachAsStream = async () => (await axios.get('https://img.jpg', { responseType: 'stream' })).data;
+const obj = await objectStorage.update(getAttachAsStream);
 );
+```
+
+### Delete operations
+
+#### Delete object by ID
+
+The method has the following signature:
+```
+async deleteOne(objectId: string, reqOptions: ReqOptions = {})
+```
+where
+- id - Maester internal id of the object to delete. E.g. '76380cae-aee3-457a-9029-d971f61e3731'.
+- [reqOptions](/src/interfaces.ts#L22).
+
+```
+const obj = await objectStorage.deleteOne(id);
+const obj = await objectStorage.deleteOne(id, { retryOptions: { retriesCount: 5, retryDelay: 10000, requestTimeout: 60000 } });
+```
+
+#### Delete objects by query parameters
+The method has the following signature:
+```
+async deleteAllByParams(params: object, reqOptions: ReqOptions = {})
+```
+where
+- params - object of query params, current maximum - 5 items. 
+- [reqOptions](/src/interfaces.ts#L22).
+```
+const obj = await objectStorage.deleteAllByParams({ 'query[field]': 'value' });
 ```
