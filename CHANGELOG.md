@@ -1,5 +1,5 @@
-# 4.0.0 (June 17, 2022)
-* new version of library 
+# 4.0.0 (June 25, 2022)
+* New version with braking changes 
 
 # 3.4.3 (April 8, 2022)
 * Fix dependencies

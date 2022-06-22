@@ -54,6 +54,9 @@ export class ObjectStorage {
     return data.objectId;
   }
 
+  /**
+   * @param dataOrFunc async function returning stream OR any data (except 'undefined')
+   */
   public async update(
     objectId: string, dataOrFunc: uploadData | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions
   ) {

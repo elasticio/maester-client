@@ -1,5 +1,5 @@
 import { ObjectStorage } from './ObjectStorage';
-import { ResponseType, DEFAULT_RESPONSE_TYPE } from './interfaces';
+import { ResponseType, DEFAULT_RESPONSE_TYPE, uploadData } from './interfaces';
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
 export const TTL_HEADER = 'x-eio-ttl';
@@ -35,7 +35,10 @@ export class ObjectStorageWrapper {
     this.objectStorage = new ObjectStorage({ uri: this.url, jwtSecret: this.token });
   }
 
-  async createObject(data: object, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number) {
+  /**
+   * @param data any data (except 'undefined')
+   */
+  async createObject(data: uploadData, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number) {
     this.logger.debug('Going to create an object...');
     if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
@@ -73,7 +76,10 @@ export class ObjectStorageWrapper {
     return this.objectStorage.getAllByParams(resultParams);
   }
 
-  async updateObjectById(id: string, data: object, queryHeaders?: Header[], metaHeaders?: Header[]) {
+  /**
+   * @param data any data (except 'undefined')
+   */
+  async updateObjectById(id: string, data: uploadData, queryHeaders?: Header[], metaHeaders?: Header[]) {
     this.logger.debug(`Going to update and object with id ${id}...`);
     if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);

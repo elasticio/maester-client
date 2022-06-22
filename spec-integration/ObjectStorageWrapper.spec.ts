@@ -27,6 +27,30 @@ describe('objectStorage', () => {
     expect(headers['x-query-key0']).to.be.equal('value0');
     expect(headers['x-query-key1']).to.be.equal('value1');
   });
+  it('should createObject (number)', async () => {
+    const objectId = await objectStorageWrapper.createObject(8);
+    expect(isUUID(objectId)).to.be.equal(true);
+    const object = await objectStorageWrapper.lookupObjectById(objectId);
+    expect(JSON.parse(object)).to.be.deep.equal(8);
+    const headers = await objectStorageWrapper.getObjectHeaders(objectId);
+    expect(headers['content-type']).to.be.equal('application/json');
+  });
+  it('should createObject (array)', async () => {
+    const objectId = await objectStorageWrapper.createObject([1, 'dva', null]);
+    expect(isUUID(objectId)).to.be.equal(true);
+    const object = await objectStorageWrapper.lookupObjectById(objectId);
+    expect(JSON.parse(object)).to.be.deep.equal([1, 'dva', null]);
+    const headers = await objectStorageWrapper.getObjectHeaders(objectId);
+    expect(headers['content-type']).to.be.equal('application/json');
+  });
+  it('should createObject (string)', async () => {
+    const objectId = await objectStorageWrapper.createObject('[1, dva, null]');
+    expect(isUUID(objectId)).to.be.equal(true);
+    const object = await objectStorageWrapper.lookupObjectById(objectId);
+    expect(JSON.parse(object)).to.be.deep.equal('[1, dva, null]');
+    const headers = await objectStorageWrapper.getObjectHeaders(objectId);
+    expect(headers['content-type']).to.be.equal('application/json');
+  });
   describe('lookupObjectById', () => {
     it('should lookupObjectById', async () => {
       const objectId = await objectStorageWrapper.createObject({ a: 2 });
@@ -75,6 +99,14 @@ describe('objectStorage', () => {
       expect(updated.objectId).to.be.equal(objectId);
       const object = await objectStorageWrapper.lookupObjectById(objectId);
       expect(JSON.parse(object)).to.be.deep.equal({ a: 3 });
+    });
+    it('should updateObjectById (string)', async () => {
+      const objectId = await objectStorageWrapper.createObject({ a: 2 });
+      expect(isUUID(objectId)).to.be.equal(true);
+      const updated = await objectStorageWrapper.updateObjectById(objectId, 'hey');
+      expect(updated.objectId).to.be.equal(objectId);
+      const object = await objectStorageWrapper.lookupObjectById(objectId);
+      expect(JSON.parse(object)).to.be.deep.equal('hey');
     });
     it('should throw 404', async () => {
       await expect(objectStorageWrapper.updateObjectById('fa208d86-6b81-408e-87f3-4b6e90be7db9', {})).to.be.rejectedWith('Request failed with status code 404');
