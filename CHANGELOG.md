@@ -1,5 +1,5 @@
-# 4.0.0 (June 25, 2022)
-* New version with braking changes 
+# 4.0.0 (June 28, 2022)
+* New version of library with braking changes, look for updates in [README](/README.md) 
 
 # 3.4.3 (April 8, 2022)
 * Fix dependencies

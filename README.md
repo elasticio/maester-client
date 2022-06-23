@@ -256,3 +256,28 @@ where
 ```
 const obj = await objectStorage.deleteAllByParams({ 'query[field]': 'value' });
 ```
+
+### Additional methods
+
+#### Use method
+The method has the following signature:
+```
+async use(forward: TransformMiddleware, reverse: TransformMiddleware)
+```
+where
+- forward - transform middleware to use with `Create` and `Update` object operations (`add`, `update` methods).
+- reverse - transform middleware to use with `Get` object operations (`getOne`, `getAllByParams` methods).
+
+#### getHeaders method
+The method has the following signature:
+```
+async getHeaders(objectId: string, reqOptions: ReqOptions = {})
+```
+where
+- forward - transform middleware to use with `Create` and `Update` object operations (`add`, `update` methods).
+- reverse - transform middleware to use with `Get` object operations (`getOne`, `getAllByParams` methods).
+
+## Limitations
+
+1. Both `ObjectStorage` and `ObjectStorageWrapper` could'n process `undefined` as values for upsert value. Also value `undefined` in array will be converted to `null`, e.g
+`[1, 'str', undefined, null, { d: 2 }]` will be saved as `[1, 'str', null, null, { d: 2 }]`
