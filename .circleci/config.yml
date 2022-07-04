@@ -1,37 +1,78 @@
-version: 2
+version: 2.1
 jobs:
-  test:
+  build:
+    # working_directory: ~/elasticio-rest-node
     docker:
-      - image: circleci/node:14-stretch
+      - image: circleci/node:16-stretch
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: Audit Dependencies
-          command: npm audit --production
+          key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
           name: Installing Dependencies
           command: npm install
       - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
-            - node_modules
+            - ./node_modules
+      - run:
+          name: "Running audit"
+          command: npm run audit --production
       - run:
           name: Running Mocha Tests
           command: npm test
+
 workflows:
   version: 2
-  build_and_test:
+
+  build:
     jobs:
-      - test
+      - build
+
   nightly:
     triggers:
       - schedule:
-          cron: "0 * * * *"
+          cron: "0 0 * * *"
           filters:
             branches:
               only:
-                - master
+                - v4
     jobs:
-      - test
+      - build
+# version: 2
+# jobs:
+#   test:
+#     docker:
+#       - image: circleci/node:14-stretch
+#     steps:
+#       - checkout
+#       - restore_cache:
+#           key: dependency-cache-{{ checksum "package.json" }}
+#       - run:
+#           name: Audit Dependencies
+#           command: npm audit --production
+#       - run:
+#           name: Installing Dependencies
+#           command: npm install
+#       - save_cache:
+#           key: dependency-cache-{{ checksum "package.json" }}
+#           paths:
+#             - node_modules
+#       - run:
+#           name: Running Mocha Tests
+#           command: npm test
+# workflows:
+#   version: 2
+#   build_and_test:
+#     jobs:
+#       - test
+#   nightly:
+#     triggers:
+#       - schedule:
+#           cron: "0 * * * *"
+#           filters:
+#             branches:
+#               only:
+#                 - master
+#     jobs:
+#       - test
