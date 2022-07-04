@@ -7,7 +7,7 @@ import { streamFromData } from '../src/utils';
 
 chai.use(require('chai-as-promised'));
 
-describe('objectStorage', () => {
+describe('objectStorag e', () => {
   const objectStorage = new ObjectStorage(creds);
   describe('add', () => {
     describe('as stream', () => {
