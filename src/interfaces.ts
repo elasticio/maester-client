@@ -20,12 +20,12 @@ export interface reqHeaders {
 }
 
 export interface ReqOptions extends reqHeaders {
-  jwtPayload?: JWTPayload;
+  jwtPayloadOrToken?: JWTPayload | string;
   retryOptions?: RetryOptions;
 }
 
 export interface ReqWithBodyOptions extends reqWithBodyHeaders {
-  jwtPayload?: JWTPayload;
+  jwtPayloadOrToken?: JWTPayload | string;
   retryOptions?: RetryOptions;
 }
 

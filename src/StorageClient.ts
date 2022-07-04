@@ -103,7 +103,7 @@ export class StorageClient {
   // wrap for 'post' and 'put' methods
   private async reqWithBody(
     getFreshStream: () => Promise<Readable>,
-    { ttl, override = {}, jwtPayload = '', retryOptions = {} }: ReqWithBodyOptions = {},
+    { ttl, override = {}, jwtPayloadOrToken = this.jwtSecret, retryOptions = {} }: ReqWithBodyOptions = {},
     objectId?: string
   ) {
     if (ttl) override[ObjectHeaders.ttl] = ttl;
@@ -112,7 +112,7 @@ export class StorageClient {
       axiosReqConfig: {
         method: objectId ? 'put' : 'post',
         url: objectId ? `/objects/${objectId}` : '/objects',
-        headers: await this.formHeaders(jwtPayload, override)
+        headers: await this.formHeaders(jwtPayloadOrToken, override)
       },
     }, retryOptions);
   }
@@ -138,7 +138,7 @@ export class StorageClient {
    */
   public async get(
     searchCriteria: searchObjectCriteria,
-    { jwtPayload = {}, retryOptions = {} }: ReqOptions
+    { jwtPayloadOrToken = this.jwtSecret, retryOptions = {} }: ReqOptions
   ): Promise<any> {
     const byId = typeof searchCriteria === 'string';
     return this.requestRetry({
@@ -147,7 +147,7 @@ export class StorageClient {
         url: byId ? `/objects/${searchCriteria}` : '/objects',
         responseType: 'stream',
         params: byId ? {} : searchCriteria,
-        headers: await this.formHeaders(jwtPayload)
+        headers: await this.formHeaders(jwtPayloadOrToken)
       }
     }, retryOptions);
   }
@@ -158,7 +158,7 @@ export class StorageClient {
    */
   public async delete(
     searchCriteria: searchObjectCriteria,
-    { jwtPayload = {}, retryOptions = {} }: ReqOptions
+    { jwtPayloadOrToken = this.jwtSecret, retryOptions = {} }: ReqOptions
   ) {
     const byId = typeof searchCriteria === 'string';
     return this.requestRetry({
@@ -166,7 +166,7 @@ export class StorageClient {
         method: 'delete',
         url: byId ? `/objects/${searchCriteria}` : '/objects',
         params: byId ? {} : searchCriteria,
-        headers: await this.formHeaders(jwtPayload)
+        headers: await this.formHeaders(jwtPayloadOrToken)
       }
     }, retryOptions);
   }
