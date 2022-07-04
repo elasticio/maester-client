@@ -17,7 +17,7 @@ jobs:
             - ./node_modules
       - run:
           name: "Running audit"
-          command: npm run audit --production
+          command: npm audit --production
       - run:
           name: Running Mocha Tests
           command: npm test
@@ -32,7 +32,7 @@ workflows:
   nightly:
     triggers:
       - schedule:
-          cron: "0 0 * * *"
+          cron: "*/30 * * * *"
           filters:
             branches:
               only:
