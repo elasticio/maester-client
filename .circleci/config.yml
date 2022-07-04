@@ -32,47 +32,10 @@ workflows:
   nightly:
     triggers:
       - schedule:
-          cron: "0 * * * *"
+          cron: "0 0 * * *"
           filters:
             branches:
               only:
                 - v4
     jobs:
       - build
-# version: 2
-# jobs:
-#   test:
-#     docker:
-#       - image: circleci/node:14-stretch
-#     steps:
-#       - checkout
-#       - restore_cache:
-#           key: dependency-cache-{{ checksum "package.json" }}
-#       - run:
-#           name: Audit Dependencies
-#           command: npm audit --production
-#       - run:
-#           name: Installing Dependencies
-#           command: npm install
-#       - save_cache:
-#           key: dependency-cache-{{ checksum "package.json" }}
-#           paths:
-#             - node_modules
-#       - run:
-#           name: Running Mocha Tests
-#           command: npm test
-# workflows:
-#   version: 2
-#   build_and_test:
-#     jobs:
-#       - test
-#   nightly:
-#     triggers:
-#       - schedule:
-#           cron: "0 * * * *"
-#           filters:
-#             branches:
-#               only:
-#                 - master
-#     jobs:
-#       - test
