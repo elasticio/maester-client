@@ -90,20 +90,20 @@ export class StorageClient {
     return res;
   }
 
-  private async formHeaders(jwtPayload: JWTPayload, override?: RequestHeaders) {
-    if (isEmptyObject(jwtPayload) && !this.jwtSecret) {
-      throw new JwtNotProvidedError('Neither JWT payload passed, nor JWT secret provided during initialization');
+  private async formHeaders(jwtPayloadOrToken: JWTPayload | string, override?: RequestHeaders) {
+    if (typeof jwtPayloadOrToken !== 'string' && !this.jwtSecret) {
+      throw new JwtNotProvidedError('Neither JWT token passed, nor JWT secret provided during initialization');
     }
-    const token = isEmptyObject(jwtPayload)
-      ? this.jwtSecret
-      : await promisify(sign)(jwtPayload, this.jwtSecret);
+    const token = typeof jwtPayloadOrToken === 'string'
+      ? jwtPayloadOrToken
+      : await promisify(sign)(jwtPayloadOrToken, this.jwtSecret);
     return { Authorization: `Bearer ${token}`, ...override };
   }
 
   // wrap for 'post' and 'put' methods
   private async reqWithBody(
     getFreshStream: () => Promise<Readable>,
-    { ttl, override = {}, jwtPayload = {}, retryOptions = {} }: ReqWithBodyOptions = {},
+    { ttl, override = {}, jwtPayload = '', retryOptions = {} }: ReqWithBodyOptions = {},
     objectId?: string
   ) {
     if (ttl) override[ObjectHeaders.ttl] = ttl;

@@ -83,7 +83,7 @@ describe('objectStorage', () => {
     });
   });
   describe('get', () => {
-    it('should get (default responseType: json)', async () => {
+    it.only('should get (default responseType: json)', async () => {
       const objectId = await objectStorage.add({ a: 2 });
       const object = await objectStorage.getOne(objectId);
       expect(JSON.parse(object)).to.be.deep.equal({ a: 2 });
