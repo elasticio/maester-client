@@ -25,11 +25,11 @@ workflows:
   build_and_test:
     jobs:
       - test
-  # nightly:
-  #   triggers:
-  #     - schedule:
-  #         cron: "*/10 * * * *"
-  #         filters:
-  #           branches:
-  #             only:
-  #               - v4
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - v4
