@@ -1,6 +1,7 @@
 /* eslint-disable import/first */
-process.env.LOG_LEVEL = 'TRACE';
+process.env.LOG_LEVEL = 'INFO';
 process.env.LOG_OUTPUT_MODE = 'short';
+process.env.NODE_ENV = 'test';
 import getLogger from '@elastic.io/component-logger';
 import sinon from 'sinon';
 import { existsSync } from 'fs';

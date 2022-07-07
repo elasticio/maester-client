@@ -6,7 +6,7 @@
   "types": "src/index.d.ts",
   "scripts": {
     "lint": "eslint '*/**/*[^.d$].ts' --quiet --fix",
-    "test": "NODE_ENV=test mocha -r ts-node/register --recursive spec/**/*.ts --timeout 10000",
+    "test": "mocha -r ts-node/register --recursive spec/**/*.ts --timeout 12000",
     "integration-test": "npm run pretest && mocha --exit --r ts-node/register spec-integration/**/*.ts --timeout 1000000",
     "pretest": "eslint --ext .ts --quiet --fix && find src spec spec-integration -name \"*.js\" -type f -delete && find src spec spec-integration -name \"*.d.ts\" -type f -delete",
     "posttest": "tsc",

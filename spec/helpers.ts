@@ -1,6 +1,6 @@
 /* eslint-disable import/first */
-process.env.REQUEST_MAX_RETRY = '3';
 process.env.REQUEST_RETRY_DELAY = '0';
+process.env.NODE_ENV = 'test';
 import { Readable, Duplex } from 'stream';
 import * as crypto from 'crypto';
 import * as zlib from 'zlib';

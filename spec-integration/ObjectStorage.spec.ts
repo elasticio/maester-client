@@ -1,9 +1,11 @@
 import chai, { expect } from 'chai';
 import axios from 'axios';
+import sinon from 'sinon';
 import fs from 'fs';
-import { ObjectStorage } from '../src';
 import { creds } from './common';
-import { streamFromData } from '../src/utils';
+import * as utils from '../src/utils';
+import logging from '../src/logger';
+import { ObjectStorage } from '../src';
 
 chai.use(require('chai-as-promised'));
 
@@ -31,7 +33,7 @@ describe('objectStorage', () => {
         expect(typeof objectId).to.be.equal('string');
       });
       it('should add (json)', async () => {
-        const getJSONAsStream = async () => streamFromData({ a: 4 });
+        const getJSONAsStream = async () => utils.streamFromData({ a: 4 });
         const objectId = await objectStorage.add(getJSONAsStream);
         expect(typeof objectId).to.be.equal('string');
         const object = await objectStorage.getOne(objectId);
@@ -89,7 +91,7 @@ describe('objectStorage', () => {
       expect(JSON.parse(object)).to.be.deep.equal({ a: 2 });
     });
     it('should get (default responseType: json)', async () => {
-      const getJSONAsStream = async () => streamFromData({ a: 4 });
+      const getJSONAsStream = async () => utils.streamFromData({ a: 4 });
       const objectId = await objectStorage.add(getJSONAsStream);
       const object = await objectStorage.getOne(objectId);
       expect(JSON.parse(object)).to.be.deep.equal({ a: 4 });
@@ -103,7 +105,7 @@ describe('objectStorage', () => {
   });
   describe('update', () => {
     it('should update (addAsJSON, update as stream)', async () => {
-      const dataAsStream = async () => streamFromData({ a: 2 });
+      const dataAsStream = async () => utils.streamFromData({ a: 2 });
       const objId = await objectStorage.add({ a: 3 });
       const resUpdate = await objectStorage.update(objId, dataAsStream);
       const object = await objectStorage.getOne(objId);
@@ -118,15 +120,15 @@ describe('objectStorage', () => {
       expect(resUpdate.contentType).to.be.equal('application/json');
     });
     it('should update (addAsStream, update as stream)', async () => {
-      const dataAsStream = async () => streamFromData({ a: 4 });
-      const dataAsStream2 = async () => streamFromData({ a: 2 });
+      const dataAsStream = async () => utils.streamFromData({ a: 4 });
+      const dataAsStream2 = async () => utils.streamFromData({ a: 2 });
       const objId = await objectStorage.add(dataAsStream);
       await objectStorage.update(objId, dataAsStream2);
       const object = await objectStorage.getOne(objId);
       expect(JSON.parse(object)).to.be.deep.equal({ a: 2 });
     });
     it('should update (addAsStream, update as json)', async () => {
-      const dataAsStream = async () => streamFromData({ a: 4 });
+      const dataAsStream = async () => utils.streamFromData({ a: 4 });
       const objId = await objectStorage.add(dataAsStream);
       await objectStorage.update(objId, { a: 2 });
       const object = await objectStorage.getOne(objId);
@@ -144,7 +146,7 @@ describe('objectStorage', () => {
   });
   describe('deleteOne', () => {
     it('should deleteOne', async () => {
-      const getAttachAsStream = async () => streamFromData({ a: 4 });
+      const getAttachAsStream = async () => utils.streamFromData({ a: 4 });
       const objectId = await objectStorage.add(getAttachAsStream);
       const deletedObject = await objectStorage.deleteOne(objectId);
       expect(deletedObject.data).to.be.equal('');
@@ -167,7 +169,7 @@ describe('objectStorage', () => {
   });
   describe('getByParams', () => {
     it('should getByParams', async () => {
-      const jsonAsStream = async () => streamFromData({ a: 4 });
+      const jsonAsStream = async () => utils.streamFromData({ a: 4 });
       const objId1 = await objectStorage.add(jsonAsStream, { override: { 'x-query-x': '123' } });
       const objId2 = await objectStorage.add(jsonAsStream, { override: { 'x-query-x': '123' } });
       const objId3 = await objectStorage.add(jsonAsStream, { override: { 'x-query-x': '1234' } });
@@ -176,6 +178,44 @@ describe('objectStorage', () => {
       await objectStorage.deleteOne(objId2);
       await objectStorage.deleteOne(objId3);
       expect(JSON.parse(result).length).to.be.equal(2);
+    });
+  });
+  describe('errors handling', () => {
+    let loggingTraceSpy;
+    let loggingWarnSpy;
+    beforeEach(() => {
+      loggingTraceSpy = sinon.spy(logging, 'trace');
+      loggingWarnSpy = sinon.spy(logging, 'warn');
+    });
+    afterEach(sinon.restore);
+    describe('response with error (4xx)', () => {
+      it('should throw 400, no retries', async () => {
+        await expect(objectStorage.getOne('not-a-uuid')).to.be.rejectedWith('Request failed with status code 400');
+        expect(loggingTraceSpy.callCount).to.be.equal(1);
+      });
+      it('should throw 404, no retries', async () => {
+        await expect(objectStorage.getOne('2e084a24-e2ea-47c6-a95a-732ec8df7263')).to.be.rejectedWith('Request failed with status code 404');
+        expect(loggingTraceSpy.callCount).to.be.equal(1);
+      });
+    });
+    describe('Server error (5xx)', () => {
+      beforeEach(() => {
+        sinon.stub(utils, 'validateRetryOptions').callsFake(() => ({ retryDelay: 1, retriesCount: 2, requestTimeout: 1 }));
+      });
+      it('should throw 5xx', async () => {
+        await expect(objectStorage.getOne('some-id')).to.be.rejectedWith('Server error during request: "timeout of 1ms exceeded"');
+        expect(loggingTraceSpy.callCount).to.be.equal(3);
+        expect(loggingWarnSpy.callCount).to.be.equal(2);
+        const [{ err: err1 }, log1] = loggingWarnSpy.getCall(0).args;
+        expect(err1.toJSON().message).to.be.equal('timeout of 1ms exceeded');
+        expect(log1).to.be.equal('Error during object request, retrying (1)');
+        const [{ err: err2 }, log2] = loggingWarnSpy.getCall(1).args;
+        expect(err2.toJSON().message).to.be.equal('timeout of 1ms exceeded');
+        expect(log2).to.be.equal('Error during object request, retrying (2)');
+      });
+      xit('RUN THIS TEST WITHOUT PORT-FORWARDING', async () => {
+        await expect(objectStorage.getOne('some-id')).to.be.rejectedWith('Server error during request: "connect ECONNREFUSED 127.0.0.1:3002"');
+      });
     });
   });
 });

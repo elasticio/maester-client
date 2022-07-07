@@ -11,16 +11,13 @@ import {
   JwtNotProvidedError,
   ObjectStorageClientError,
   ServerTransportError,
+  PotentiallyConsumedStreamError
 } from './errors';
-import { isEmptyObject, sleep } from './utils';
+import { sleep, validateRetryOptions, getDelayTime } from './utils';
 import {
   JWTPayload, RequestHeaders, RetryOptions, ReqWithBodyOptions, ObjectHeaders,
   StreamBasedRequestConfig, ReqOptions, searchObjectCriteria
 } from './interfaces';
-
-const REQUEST_MAX_RETRY = process.env.REQUEST_MAX_RETRY ? parseInt(process.env.REQUEST_MAX_RETRY, 10) : 5;
-const REQUEST_RETRY_DELAY = process.env.REQUEST_RETRY_DELAY ? parseInt(process.env.REQUEST_RETRY_DELAY, 10) : 5000; // 5s
-const REQUEST_TIMEOUT = process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : 10000; // 10s
 
 export const getStreamWithContentType = async (getStream: () => Promise<Readable>): Promise<{ mime, stream }> => {
   const { mime = 'application/json', stream } = await getMimeType(await getStream(), { strict: true });
@@ -48,12 +45,13 @@ export class StorageClient {
   }
 
   private async requestRetry(
-    requestConfig: StreamBasedRequestConfig, { retriesCount = REQUEST_MAX_RETRY, retryDelay = REQUEST_RETRY_DELAY, requestTimeout = REQUEST_TIMEOUT }: RetryOptions
+    requestConfig: StreamBasedRequestConfig, retryOptions: RetryOptions
   ): Promise<AxiosResponse> {
+    const { retryDelay, retriesCount, requestTimeout } = validateRetryOptions(retryOptions);
     let currentRetries = 0;
     let res;
     let err;
-    while (currentRetries < retriesCount) {
+    while (currentRetries <= retriesCount) {
       err = null;
       res = null;
       try {
@@ -63,7 +61,12 @@ export class StorageClient {
           const { mime, stream } = await getStreamWithContentType(getFreshStream);
           axiosReqConfig.headers['content-type'] = mime;
           bodyAsStream = stream;
-          if (process.env.NODE_ENV === 'test') log.debug(bodyAsStream); // to insure it's new stream on each call (in unit tests only)
+          if (process.env.NODE_ENV === 'test') {
+            log.debug(bodyAsStream); // to insure it's new stream on each call (in tests only)
+          }
+        }
+        if (process.env.NODE_ENV === 'test') {
+          log.trace(retryDelay, retriesCount, requestTimeout);
         }
         res = await this.api.request({ ...axiosReqConfig, data: bodyAsStream, timeout: requestTimeout });
       } catch (e) {
@@ -75,14 +78,14 @@ export class StorageClient {
       }
       if ((err || res.status >= 500) && currentRetries < retriesCount) {
         log.warn({ err, status: res?.status, statusText: res?.statusText }, `Error during object request, retrying (${currentRetries + 1})`);
-        await sleep(retryDelay);
+        await sleep(getDelayTime(retryDelay, currentRetries)); // + 1s for each iteration
         currentRetries++;
         continue;
       }
       break;
     }
     if (err || res?.status >= 500) {
-      throw new ServerTransportError('Server error during request', {
+      throw new ServerTransportError(`Server error during request: "${err?.message || 'unknown error'}"`, {
         code: res?.status,
         cause: err
       });
