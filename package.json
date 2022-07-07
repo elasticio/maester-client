@@ -11,7 +11,7 @@
     "pretest": "rm -rf dist && eslint --ext .ts --quiet --fix && find src spec spec-integration -name \"*.js\" -type f -delete && find src spec spec-integration -name \"*.d.ts\" -type f -delete",
     "posttest": "tsc",
     "build": "tsc",
-    "prepare": "npm run build",
+    "prepare": "rm -rf dist && npm run build",
     "prepublishOnly": "npm run lint && npm run test",
     "license-check": "license-checker --excludePrivatePackages --excludePackages \"$(node ../../../.ignored-licenses.js)\" --onlyAllow \"$(node ../../../.allowed-licenses.js)\""
   },
