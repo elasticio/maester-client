@@ -2,6 +2,7 @@
 .env
 
 .idea
+/dist
 node_modules
 *.js
 *.js.map
