@@ -39,6 +39,7 @@ export const validateRetryOptions = ({
   };
 };
 
+// + 1s for each retry
 export const getDelayTime = (retryDelay: number, currentReties: number): number => {
   const maxBackoff = 10000; // 10s
   return Math.min(retryDelay + (currentReties * 1000), maxBackoff);
