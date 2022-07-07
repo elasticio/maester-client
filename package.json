@@ -2,8 +2,8 @@
   "name": "@elastic.io/maester-client",
   "version": "4.0.0-dev.6",
   "description": "The official object-storage client",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "lint": "eslint '*/**/*[^.d$].ts' --quiet --fix",
     "test": "mocha -r ts-node/register --recursive spec/**/*.ts --timeout 12000",
