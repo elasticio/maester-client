@@ -5,6 +5,16 @@ const REQUEST_RETRY_DELAY = process.env.REQUEST_RETRY_DELAY ? parseInt(process.e
 const REQUEST_MAX_RETRY = process.env.REQUEST_MAX_RETRY ? parseInt(process.env.REQUEST_MAX_RETRY, 10) : 3;
 const REQUEST_TIMEOUT = process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : 10000; // 10s
 
+export const parseJson = (source: string) => {
+  let parsedJson;
+  try {
+    parsedJson = JSON.parse(source);
+  } catch (parseError) {
+    throw new Error('Could not parse Maester object as it is not a JSON object');
+  }
+  return parsedJson;
+};
+
 export const sleep = async (ms: number) => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });

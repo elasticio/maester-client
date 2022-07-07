@@ -53,21 +53,15 @@ const obj = await objectStorageWrapper.createObject(
 
 #### Get object by ID
 
-The method has the following signature:
+Returns JSON object. The method has the following signature:
 ```
-async lookupObjectById(id: string, responseType: ResponseType)
+async lookupObjectById(id: string)
 ```
 where
 - id - Maester internal id of the object to lookup. E.g. '76380cae-aee3-457a-9029-d971f61e3731'. *Required*
-- responseType - One of response-types [`json`, `stream`, `arraybuffer`]. Data will be returned in an appropriate format. Defaults to `json`. *Optional*
 
 ```
 const obj = await objectStorageWrapper.lookupObjectById(id);
-const obj = await objectStorageWrapper.lookupObjectById(id, 'stream');
-```
-By default method returns **a raw string**, you may want to parse JSON or do any other data processing according to object's expected data type:
-```
-const parsedObject = JSON.parse(obj);
 ```
 
 #### Get objects by query parameters
@@ -92,7 +86,7 @@ Using Maester REST API you can find this object by:
 ```
 Using the library:
 ```
-const obj = await objectStorageWrapper.lookupObjectsByQueryParameters([
+const objects = await objectStorageWrapper.lookupObjectsByQueryParameters([
   { key: 'somequeriablefieldkey', value: 'somequeriablefieldvalue' },
   { key: 'anotherqueriablefieldkey', value: 'anotherqueriablefieldvalue' }
 ]);

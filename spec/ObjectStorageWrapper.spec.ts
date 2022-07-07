@@ -161,7 +161,7 @@ describe('ObjectStorageWrapper', () => {
     });
     it('Should successfully return object', async () => {
       const result = await objectStorageWrapper.lookupObjectById(id);
-      expect(JSON.parse(result)).to.be.deep.equal(data);
+      expect(result).to.be.deep.equal(data);
       const { firstArg, lastArg } = finalReqCfg.getCall(0);
       expect(lastArg).to.be.deep.equal({});
       expect(firstArg.getFreshStream).to.be.equal(undefined);
@@ -182,7 +182,7 @@ describe('ObjectStorageWrapper', () => {
     });
     it('Should return 2 objects', async () => {
       const result = await objectStorageWrapper.lookupObjectsByQueryParameters([{ key: queryKey, value: queryValue }]);
-      expect(JSON.parse(result)).to.deep.equal([createObjectWithQueriableField, createObjectWithQueriableField]);
+      expect(result).to.deep.equal([createObjectWithQueriableField, createObjectWithQueriableField]);
       const { firstArg, lastArg } = finalReqCfg.getCall(0);
       expect(lastArg).to.be.deep.equal({});
       expect(firstArg.getFreshStream).to.be.equal(undefined);
