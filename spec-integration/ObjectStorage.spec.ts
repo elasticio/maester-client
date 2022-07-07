@@ -215,6 +215,14 @@ describe('objectStorage', () => {
       });
       xit('RUN THIS TEST WITHOUT PORT-FORWARDING', async () => {
         await expect(objectStorage.getOne('some-id')).to.be.rejectedWith('Server error during request: "connect ECONNREFUSED 127.0.0.1:3002"');
+        expect(loggingTraceSpy.callCount).to.be.equal(3);
+        expect(loggingWarnSpy.callCount).to.be.equal(2);
+        const [{ err: err1 }, log1] = loggingWarnSpy.getCall(0).args;
+        expect(err1.toJSON().message).to.be.equal('connect ECONNREFUSED 127.0.0.1:3002');
+        expect(log1).to.be.equal('Error during object request, retrying (1)');
+        const [{ err: err2 }, log2] = loggingWarnSpy.getCall(1).args;
+        expect(err2.toJSON().message).to.be.equal('connect ECONNREFUSED 127.0.0.1:3002');
+        expect(log2).to.be.equal('Error during object request, retrying (2)');
       });
     });
   });
