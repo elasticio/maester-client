@@ -135,10 +135,8 @@ describe('objectStorage', () => {
       expect(JSON.parse(object)).to.be.deep.equal({ a: 2 });
     });
     it('should update pdf', async () => {
-      const getAttachAsStream = async () => (
-        await axios.get('http://environmentclearance.nic.in/writereaddata/FormB/Agenda/2201201642EWMJ8Bpdf18.pdf', { responseType: 'stream' })
-      ).data;
-      const objId = await objectStorage.add(getAttachAsStream);
+      const dataAsStream = async () => utils.streamFromData({ a: 4 });
+      const objId = await objectStorage.add(dataAsStream);
       const getAttachAsStream2 = async () => (await axios.get('http://www.africau.edu/images/default/sample.pdf', { responseType: 'stream' })).data;
       const resUpd = await objectStorage.update(objId, getAttachAsStream2);
       expect(resUpd.contentType).to.be.equal('application/pdf');
