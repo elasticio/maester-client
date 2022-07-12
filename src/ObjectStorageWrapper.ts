@@ -1,9 +1,7 @@
 import { ObjectStorage } from './ObjectStorage';
-import { uploadData } from './interfaces';
-import { parseJson } from './utils';
+import { uploadData, TTL_HEADER } from './interfaces';
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
-export const TTL_HEADER = 'x-eio-ttl';
 const isHeaders = (headers?: Header[]): boolean => headers && headers.length > 0;
 
 export interface Scope {
@@ -45,7 +43,7 @@ export class ObjectStorageWrapper {
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
     const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
     if (ttl) resultHeaders[TTL_HEADER] = ttl.toString();
-    return this.objectStorage.add(data, { override: resultHeaders });
+    return this.objectStorage.add(data, { headers: resultHeaders });
   }
 
   async deleteObjectById(id: string) {
@@ -62,8 +60,7 @@ export class ObjectStorageWrapper {
 
   async lookupObjectById(id: string) {
     this.logger.debug(`Going to find an object by id ${id}...`);
-    const object = await this.objectStorage.getOne(id);
-    return parseJson(object);
+    return this.objectStorage.getOne(id);
   }
 
   async getObjectHeaders(id: string) {
@@ -75,8 +72,7 @@ export class ObjectStorageWrapper {
     this.logger.debug('Going to find an object by query parameters');
     ObjectStorageWrapper.validateQueryHeaders(headers);
     const resultParams = ObjectStorageWrapper.getQueryParams(headers);
-    const objects = await this.objectStorage.getAllByParams(resultParams);
-    return parseJson(objects);
+    return this.objectStorage.getAllByParams(resultParams);
   }
 
   /**
@@ -87,7 +83,7 @@ export class ObjectStorageWrapper {
     if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
     const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
-    return this.objectStorage.update(id, data, { override: resultHeaders });
+    return this.objectStorage.update(id, data, { headers: resultHeaders });
   }
 
   private static validateQueryHeaders(headers: Header[]) {

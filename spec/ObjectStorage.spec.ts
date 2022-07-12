@@ -3,10 +3,15 @@ import nock from 'nock';
 import sinon from 'sinon';
 import getStream from 'get-stream';
 import { expect } from 'chai';
+import { Readable } from 'stream';
+import logging from '../src/logger';
 import { ObjectStorage, StorageClient } from '../src';
+import { getFreshStreamChecker } from '../src/utils';
 import {
   encryptStream, decryptStream, zip, unzip, streamFromObject
 } from './helpers';
+import { PotentiallyConsumedStreamError } from '../src/errors';
+// import { getFreshStreamChecker } from '../src/utils';
 
 describe('Object Storage', () => {
   const config = {
@@ -46,7 +51,7 @@ describe('Object Storage', () => {
         });
         it('should getAllByParams', async () => {
           const result = await objectStorage.getAllByParams({ foo: 'bar' });
-          expect(JSON.parse(result)).to.deep.equal([createdObjWithQueryField, createdObjWithQueryField]);
+          expect(result).to.deep.equal([createdObjWithQueryField, createdObjWithQueryField]);
           const { firstArg, lastArg } = finalReqCfg.getCall(0);
           expect(lastArg).to.be.deep.equal({});
           expect(firstArg.getFreshStream).to.be.equal(undefined);
@@ -85,7 +90,7 @@ describe('Object Storage', () => {
         });
         it('should getById (json)', async () => {
           const result = await objectStorage.getOne('objectId', { responseType: 'json' });
-          expect(result).to.be.equal(JSON.stringify({ q: 'i`m a stream' }));
+          expect(result).to.be.deep.equal({ q: 'i`m a stream' });
           const { firstArg, lastArg } = finalReqCfg.getCall(0);
           expect(lastArg).to.be.deep.equal({});
           expect(firstArg.getFreshStream).to.be.equal(undefined);
@@ -130,7 +135,6 @@ describe('Object Storage', () => {
         await expect(objectStorage.getOne('1')).to.be.rejectedWith('Server error during request');
         expect(objectStorageCalls.isDone()).to.be.true;
       });
-
       it('should retry get request on errors', async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
@@ -141,9 +145,8 @@ describe('Object Storage', () => {
 
         const response = await objectStorage.getOne('1', { responseType: 'json' });
         expect(objectStorageCalls.isDone()).to.be.true;
-        expect(response).to.be.deep.equal(JSON.stringify(responseData));
+        expect(response).to.be.deep.equal(responseData);
       });
-
       it('should throw an error on post request connection error', async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
@@ -154,7 +157,6 @@ describe('Object Storage', () => {
         await expect(objectStorage.add(postData, {})).to.be.rejectedWith('Server error during request');
         expect(objectStorageCalls.isDone()).to.be.true;
       });
-
       it('should throw an error immediately on post request http error', async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
@@ -164,7 +166,6 @@ describe('Object Storage', () => {
         await expect(objectStorage.add(postData, {})).to.be.rejectedWith('Request failed with status code 409');
         expect(objectStorageCalls.isDone()).to.be.true;
       });
-
       it('should post successfully', async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
@@ -175,6 +176,50 @@ describe('Object Storage', () => {
         expect(objectStorageCalls.isDone()).to.be.true;
         expect(objectId).to.match(/^[0-9a-z-]+$/);
       });
+    });
+  });
+  describe('custom headers', () => {
+    it('should post successfully', async () => {
+      const objectStorageCalls = nock(config.uri)
+        .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
+        .matchHeader('content-type', 'some-type')
+        .matchHeader('x-eio-ttl', '1')
+        .matchHeader('x-meta-k', 'v')
+        .matchHeader('x-query-k', 'v')
+        .post('/objects')
+        .reply(200, streamFromObject({ objectId: 'dfsf-2dasd3-dsf2l' }));
+
+      const response = await objectStorage.add(postData, {
+        headers: {
+          'content-type': 'some-type',
+          'x-eio-ttl': 1,
+          'x-meta-k': 'v',
+          'x-query-k': 'v',
+        }
+      });
+      expect(response).to.be.equal('dfsf-2dasd3-dsf2l');
+      expect(objectStorageCalls.isDone()).to.be.true;
+    });
+    it('should put successfully', async () => {
+      const objectStorageCalls = nock(config.uri)
+        .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
+        .matchHeader('content-type', 'some-type')
+        .matchHeader('x-eio-ttl', '1')
+        .matchHeader('x-meta-k', 'v')
+        .matchHeader('x-query-k', 'v')
+        .put('/objects/dfsf-2dasd3-dsf2l')
+        .reply(200, 'response');
+
+      const response = await objectStorage.update('dfsf-2dasd3-dsf2l', postData, {
+        headers: {
+          'content-type': 'some-type',
+          'x-eio-ttl': 1,
+          'x-meta-k': 'v',
+          'x-query-k': 'v',
+        }
+      });
+      expect(response).to.be.equal('response');
+      expect(objectStorageCalls.isDone()).to.be.true;
     });
   });
   describe('middlewares + zip/unzip and encrypt/decrypt', () => {
@@ -261,7 +306,7 @@ describe('Object Storage', () => {
           .times(5)
           .replyWithError({ code: 'ETIMEDOUT' });
 
-        const retryOptions = { retriesCount: 5, requestTimeout: 1, retryDelay: 1 };
+        const retryOptions = { retriesCount: 5, requestTimeout: 1 };
         await expect(objectStorage.getOne('1', { retryOptions })).to.be.rejectedWith('Server error during request');
         expect(objectStorageCalls.isDone()).to.be.true;
         const { lastArg } = finalReqCfg.getCall(0);
@@ -276,12 +321,76 @@ describe('Object Storage', () => {
           .get('/objects/1')
           .reply(200, streamFromObject({ objectId: '234-sdf' }));
 
-        const retryOptions = { retriesCount: 5, requestTimeout: 1, retryDelay: 1 };
+        const retryOptions = { retriesCount: 5, requestTimeout: 1 };
         const result = await objectStorage.getOne('1', { retryOptions });
-        expect(JSON.parse(result)).to.be.deep.equal({ objectId: '234-sdf' });
+        expect(result).to.be.deep.equal({ objectId: '234-sdf' });
         expect(objectStorageCalls.isDone()).to.be.true;
         const { lastArg } = finalReqCfg.getCall(0);
         expect(lastArg).to.be.deep.equal(retryOptions);
+      });
+    });
+  });
+  describe('PotentiallyConsumedStreamError', () => {
+    describe('on put', () => {
+      it('should fail put request when the same stream returned on retry', async () => {
+        const objectStorageCalls = nock(config.uri)
+          .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
+          .put('/objects/1')
+          .reply(500);
+
+        const sameStream = streamFromObject(postData);
+        let err: Error;
+        try {
+          await objectStorage.update('1', async () => sameStream);
+        } catch (e) {
+          err = e;
+        }
+        expect(objectStorageCalls.isDone()).to.be.true;
+        expect(err).to.be.instanceOf(PotentiallyConsumedStreamError);
+      });
+      it('should retry', async () => {
+        const objectStorageCalls = nock(config.uri)
+          .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
+          .put('/objects/1')
+          .reply(500)
+          .put('/objects/1')
+          .reply(500)
+          .put('/objects/1')
+          .reply(200);
+
+        await objectStorage.update('1', async () => streamFromObject(postData));
+        expect(objectStorageCalls.isDone()).to.be.true;
+      });
+    });
+    describe('on post', () => {
+      it('should fail post request when the same stream returned on retry', async () => {
+        const objectStorageCalls = nock(config.uri)
+          .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
+          .post('/objects')
+          .reply(500);
+
+        const sameStream = streamFromObject(postData);
+        let err: Error;
+        try {
+          await objectStorage.add(async () => sameStream);
+        } catch (e) {
+          err = e;
+        }
+        expect(objectStorageCalls.isDone()).to.be.true;
+        expect(err).to.be.instanceOf(PotentiallyConsumedStreamError);
+      });
+      it('should retry', async () => {
+        const objectStorageCalls = nock(config.uri)
+          .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
+          .post('/objects')
+          .reply(500)
+          .post('/objects')
+          .reply(500)
+          .post('/objects')
+          .reply(200);
+
+        await objectStorage.add(async () => streamFromObject(postData));
+        expect(objectStorageCalls.isDone()).to.be.true;
       });
     });
   });

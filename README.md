@@ -10,6 +10,14 @@ Use `ObjectStorage` to operate attachments (also could be used for same purpose 
 
 Note: All the code snippets written in Typescript
 
+### Environment variables
+
+*REQUEST_MAX_RETRY* - specifies amount of tries to repeat failed request if server/connection error occurred. <br>
+Default value: 3. Min value: 0. Max value: 6. If entered value is out of limits - default value will be used.
+
+*REQUEST_TIMEOUT* - specifies the number of milliseconds before the request times out. If the request takes longer than 'timeout', the request will be aborted. <br>
+Default value: 10000 (10s). Min value: 500 (0.5s). Max value: 20000 (20s). If entered value is out of limits - default value will be used.
+
 ### Create client
 ```
 import { ObjectStorage, ObjectStorageWrapper } from '@elastic.io/maester-client';
@@ -160,9 +168,9 @@ where
 - [reqWithBodyOptions](/src/interfaces.ts#L27).
 
 ```
-const obj = await objectStorage.add(data, { override: {'x-query-somequeriablefieldkey': 'somequeriablefieldvalue'} });
+const obj = await objectStorage.add(data, { headers: {'x-query-somequeriablefieldkey': 'somequeriablefieldvalue'} });
 const getAttachAsStream = async () => (await axios.get('https://img.jpg', { responseType: 'stream' })).data;
-const obj = await objectStorage.add(getAttachAsStream, { retryOptions: { retriesCount: 5, retryDelay: 10000, requestTimeout: 60000 } });
+const obj = await objectStorage.add(getAttachAsStream, { retryOptions: { retriesCount: 5, requestTimeout: 60000 } });
 );
 ```
 
@@ -180,11 +188,7 @@ where
 
 ```
 const obj = await objectStorage.getOne(id);
-const obj = await objectStorage.getOne(id, { responseTYpe: 'stream'});
-```
-By default method returns **a raw string**, you may want to parse JSON or do any other data processing according to object's expected data type:
-```
-const parsedObject = JSON.parse(obj);
+const objAsStream = await objectStorage.getOne(id, { responseType: 'stream'});
 ```
 
 #### Get objects by query parameters
@@ -216,7 +220,7 @@ where
 - [reqWithBodyOptions](/src/interfaces.ts#L27)
 
 ```
-const obj = await objectStorage.update(data, { override: {'x-query-somequeriablefieldkey': 'somequeriablefieldvalue'} });
+const obj = await objectStorage.update(data, { headers: {'x-query-somequeriablefieldkey': 'somequeriablefieldvalue'} });
 const getAttachAsStream = async () => (await axios.get('https://img.jpg', { responseType: 'stream' })).data;
 const obj = await objectStorage.update(getAttachAsStream);
 );
@@ -236,7 +240,7 @@ where
 
 ```
 const obj = await objectStorage.deleteOne(id);
-const obj = await objectStorage.deleteOne(id, { retryOptions: { retriesCount: 5, retryDelay: 10000, requestTimeout: 60000 } });
+const obj = await objectStorage.deleteOne(id, { retryOptions: { retriesCount: 5, requestTimeout: 60000 } });
 ```
 
 #### Delete objects by query parameters
@@ -271,7 +275,14 @@ where
 - forward - transform middleware to use with `Create` and `Update` object operations (`add`, `update` methods).
 - reverse - transform middleware to use with `Get` object operations (`getOne`, `getAllByParams` methods).
 
+## Handling errors
+
+All errors thrown by library are instances of `ObjectStorageClientError` class. Check exported `Errors` property for a
+list of all errors classes and their properties.
+
 ## Limitations
 
 1. Both `ObjectStorage` and `ObjectStorageWrapper` could'n process `undefined` as values for upsert value. Also value `undefined` in array will be converted to `null`, e.g
 `[1, 'str', undefined, null, { d: 2 }]` will be saved as `[1, 'str', null, null, { d: 2 }]`
+2. Once object was created with custom 'content-type', be aware 'content-type' could be changed automatically with next update request of this object. To avoid that provide custom 'content-type' again with next update request. <br>
+E.g if you created objected like this `const objectId = await objectStorage.add({ a: 2 }, { headers: { 'content-type': 'some-type' } })` - object will be stored with `'content-type': 'some-type'`. But if you are going to update this object without passing same custom 'content-type' (`await objectStorage.update(objectId, { a: 3 })`) - object 'content-type' will be calculated automatically, and in this case will be set to 'application/json'.

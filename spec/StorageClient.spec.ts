@@ -1,10 +1,8 @@
 /* eslint-disable no-unused-expressions */
 import nock from 'nock';
-import sinon from 'sinon';
 import { expect } from 'chai';
 import getStream from 'get-stream';
 import { StorageClient } from '../src/StorageClient';
-import logging from '../src/logger';
 import { streamFromObject } from './helpers';
 
 describe('Storage Client', () => {
@@ -60,24 +58,5 @@ describe('Storage Client', () => {
     const response = await storageClient.post(streamFromObject.bind({}, data));
     expect(response.data).to.be.deep.equal(responseData);
     expect(storageClientCalls.isDone()).to.be.true;
-  });
-  it('INSURE IT`S A FRESH STREAM ON EACH RETRY', async () => {
-    const log = sinon.stub(logging, 'debug');
-    const storageClientCalls = nock(config.uri)
-      .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
-      .post('/objects')
-      .times(2)
-      .reply(500)
-      .post('/objects')
-      .reply(200, responseData);
-
-    const response = await storageClient.post(streamFromObject.bind({}, data), {});
-    expect(response.data).to.be.deep.equal(responseData);
-    expect(storageClientCalls.isDone()).to.be.true;
-    const firstStreamInstance = log.getCall(0).args[0];
-    const secStreamInstance = log.getCall(1).args[0];
-    const thirdStreamInstance = log.getCall(2).args[0];
-    expect(firstStreamInstance === secStreamInstance).to.be.equal(false);
-    expect(secStreamInstance === thirdStreamInstance).to.be.equal(false);
   });
 });

@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
+import { PotentiallyConsumedStreamError } from './errors';
 import { uploadData, RetryOptions } from './interfaces';
 
-const REQUEST_RETRY_DELAY = process.env.REQUEST_RETRY_DELAY ? parseInt(process.env.REQUEST_RETRY_DELAY, 10) : 5000; // 5s
 const REQUEST_MAX_RETRY = process.env.REQUEST_MAX_RETRY ? parseInt(process.env.REQUEST_MAX_RETRY, 10) : 3;
 const REQUEST_TIMEOUT = process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : 10000; // 10s
 
@@ -28,29 +28,39 @@ export const streamFromData = async (data: uploadData): Promise<Readable> => {
   return stream;
 };
 
+export const getFreshStreamChecker = () => {
+  let previousStream: Readable;
+  return (stream: Readable) => {
+    // defensive check
+    if (previousStream && previousStream === stream) {
+      throw new PotentiallyConsumedStreamError('The stream callback must always return a new stream');
+    }
+    previousStream = stream;
+  };
+};
+
 /**
  * if values are higher or lower the limit - they'll be overwritten.
  * returns valid values for RetryOptions
  */
 export const validateRetryOptions = ({
-  retryDelay = REQUEST_RETRY_DELAY, retriesCount = REQUEST_MAX_RETRY, requestTimeout = REQUEST_TIMEOUT
+  retriesCount = REQUEST_MAX_RETRY, requestTimeout = REQUEST_TIMEOUT
 }: RetryOptions): RetryOptions => {
-  const retryDelay_MAX_LIMIT = 10000; // 10s
-  const retryDelay_MIN_LIMIT = 0; // 0ms
   const retriesCount_MAX_LIMIT = 6;
   const retriesCount_MIN_LIMIT = 0;
   const requestTimeout_MAX_LIMIT = 20000; // 20s
   const requestTimeout_MIN_LIMIT = 500; // 500ms
 
   return {
-    retryDelay: (retryDelay > retryDelay_MAX_LIMIT || retryDelay < retryDelay_MIN_LIMIT) ? REQUEST_RETRY_DELAY : retryDelay,
     retriesCount: (retriesCount > retriesCount_MAX_LIMIT || retriesCount < retriesCount_MIN_LIMIT) ? REQUEST_MAX_RETRY : retriesCount,
     requestTimeout: (requestTimeout > requestTimeout_MAX_LIMIT || requestTimeout < requestTimeout_MIN_LIMIT) ? REQUEST_TIMEOUT : requestTimeout
   };
 };
 
-// + 1s for each retry
-export const getDelayTime = (retryDelay: number, currentReties: number): number => {
-  const maxBackoff = 10000; // 10s
-  return Math.min(retryDelay + (currentReties * 1000), maxBackoff);
+// the same logic as in https://github.com/softonic/axios-retry, which we actively use, but with max backoff
+export const exponentialDelay = (currentRetries: number) => {
+  const maxBackoff = 10000;
+  const delay = (2 ** currentRetries) * 100;
+  const randomSum = delay * 0.2 * Math.random(); // 0-20% of the delay
+  return Math.min(delay + randomSum, maxBackoff);
 };

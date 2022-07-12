@@ -21,6 +21,17 @@ export class TransportError extends ObjectStorageClientError {
   }
 }
 
+export class ClientTransportError extends TransportError {
+  public code: number;
+
+  public constructor(message: string, code: number, cause?: Error) {
+    // @ts-ignore
+    super(message, cause);
+    this.name = 'ClientTransportError';
+    this.code = code;
+  }
+}
+
 export class ServerTransportError extends TransportError {
   public code: number;
 

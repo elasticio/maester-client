@@ -11,11 +11,11 @@ import {
   JwtNotProvidedError,
   ObjectStorageClientError,
   ServerTransportError,
-  PotentiallyConsumedStreamError
+  ClientTransportError
 } from './errors';
-import { sleep, validateRetryOptions, getDelayTime } from './utils';
+import { sleep, validateRetryOptions, exponentialDelay } from './utils';
 import {
-  JWTPayload, RequestHeaders, RetryOptions, ReqWithBodyOptions, ObjectHeaders,
+  JWTPayload, reqWithBodyHeaders, RetryOptions, ReqWithBodyOptions,
   StreamBasedRequestConfig, ReqOptions, searchObjectCriteria
 } from './interfaces';
 
@@ -47,7 +47,7 @@ export class StorageClient {
   private async requestRetry(
     requestConfig: StreamBasedRequestConfig, retryOptions: RetryOptions
   ): Promise<AxiosResponse> {
-    const { retryDelay, retriesCount, requestTimeout } = validateRetryOptions(retryOptions);
+    const { retriesCount, requestTimeout } = validateRetryOptions(retryOptions);
     let currentRetries = 0;
     let res;
     let err;
@@ -59,26 +59,20 @@ export class StorageClient {
         let bodyAsStream;
         if (getFreshStream) {
           const { mime, stream } = await getStreamWithContentType(getFreshStream);
-          axiosReqConfig.headers['content-type'] = mime;
+          if (!axiosReqConfig.headers['content-type']) axiosReqConfig.headers['content-type'] = mime;
           bodyAsStream = stream;
-          if (process.env.NODE_ENV === 'test') {
-            log.debug(bodyAsStream); // to insure it's new stream on each call (in tests only)
-          }
-        }
-        if (process.env.NODE_ENV === 'test') {
-          log.trace(retryDelay, retriesCount, requestTimeout);
         }
         res = await this.api.request({ ...axiosReqConfig, data: bodyAsStream, timeout: requestTimeout });
       } catch (e) {
         if (e instanceof ObjectStorageClientError) {
           throw e;
         }
-        err = e;
-        if (err?.response?.status < 500) throw e; // The request was made and the server responded with a status code
+        err = e; /// throw client error
+        if (err?.response?.status < 500) throw new ClientTransportError(`Client error during request: ${err.message}`, err.response.status);
       }
       if ((err || res.status >= 500) && currentRetries < retriesCount) {
         log.warn({ err, status: res?.status, statusText: res?.statusText }, `Error during object request, retrying (${currentRetries + 1})`);
-        await sleep(getDelayTime(retryDelay, currentRetries)); // + 1s for each iteration
+        await sleep(exponentialDelay(currentRetries));
         currentRetries++;
         continue;
       }
@@ -93,29 +87,28 @@ export class StorageClient {
     return res;
   }
 
-  private async formHeaders(jwtPayloadOrToken: JWTPayload | string, override?: RequestHeaders) {
+  private async formHeaders(jwtPayloadOrToken: JWTPayload | string, headers?: reqWithBodyHeaders) {
     if (typeof jwtPayloadOrToken !== 'string' && !this.jwtSecret) {
       throw new JwtNotProvidedError('Neither JWT token passed, nor JWT secret provided during initialization');
     }
     const token = typeof jwtPayloadOrToken === 'string'
       ? jwtPayloadOrToken
       : await promisify(sign)(jwtPayloadOrToken, this.jwtSecret);
-    return { Authorization: `Bearer ${token}`, ...override };
+    return { Authorization: `Bearer ${token}`, ...headers };
   }
 
   // wrap for 'post' and 'put' methods
   private async reqWithBody(
     getFreshStream: () => Promise<Readable>,
-    { ttl, override = {}, jwtPayloadOrToken = this.jwtSecret, retryOptions = {} }: ReqWithBodyOptions = {},
+    { headers = {}, jwtPayloadOrToken = this.jwtSecret, retryOptions = {} }: ReqWithBodyOptions = {},
     objectId?: string
   ) {
-    if (ttl) override[ObjectHeaders.ttl] = ttl;
     return this.requestRetry({
       getFreshStream,
       axiosReqConfig: {
         method: objectId ? 'put' : 'post',
         url: objectId ? `/objects/${objectId}` : '/objects',
-        headers: await this.formHeaders(jwtPayloadOrToken, override)
+        headers: await this.formHeaders(jwtPayloadOrToken, headers)
       },
     }, retryOptions);
   }

@@ -1,18 +1,18 @@
 import { Readable, Duplex } from 'stream';
 import { AxiosRequestConfig } from 'axios';
 
+export const TTL_HEADER = 'x-eio-ttl';
+
 export interface StreamBasedRequestConfig {
   getFreshStream?: () => Promise<Readable>;
   axiosReqConfig: AxiosRequestConfig;
 }
 
-export enum ObjectHeaders {
-  ttl = 'x-eio-ttl'
-}
-
 export interface reqWithBodyHeaders {
-  ttl?: number;
-  override?: RequestHeaders;
+  [TTL_HEADER]?: number;
+  'content-type'?: string;
+  [index: `x-query-${string}`]: string | number
+  [index: `x-meta-${string}`]: string | number
 }
 
 export interface reqHeaders {
@@ -24,13 +24,13 @@ export interface ReqOptions extends reqHeaders {
   retryOptions?: RetryOptions;
 }
 
-export interface ReqWithBodyOptions extends reqWithBodyHeaders {
+export interface ReqWithBodyOptions {
   jwtPayloadOrToken?: JWTPayload | string;
   retryOptions?: RetryOptions;
+  headers?: reqWithBodyHeaders
 }
 
 export interface RetryOptions {
-  retryDelay?: number;
   retriesCount?: number;
   requestTimeout?: number;
 }
@@ -41,10 +41,6 @@ export interface JWTPayload {
   workspaceId?: string,
   flowId?: string,
   userId?: string
-}
-
-export interface RequestHeaders {
-  [index: string]: string | number;
 }
 
 export type searchObjectCriteria = string | object;
