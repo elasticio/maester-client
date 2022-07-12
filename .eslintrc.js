@@ -1,5 +1,6 @@
 module.exports = {
   env: {
+    es6: true,
     node: true,
     mocha: true,
   },
@@ -12,7 +13,7 @@ module.exports = {
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 2016,
+    ecmaVersion: 2019,
     sourceType: 'module',
   },
   plugins: [
