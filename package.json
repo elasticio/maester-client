@@ -1,6 +1,6 @@
 {
   "name": "@elastic.io/maester-client",
-  "version": "4.0.0-dev.8",
+  "version": "4.0.0-dev.9",
   "description": "The official object-storage client",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
