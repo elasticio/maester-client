@@ -67,7 +67,7 @@ export class StorageClient {
         if (e instanceof ObjectStorageClientError) {
           throw e;
         }
-        err = e; /// throw client error
+        err = e;
         if (err?.response?.status < 500) throw new ClientTransportError(`Client error during request: ${err.message}`, err.response.status);
       }
       if ((err || res.status >= 500) && currentRetries < retriesCount) {
