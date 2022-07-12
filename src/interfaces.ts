@@ -2,6 +2,7 @@ import { Readable, Duplex } from 'stream';
 import { AxiosRequestConfig } from 'axios';
 
 export const TTL_HEADER = 'x-eio-ttl';
+export const CONTENT_TYPE_HEADER = 'content-type';
 
 export interface StreamBasedRequestConfig {
   getFreshStream?: () => Promise<Readable>;
@@ -10,7 +11,7 @@ export interface StreamBasedRequestConfig {
 
 export interface reqWithBodyHeaders {
   [TTL_HEADER]?: number;
-  'content-type'?: string;
+  [CONTENT_TYPE_HEADER]?: string;
   [index: `x-query-${string}`]: string | number
   [index: `x-meta-${string}`]: string | number
 }

@@ -16,7 +16,7 @@ import {
 import { sleep, validateRetryOptions, exponentialDelay } from './utils';
 import {
   JWTPayload, reqWithBodyHeaders, RetryOptions, ReqWithBodyOptions,
-  StreamBasedRequestConfig, ReqOptions, searchObjectCriteria
+  StreamBasedRequestConfig, ReqOptions, searchObjectCriteria, CONTENT_TYPE_HEADER
 } from './interfaces';
 
 export const getStreamWithContentType = async (getStream: () => Promise<Readable>): Promise<{ mime, stream }> => {
@@ -59,7 +59,7 @@ export class StorageClient {
         let bodyAsStream;
         if (getFreshStream) {
           const { mime, stream } = await getStreamWithContentType(getFreshStream);
-          if (!axiosReqConfig.headers['content-type']) axiosReqConfig.headers['content-type'] = mime;
+          if (!axiosReqConfig.headers[CONTENT_TYPE_HEADER]) axiosReqConfig.headers[CONTENT_TYPE_HEADER] = mime;
           bodyAsStream = stream;
         }
         res = await this.api.request({ ...axiosReqConfig, data: bodyAsStream, timeout: requestTimeout });
