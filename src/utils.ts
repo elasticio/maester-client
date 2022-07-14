@@ -48,7 +48,7 @@ export const validateRetryOptions = ({
 }: RetryOptions): RetryOptions => {
   const retriesCount_MAX_LIMIT = 6;
   const retriesCount_MIN_LIMIT = 0;
-  const requestTimeout_MAX_LIMIT = 20000; // 20s
+  const requestTimeout_MAX_LIMIT = 40000; // 40s
   const requestTimeout_MIN_LIMIT = 500; // 500ms
 
   return {
