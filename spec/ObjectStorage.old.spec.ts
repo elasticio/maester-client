@@ -10,6 +10,7 @@ import { ObjectStorage } from '../src';
 import {
   encryptStream, decryptStream, zip, unzip, streamFromObject
 } from './helpers';
+import { RETRIES_COUNT } from '../src/interfaces';
 
 describe('Object Storage', () => {
   const config = {
@@ -41,7 +42,7 @@ describe('Object Storage', () => {
 
   describe('basic', () => {
     describe('data mode', () => {
-      it('should fail after 3 retries', async () => {
+      it(`should fail after ${RETRIES_COUNT.defaultValue} retries`, async () => {
         const log = sinon.stub(logging, 'warn');
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', authHeaderMatch())
@@ -62,9 +63,9 @@ describe('Object Storage', () => {
         expect(objectStorageCalls.isDone()).to.be.true;
         expect(err).to.be.instanceOf(ServerTransportError);
         expect(log.getCall(1).args[1].toString()).to.include('Error during object request');
-        expect(log.callCount).to.be.equal(3);
+        expect(log.callCount).to.be.equal(RETRIES_COUNT.defaultValue);
       });
-      it('should retry get request 3 times on errors', async () => {
+      it(`should retry get request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', authHeaderMatch())
           .get('/objects/1')
@@ -79,7 +80,7 @@ describe('Object Storage', () => {
         expect(objectStorageCalls.isDone()).to.be.true;
         expect(out).to.be.deep.equal(responseData);
       });
-      it('should retry get as string request 3 times on errors', async () => {
+      it(`should retry get as string request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', authHeaderMatch())
           .get('/objects/1')
@@ -94,7 +95,7 @@ describe('Object Storage', () => {
         expect(objectStorageCalls.isDone()).to.be.true;
         expect(out).to.be.deep.equal(responseData);
       });
-      it('should retry post request 3 times on errors', async () => {
+      it(`should retry post request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', authHeaderMatch())
           .post('/objects')
@@ -108,7 +109,7 @@ describe('Object Storage', () => {
 
         expect(objectStorageCalls.isDone()).to.be.true;
       });
-      it('should retry put request 3 times on errors', async () => {
+      it(`should retry put request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', authHeaderMatch())
           .put('/objects/1')
@@ -193,7 +194,7 @@ describe('Object Storage', () => {
       });
     });
     describe('stream mode', () => {
-      it('should fail after 3 get retries', async () => {
+      it(`should fail after ${RETRIES_COUNT.defaultValue} get retries`, async () => {
         const log = sinon.stub(logging, 'warn');
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', authHeaderMatch())
@@ -214,7 +215,7 @@ describe('Object Storage', () => {
         expect(objectStorageCalls.isDone()).to.be.true;
         expect(err).to.be.instanceOf(ServerTransportError);
         expect(log.getCall(1).args[1].toString()).to.include('Error during object request');
-        expect(log.callCount).to.be.equal(3);
+        expect(log.callCount).to.be.equal(RETRIES_COUNT.defaultValue);
       });
       it('should retry get request on errors', async () => {
         const objectStorageCalls = nock(config.uri)
@@ -269,7 +270,7 @@ describe('Object Storage', () => {
         expect(objectStorageCalls.isDone()).to.be.true;
         expect(err).to.be.instanceOf(ServerTransportError);
       });
-      it('should retry put request 3 times on errors', async () => {
+      it(`should retry put request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', authHeaderMatch())
           .put('/objects/1')
@@ -326,7 +327,7 @@ describe('Object Storage', () => {
     });
     describe('middlewares + zip/unzip and encrypt/decrypt', () => {
       describe('data mode', () => {
-        it('should fail after 3 retries', async () => {
+        it(`should fail after ${RETRIES_COUNT.defaultValue} retries`, async () => {
           const objectStorageWithMiddlewares = new ObjectStorage(config);
           objectStorageWithMiddlewares.use(encryptStream, decryptStream);
           objectStorageWithMiddlewares.use(zip, unzip);
@@ -350,9 +351,9 @@ describe('Object Storage', () => {
           expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
           expect(err).to.be.instanceOf(ServerTransportError);
           expect(log.getCall(1).args[1].toString()).to.include('Error during object request');
-          expect(log.callCount).to.be.equal(3);
+          expect(log.callCount).to.be.equal(RETRIES_COUNT.defaultValue);
         });
-        it('should retry get request 3 times on errors', async () => {
+        it(`should retry get request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
           const objectStorageWithMiddlewares = new ObjectStorage(config);
           objectStorageWithMiddlewares.use(encryptStream, decryptStream);
           objectStorageWithMiddlewares.use(zip, unzip);
@@ -373,7 +374,7 @@ describe('Object Storage', () => {
           expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
           expect(out).to.be.deep.equal(responseData);
         });
-        it('should retry post request 3 times on errors', async () => {
+        it(`should retry post request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
           const objectStorageWithMiddlewares = new ObjectStorage(config);
           objectStorageWithMiddlewares.use(encryptStream, decryptStream);
           objectStorageWithMiddlewares.use(zip, unzip);
@@ -390,7 +391,7 @@ describe('Object Storage', () => {
 
           expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
         });
-        it('should retry put request 3 times on errors', async () => {
+        it(`should retry put request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
           const objectStorageWithMiddlewares = new ObjectStorage(config);
           objectStorageWithMiddlewares.use(encryptStream, decryptStream);
           objectStorageWithMiddlewares.use(zip, unzip);
@@ -553,7 +554,7 @@ describe('Object Storage', () => {
         });
       });
       describe('stream mode', () => {
-        it('should fail after 3 get retries', async () => {
+        it(`should fail after ${RETRIES_COUNT.defaultValue} get retries`, async () => {
           const objectStorageWithMiddlewares = new ObjectStorage(config);
           objectStorageWithMiddlewares.use(encryptStream, decryptStream);
           objectStorageWithMiddlewares.use(zip, unzip);
@@ -577,7 +578,7 @@ describe('Object Storage', () => {
           expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
           expect(err).to.be.instanceOf(ServerTransportError);
           expect(log.getCall(1).args[1].toString()).to.include('Error during object request');
-          expect(log.callCount).to.be.equal(3);
+          expect(log.callCount).to.be.equal(RETRIES_COUNT.defaultValue);
         });
         it('should retry get request on errors', async () => {
           const objectStorageWithMiddlewares = new ObjectStorage(config);
@@ -643,7 +644,7 @@ describe('Object Storage', () => {
           expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
           expect(err).to.be.instanceOf(ServerTransportError);
         });
-        it('should retry put request 3 times on errors', async () => {
+        it(`should retry put request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
           const objectStorageWithMiddlewares = new ObjectStorage(config);
           objectStorageWithMiddlewares.use(encryptStream, decryptStream);
           objectStorageWithMiddlewares.use(zip, unzip);

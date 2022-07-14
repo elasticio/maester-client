@@ -122,11 +122,11 @@ describe('Object Storage', () => {
       });
     });
     describe('stream mode', () => {
-      it('should fail after 3 get retries', async () => {
+      it(`should fail after ${RETRIES_COUNT.defaultValue} get retries`, async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
           .get('/objects/1')
-          .times(3)
+          .times(RETRIES_COUNT.defaultValue)
           .reply(500);
 
         await expect(objectStorage.getOne('1')).to.be.rejectedWith('Server error during request');
@@ -221,7 +221,7 @@ describe('Object Storage', () => {
   });
   describe('middlewares + zip/unzip and encrypt/decrypt', () => {
     describe('stream mode', () => {
-      it('should fail after 3 get retries', async () => {
+      it(`should fail after ${RETRIES_COUNT.defaultValue} get retries`, async () => {
         const objectStorageWithMiddlewares = new ObjectStorage(config);
         objectStorageWithMiddlewares.use(encryptStream, decryptStream);
         objectStorageWithMiddlewares.use(zip, unzip);
