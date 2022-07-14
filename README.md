@@ -13,7 +13,7 @@ Note: All the code snippets written in Typescript
 ### Environment variables
 
 *REQUEST_MAX_RETRY* - specifies amount of tries to repeat failed request if server/connection error occurred. <br>
-Default value: 3. Min value: 0. Max value: 6. If entered value is out of limits - default value will be used.
+Default value: 2. Min value: 0. Max value: 4. If entered value is out of limits - default value will be used.
 
 *REQUEST_TIMEOUT* - specifies the number of milliseconds before the request times out. If the request takes longer than 'timeout', the request will be aborted. <br>
 Default value: 10000 (10s). Min value: 500 (0.5s). Max value: 20000 (20s). If entered value is out of limits - default value will be used.

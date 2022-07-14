@@ -3,15 +3,12 @@ import nock from 'nock';
 import sinon from 'sinon';
 import getStream from 'get-stream';
 import { expect } from 'chai';
-import { Readable } from 'stream';
-import logging from '../src/logger';
 import { ObjectStorage, StorageClient } from '../src';
-import { getFreshStreamChecker } from '../src/utils';
 import {
   encryptStream, decryptStream, zip, unzip, streamFromObject
 } from './helpers';
 import { PotentiallyConsumedStreamError } from '../src/errors';
-// import { getFreshStreamChecker } from '../src/utils';
+import { RETRIES_COUNT } from '../src/interfaces';
 
 describe('Object Storage', () => {
   const config = {
@@ -125,11 +122,11 @@ describe('Object Storage', () => {
       });
     });
     describe('stream mode', () => {
-      it('should fail after 3 get retries', async () => {
+      it(`should fail after ${RETRIES_COUNT.defaultValue} get retries`, async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
           .get('/objects/1')
-          .times(3)
+          .times(RETRIES_COUNT.defaultValue)
           .reply(500);
 
         await expect(objectStorage.getOne('1')).to.be.rejectedWith('Server error during request');
@@ -224,7 +221,7 @@ describe('Object Storage', () => {
   });
   describe('middlewares + zip/unzip and encrypt/decrypt', () => {
     describe('stream mode', () => {
-      it('should fail after 3 get retries', async () => {
+      it(`should fail after ${RETRIES_COUNT.defaultValue} get retries`, async () => {
         const objectStorageWithMiddlewares = new ObjectStorage(config);
         objectStorageWithMiddlewares.use(encryptStream, decryptStream);
         objectStorageWithMiddlewares.use(zip, unzip);
@@ -299,14 +296,14 @@ describe('Object Storage', () => {
       beforeEach(async () => {
         finalReqCfg = sinon.spy(StorageClient.prototype, <any>'requestRetry');
       });
-      it('configure ReqOptions', async () => {
+      it('configure ReqOptions use defaultValue', async () => {
         const objectStorageCalls = nock(config.uri)
           .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
           .get('/objects/1')
-          .times(5)
+          .times(RETRIES_COUNT.defaultValue)
           .replyWithError({ code: 'ETIMEDOUT' });
 
-        const retryOptions = { retriesCount: 5, requestTimeout: 1 };
+        const retryOptions = { retriesCount: 10, requestTimeout: 1 };
         await expect(objectStorage.getOne('1', { retryOptions })).to.be.rejectedWith('Server error during request');
         expect(objectStorageCalls.isDone()).to.be.true;
         const { lastArg } = finalReqCfg.getCall(0);
@@ -321,7 +318,7 @@ describe('Object Storage', () => {
           .get('/objects/1')
           .reply(200, streamFromObject({ objectId: '234-sdf' }));
 
-        const retryOptions = { retriesCount: 5, requestTimeout: 1 };
+        const retryOptions = { retriesCount: 4, requestTimeout: 1 };
         const result = await objectStorage.getOne('1', { retryOptions });
         expect(result).to.be.deep.equal({ objectId: '234-sdf' });
         expect(objectStorageCalls.isDone()).to.be.true;

@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import getStream from 'get-stream';
 import { StorageClient } from '../src/StorageClient';
 import { streamFromObject } from './helpers';
+import { RETRIES_COUNT } from '../src/interfaces';
 
 describe('Storage Client', () => {
   const config = {
@@ -20,7 +21,7 @@ describe('Storage Client', () => {
     objectId: 'obj.id',
     metadata: 'meta.userMetadata',
   };
-  it('should fail after 3 retries', async () => {
+  it(`should fail after ${RETRIES_COUNT.defaultValue} retries`, async () => {
     const storageClientCalls = nock(config.uri)
       .matchHeader('authorization', `Bearer ${config.jwtSecret}`)
       .get('/objects/1')

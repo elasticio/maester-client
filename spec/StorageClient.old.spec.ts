@@ -9,6 +9,7 @@ import { StorageClient } from '../src/StorageClient';
 import { ServerTransportError, JwtNotProvidedError } from '../src/errors';
 import logging from '../src/logger';
 import { streamFromObject } from './helpers';
+import { RETRIES_COUNT } from '../src/interfaces';
 
 describe('Storage Client', () => {
   const config = {
@@ -56,7 +57,7 @@ describe('Storage Client', () => {
 
       expect(err.toString()).to.include('JWT');
     });
-    it('should fail after 3 retries', async () => {
+    it(`should fail after ${RETRIES_COUNT.defaultValue} retries`, async () => {
       const log = sinon.stub(logging, 'warn');
       const storageClientCalls = nock(config.uri)
         .matchHeader('authorization', authHeaderMatch())
@@ -76,7 +77,7 @@ describe('Storage Client', () => {
       expect(storageClientCalls.isDone()).to.be.true;
       expect(err).to.be.instanceOf(ServerTransportError);
       expect(log.getCall(1).args[1].toString()).to.include('Error during object request');
-      expect(log.callCount).to.be.equal(3);
+      expect(log.callCount).to.be.equal(RETRIES_COUNT.defaultValue);
     });
     it('should not retry because of config', async () => {
       const log = sinon.stub(logging, 'warn');
@@ -124,7 +125,7 @@ describe('Storage Client', () => {
       const resultData = JSON.parse(await getStream(response.data));
       expect(resultData).to.be.deep.equal(data);
     });
-    it('should retry get request 3 times on errors', async () => {
+    it(`should retry get request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
       const storageClientCalls = nock(config.uri)
         .matchHeader('authorization', authHeaderMatch())
         .get('/objects/1')
@@ -142,7 +143,7 @@ describe('Storage Client', () => {
       expect(resultData).to.be.deep.equal(data);
     });
     describe('post', () => {
-      it('should retry post request 3 times on errors', async () => {
+      it(`should retry post request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
         const storageClientCalls = nock(config.uri)
           .matchHeader('authorization', authHeaderMatch())
           .post('/objects')
@@ -176,7 +177,7 @@ describe('Storage Client', () => {
     });
 
     describe('put', () => {
-      it('should fail after 3 retries', async () => {
+      it(`should fail after ${RETRIES_COUNT.defaultValue} retries`, async () => {
         const storageClientCalls = nock(config.uri)
           .matchHeader('authorization', authHeaderMatch())
           .put('/objects/1')

@@ -1,9 +1,6 @@
 import { Readable } from 'stream';
 import { PotentiallyConsumedStreamError } from './errors';
-import { uploadData, RetryOptions } from './interfaces';
-
-const REQUEST_MAX_RETRY = process.env.REQUEST_MAX_RETRY ? parseInt(process.env.REQUEST_MAX_RETRY, 10) : 3;
-const REQUEST_TIMEOUT = process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : 10000; // 10s
+import { uploadData, RetryOptions, RETRIES_COUNT, REQUEST_TIMEOUT } from './interfaces';
 
 export const parseJson = (source: string) => {
   let parsedJson;
@@ -44,18 +41,11 @@ export const getFreshStreamChecker = () => {
  * returns valid values for RetryOptions
  */
 export const validateRetryOptions = ({
-  retriesCount = REQUEST_MAX_RETRY, requestTimeout = REQUEST_TIMEOUT
-}: RetryOptions): RetryOptions => {
-  const retriesCount_MAX_LIMIT = 6;
-  const retriesCount_MIN_LIMIT = 0;
-  const requestTimeout_MAX_LIMIT = 20000; // 20s
-  const requestTimeout_MIN_LIMIT = 500; // 500ms
-
-  return {
-    retriesCount: (retriesCount > retriesCount_MAX_LIMIT || retriesCount < retriesCount_MIN_LIMIT) ? REQUEST_MAX_RETRY : retriesCount,
-    requestTimeout: (requestTimeout > requestTimeout_MAX_LIMIT || requestTimeout < requestTimeout_MIN_LIMIT) ? REQUEST_TIMEOUT : requestTimeout
-  };
-};
+  retriesCount = RETRIES_COUNT.defaultValue, requestTimeout = REQUEST_TIMEOUT.defaultValue
+}: RetryOptions): RetryOptions => ({
+  retriesCount: (retriesCount > RETRIES_COUNT.maxValue || retriesCount < RETRIES_COUNT.minValue) ? RETRIES_COUNT.defaultValue : retriesCount,
+  requestTimeout: (requestTimeout > RETRIES_COUNT.maxValue || requestTimeout < RETRIES_COUNT.minValue) ? RETRIES_COUNT.defaultValue : requestTimeout
+});
 
 // the same logic as in https://github.com/softonic/axios-retry, which we actively use, but with max backoff
 export const exponentialDelay = (currentRetries: number) => {
