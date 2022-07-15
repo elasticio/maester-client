@@ -6,6 +6,7 @@ import https from 'https';
 import { Readable } from 'stream';
 import { sign } from 'jsonwebtoken';
 import { getMimeType } from 'stream-mime-type';
+import { exponentialSleep } from '@elastic.io/component-commons-library/dist/src/externalApi';
 import log from './logger';
 import {
   JwtNotProvidedError,
@@ -13,7 +14,7 @@ import {
   ServerTransportError,
   ClientTransportError
 } from './errors';
-import { sleep, validateRetryOptions, exponentialDelay } from './utils';
+import { validateAndGetRetryOptions } from './utils';
 import {
   JWTPayload, reqWithBodyHeaders, RetryOptions, ReqWithBodyOptions,
   StreamBasedRequestConfig, ReqOptions, searchObjectCriteria, CONTENT_TYPE_HEADER
@@ -47,7 +48,7 @@ export class StorageClient {
   private async requestRetry(
     requestConfig: StreamBasedRequestConfig, retryOptions: RetryOptions
   ): Promise<AxiosResponse> {
-    const { retriesCount, requestTimeout } = validateRetryOptions(retryOptions);
+    const { retriesCount, requestTimeout } = validateAndGetRetryOptions(retryOptions);
     let currentRetries = 0;
     let res;
     let err;
@@ -72,7 +73,7 @@ export class StorageClient {
       }
       if ((err || res.status >= 500) && currentRetries < retriesCount) {
         log.warn({ err, status: res?.status, statusText: res?.statusText }, `Error during object request, retrying (${currentRetries + 1})`);
-        await sleep(exponentialDelay(currentRetries));
+        await exponentialSleep(currentRetries);
         currentRetries++;
         continue;
       }

@@ -52,11 +52,11 @@ export const DEFAULT_RESPONSE_TYPE: ResponseType = 'json';
 
 export const RETRIES_COUNT = {
   minValue: 0,
-  defaultValue: process.env.REQUEST_MAX_RETRY ? parseInt(process.env.REQUEST_MAX_RETRY, 10) : 2, // times error will be retried
+  defaultValue: 2, // times error will be retried
   maxValue: 4
 } as const;
 export const REQUEST_TIMEOUT = {
   minValue: 500,
-  defaultValue: process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : 10000, // 10s
+  defaultValue: 10000, // 10s
   maxValue: 20000
 } as const;
