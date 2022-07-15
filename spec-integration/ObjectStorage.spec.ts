@@ -255,7 +255,7 @@ describe('objectStorage', () => {
     });
     describe('Server error (5xx)', () => {
       beforeEach(() => {
-        sinon.stub(utils, 'validateRetryOptions').callsFake(() => ({ retriesCount: 2, requestTimeout: 1 }));
+        sinon.stub(utils, 'validateAndGetRetryOptions').callsFake(() => ({ retriesCount: 2, requestTimeout: 1 }));
       });
       it('should throw 5xx', async () => {
         let err: ServerTransportError;
