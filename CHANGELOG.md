@@ -1,4 +1,7 @@
-# 4.0.0 (June 28, 2022)
+# 4.0.1 (July 25, 2022)
+* Update component-commons-library to v.3.0.0
+
+# 4.0.0 (July 25, 2022)
 * New version of library with braking changes, look for updates in [README](/README.md) 
 
 # 3.4.3 (April 8, 2022)
