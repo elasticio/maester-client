@@ -10,6 +10,7 @@ describe('Storage Client', () => {
   const config = {
     uri: 'https://ma.es.ter',
     jwtSecret: 'jwt',
+    userAgent: 'userAgent'
   };
   const storageClient = new StorageClient(config);
   const data = { test: 'test' };

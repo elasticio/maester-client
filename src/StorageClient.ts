@@ -34,14 +34,17 @@ export class StorageClient {
 
   private readonly jwtSecret: string;
 
-  public constructor(config: { uri: string; jwtSecret: string }) {
+  private readonly userAgent: string;
+
+  public constructor(config: { uri: string; jwtSecret?: string, userAgent: string }) {
     this.api = axios.create({
       baseURL: config.uri,
       httpAgent: StorageClient.httpAgent,
       httpsAgent: StorageClient.httpsAgent,
       maxContentLength: Infinity,
-      maxRedirects: 0,
+      maxRedirects: 0
     });
+    this.userAgent = config.userAgent;
     this.jwtSecret = config.jwtSecret;
   }
 
@@ -95,7 +98,11 @@ export class StorageClient {
     const token = typeof jwtPayloadOrToken === 'string'
       ? jwtPayloadOrToken
       : await promisify(sign)(jwtPayloadOrToken, this.jwtSecret);
-    return { Authorization: `Bearer ${token}`, ...headers };
+    return {
+      Authorization: `Bearer ${token}`,
+      'User-Agent': this.userAgent,
+      ...headers
+    };
   }
 
   // wrap for 'post' and 'put' methods

@@ -1,3 +1,6 @@
+# 4.0.2 (August 10, 2022)
+* Added parameter `userAgent` which will be passed in each request for `StorageClient`
+
 # 4.0.1 (July 25, 2022)
 * Update component-commons-library to v.3.0.0
 
