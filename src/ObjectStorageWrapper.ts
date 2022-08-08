@@ -1,8 +1,7 @@
-import { ObjectStorage, ResponseType, DEFAULT_RESPONSE_TYPE } from './ObjectStorage';
-
+import { ObjectStorage } from './ObjectStorage';
+import { uploadData, TTL_HEADER } from './interfaces';
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
-export const TTL_HEADER = 'x-eio-ttl';
 const isHeaders = (headers?: Header[]): boolean => headers && headers.length > 0;
 
 export interface Scope {
@@ -35,13 +34,16 @@ export class ObjectStorageWrapper {
     this.objectStorage = new ObjectStorage({ uri: this.url, jwtSecret: this.token });
   }
 
-  async createObject(data: object, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number) {
+  /**
+   * @param data any data (except 'undefined')
+   */
+  async createObject(data: uploadData, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number) {
     this.logger.debug('Going to create an object...');
     if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
     const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
     if (ttl) resultHeaders[TTL_HEADER] = ttl.toString();
-    return this.objectStorage.postObject(data, resultHeaders);
+    return this.objectStorage.add(data, { headers: resultHeaders });
   }
 
   async deleteObjectById(id: string) {
@@ -53,12 +55,17 @@ export class ObjectStorageWrapper {
     this.logger.debug('Going to delete objects by query parameters...');
     ObjectStorageWrapper.validateQueryHeaders(headers);
     const resultParams = ObjectStorageWrapper.getQueryParams(headers);
-    return this.objectStorage.deleteMany(resultParams);
+    return this.objectStorage.deleteAllByParams(resultParams);
   }
 
-  async lookupObjectById(id: string, responseType: ResponseType = DEFAULT_RESPONSE_TYPE) {
+  async lookupObjectById(id: string) {
     this.logger.debug(`Going to find an object by id ${id}...`);
-    return this.objectStorage.getById(id, responseType);
+    return this.objectStorage.getOne(id);
+  }
+
+  async getObjectHeaders(id: string) {
+    this.logger.debug(`Going to fetch object headers by id ${id}...`);
+    return this.objectStorage.getHeaders(id);
   }
 
   async lookupObjectsByQueryParameters(headers: Header[]) {
@@ -68,12 +75,15 @@ export class ObjectStorageWrapper {
     return this.objectStorage.getAllByParams(resultParams);
   }
 
-  async updateObject(id: string, data: object, queryHeaders?: Header[], metaHeaders?: Header[]) {
+  /**
+   * @param data any data (except 'undefined')
+   */
+  async updateObjectById(id: string, data: uploadData, queryHeaders?: Header[], metaHeaders?: Header[]) {
     this.logger.debug(`Going to update and object with id ${id}...`);
     if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
     const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
-    return this.objectStorage.updateOne(id, data, resultHeaders);
+    return this.objectStorage.update(id, data, { headers: resultHeaders });
   }
 
   private static validateQueryHeaders(headers: Header[]) {
@@ -112,6 +122,7 @@ export class ObjectStorageWrapper {
     // eslint-disable-next-line no-restricted-syntax
     for (const { key, value } of headers) {
       const header = `x-${headerName}-${key}`;
+      // eslint-disable-next-line no-prototype-builtins
       if (resultHeaders.hasOwnProperty(header)) throw new Error(`header key "${key}" was already added`);
       resultHeaders[header] = value;
     }
@@ -125,6 +136,7 @@ export class ObjectStorageWrapper {
     // eslint-disable-next-line no-restricted-syntax
     for (const { key, value } of headers) {
       const queryKey: string = `query[${key}]`;
+      // eslint-disable-next-line no-prototype-builtins
       if (resultParams.hasOwnProperty(queryKey)) throw new Error(`header key "${key}" was already added`);
       resultParams[queryKey] = value;
     }

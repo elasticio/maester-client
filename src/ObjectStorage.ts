@@ -1,10 +1,9 @@
-import { Readable, Duplex, Stream } from 'stream';
+/* eslint-disable class-methods-use-this */
+import { Readable, Stream } from 'stream';
 import getStream from 'get-stream';
-import { StorageClient } from './StorageClient';
-
-export type TransformMiddleware = () => Duplex;
-export type ResponseType = 'stream' | 'json' | 'arraybuffer';
-export const DEFAULT_RESPONSE_TYPE: ResponseType = 'json';
+import { StorageClient, } from './StorageClient';
+import { parseJson, streamFromData, getFreshStreamChecker } from './utils';
+import { TransformMiddleware, ReqWithBodyOptions, ReqOptions, ResponseType, uploadData } from './interfaces';
 
 export class ObjectStorage {
   private client: StorageClient;
@@ -19,17 +18,38 @@ export class ObjectStorage {
     this.reverses = [];
   }
 
-  private applyMiddlewares(stream: Readable, middlewares: TransformMiddleware[]): Readable {
-    // eslint-disable-next-line no-shadow
-    return middlewares.reduce((stream, middleware) => stream.pipe(middleware()), stream);
+  private async applyMiddlewares(getFreshStream: () => Promise<Readable>, middlewares: TransformMiddleware[]): Promise<Readable> {
+    const stream = await getFreshStream();
+    return middlewares.reduce((_stream, middleware) => _stream.pipe(middleware()), stream);
   }
 
-  private formStream(data: object): Readable {
-    const dataString = JSON.stringify(data);
-    const stream = new Readable();
-    stream.push(dataString);
-    stream.push(null);
-    return stream;
+  private async getDataByResponseType(data: Stream, responseType: ResponseType = 'json') {
+    switch (responseType) {
+      case 'stream': return data;
+      case 'json': {
+        const asJSON = await getStream(data);
+        return parseJson(asJSON);
+      }
+      case 'arraybuffer': return getStream.buffer(data);
+      default: throw new Error(`Response type "${responseType}" is not supported`);
+    }
+  }
+
+  private payloadToStream(dataOrFunc: uploadData | (() => Promise<Readable>)): () => Promise<Readable> {
+    if (typeof dataOrFunc === 'function') {
+      return dataOrFunc as () => Promise<Readable>;
+    }
+    return streamFromData.bind({}, dataOrFunc as uploadData);
+  }
+
+  private async formStreamGetter(dataOrFunc: uploadData | (() => Promise<Readable>)): Promise<() => Promise<Readable>> {
+    const checkFreshStream = getFreshStreamChecker();
+    return async () => {
+      const getFreshStream = this.payloadToStream(dataOrFunc);
+      const stream = await getFreshStream();
+      checkFreshStream(stream);
+      return this.applyMiddlewares(getFreshStream, this.forwards);
+    };
   }
 
   public use(forward: TransformMiddleware, reverse: TransformMiddleware): ObjectStorage {
@@ -38,43 +58,46 @@ export class ObjectStorage {
     return this;
   }
 
-  public async getById(objectId: string, responseType: ResponseType = DEFAULT_RESPONSE_TYPE): Promise<any> {
-    const { data } = await this.client.readStream(objectId);
-    const stream = this.applyMiddlewares(data, this.reverses);
-    return ObjectStorage.getDataByResponseType(stream, responseType);
+  /**
+   * @param dataOrFunc async function returning stream OR any data (except 'undefined')
+   */
+  public async add(dataOrFunc: uploadData | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions) {
+    const { data } = await this.client.post(await this.formStreamGetter(dataOrFunc), reqWithBodyOptions);
+    return data.objectId;
   }
 
-  public async getAllByParams(params: object): Promise<string> {
-    const res = await this.client.readAllByParamsAsStream(params);
-    return res.data;
+  /**
+   * @param dataOrFunc async function returning stream OR any data (except 'undefined')
+   */
+  public async update(
+    objectId: string, dataOrFunc: uploadData | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions
+  ) {
+    const { data } = await this.client.put(objectId, await this.formStreamGetter(dataOrFunc), reqWithBodyOptions);
+    return data;
   }
 
-  public async deleteOne(objectId: string): Promise<any> {
-    return this.client.deleteOne(objectId);
+  public async getOne(objectId: string, reqOptions: ReqOptions = {}): Promise<any> {
+    const getResultStream = async () => (await this.client.get(objectId, reqOptions)).data;
+    const stream = await this.applyMiddlewares(getResultStream, this.reverses);
+    return this.getDataByResponseType(stream, reqOptions.responseType);
   }
 
-  public async deleteMany(params: object): Promise<any> {
-    return this.client.deleteMany(params);
+  public async getAllByParams(params: object, reqOptions: ReqOptions = {}): Promise<any> {
+    const getResultStream = async () => (await this.client.get(params, reqOptions)).data;
+    const stream = await this.applyMiddlewares(getResultStream, this.reverses);
+    return this.getDataByResponseType(stream, reqOptions.responseType);
   }
 
-  public async postObject(data: object, headers: object): Promise<string> {
-    const resultStream = () => this.applyMiddlewares(this.formStream(data), this.forwards);
-    const res = await this.client.writeStream(resultStream, headers);
-    return res.data;
+  public async getHeaders(objectId: string, reqOptions: ReqOptions = {}) {
+    const { headers } = await this.client.get(objectId, reqOptions);
+    return headers;
   }
 
-  public async updateOne(objectId: string, data: object, headers?: object): Promise<string> {
-    const resultStream = () => this.applyMiddlewares(this.formStream(data), this.forwards);
-    const res = await this.client.updateAsStream(objectId, resultStream, headers);
-    return res.data;
+  public async deleteOne(objectId: string, reqOptions: ReqOptions = {}) {
+    return this.client.delete(objectId, reqOptions);
   }
 
-  private static getDataByResponseType(data: Stream, responseType: ResponseType) {
-    switch (responseType) {
-      case 'stream': return data;
-      case 'json': return getStream(data);
-      case 'arraybuffer': return getStream.buffer(data);
-      default: throw new Error(`Response type "${responseType}" is not supported`);
-    }
+  public async deleteAllByParams(params: object, reqOptions: ReqOptions = {}) {
+    return this.client.delete(params, reqOptions);
   }
 }

@@ -1,17 +1,20 @@
+/* eslint-disable import/first */
+process.env.REQUEST_RETRY_DELAY = '0';
+process.env.NODE_ENV = 'test';
 import { Readable, Duplex } from 'stream';
 import * as crypto from 'crypto';
 import * as zlib from 'zlib';
+import getLogger from '@elastic.io/component-logger';
+import sinon from 'sinon';
+
+export const getContext = () => ({
+  logger: getLogger(),
+  emit: sinon.spy(),
+});
 
 const MESSAGE_CRYPTO_PASSWORD = 'testCryptoPassword';
 const MESSAGE_CRYPTO_IV = 'iv=any16_symbols';
 const ALGORITHM = 'aes-256-cbc';
-
-export const streamResponse = (responseData: any) => () => {
-  const stream = new Readable();
-  stream.push(JSON.stringify(responseData));
-  stream.push(null);
-  return stream;
-};
 
 export const encryptStream = (): Duplex => {
   const encodeKey = crypto.createHash('sha256').update(MESSAGE_CRYPTO_PASSWORD, 'utf8').digest();
@@ -26,3 +29,11 @@ export const decryptStream = (): Duplex => {
 export const zip = (): Duplex => zlib.createGzip();
 
 export const unzip = (): Duplex => zlib.createGunzip();
+
+export const streamFromObject = (data: object): Readable => {
+  const dataString = JSON.stringify(data);
+  const stream = new Readable();
+  stream.push(dataString);
+  stream.push(null);
+  return stream;
+};
