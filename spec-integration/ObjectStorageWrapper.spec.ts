@@ -14,7 +14,7 @@ describe('ObjectStorageWrapper', () => {
     }
     return resultHeaders;
   };
-  it.only('should createObject & getObjectHeaders', async () => {
+  it('should createObject & getObjectHeaders', async () => {
     const objectId = await objectStorageWrapper.createObject({ a: 5 }, genHeaders(2), genHeaders(3));
     expect(isUUID(objectId)).to.be.equal(true);
     const object = await objectStorageWrapper.lookupObjectById(objectId);
