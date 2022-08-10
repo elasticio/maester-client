@@ -8,6 +8,7 @@ import { sign } from 'jsonwebtoken';
 import { getMimeType } from 'stream-mime-type';
 import { exponentialSleep } from '@elastic.io/component-commons-library/dist/src/externalApi';
 import log from './logger';
+import packageJson from '../package.json';
 import {
   JwtNotProvidedError,
   ObjectStorageClientError,
@@ -44,7 +45,7 @@ export class StorageClient {
       maxContentLength: Infinity,
       maxRedirects: 0
     });
-    this.userAgent = config.userAgent;
+    this.userAgent = `${config.userAgent} axios/${packageJson.dependencies.axios}`;
     this.jwtSecret = config.jwtSecret;
   }
 
