@@ -60,7 +60,7 @@ describe('Object Storage', () => {
             params: { foo: 'bar' },
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent',
+              'User-Agent': 'userAgent axios/0.26.1',
             }
           });
         });
@@ -83,7 +83,7 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent'
+              'User-Agent': 'userAgent axios/0.26.1'
             }
           });
         });
@@ -105,7 +105,7 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent'
+              'User-Agent': 'userAgent axios/0.26.1'
             }
           });
         });
@@ -128,7 +128,7 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent'
+              'User-Agent': 'userAgent axios/0.26.1'
             }
           });
         });

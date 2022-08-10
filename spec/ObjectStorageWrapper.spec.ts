@@ -63,7 +63,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'User-Agent': 'userAgent',
+            'User-Agent': 'userAgent axios/0.26.1',
             'x-query-key0': 'value0',
             'x-eio-ttl': '10',
           }
@@ -81,7 +81,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'User-Agent': 'userAgent',
+            'User-Agent': 'userAgent axios/0.26.1',
             'x-query-key0': 'value0',
             'x-query-key1': 'value1',
             'x-meta-key0': 'value0',
@@ -102,7 +102,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'User-Agent': 'userAgent',
+            'User-Agent': 'userAgent axios/0.26.1',
           }
         });
       });
@@ -118,7 +118,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'User-Agent': 'userAgent',
+            'User-Agent': 'userAgent axios/0.26.1',
           }
         });
       });
@@ -176,7 +176,7 @@ describe('ObjectStorageWrapper', () => {
         params: {},
         headers: {
           Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-          'User-Agent': 'userAgent'
+          'User-Agent': 'userAgent axios/0.26.1'
         }
       });
     });
@@ -200,7 +200,7 @@ describe('ObjectStorageWrapper', () => {
         params: { 'query[baz]': 'bap' },
         headers: {
           Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-          'User-Agent': 'userAgent',
+          'User-Agent': 'userAgent axios/0.26.1',
         }
       });
     });
@@ -228,7 +228,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects/id123',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'User-Agent': 'userAgent',
+            'User-Agent': 'userAgent axios/0.26.1',
           }
         });
       });
@@ -244,7 +244,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects/id123',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-            'User-Agent': 'userAgent',
+            'User-Agent': 'userAgent axios/0.26.1',
             'x-query-key0': 'value0',
             'x-query-key1': 'value1',
             'x-query-key2': 'value2',
@@ -286,7 +286,7 @@ describe('ObjectStorageWrapper', () => {
         params: {},
         headers: {
           Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-          'User-Agent': 'userAgent'
+          'User-Agent': 'userAgent axios/0.26.1'
         }
       });
     });
@@ -309,7 +309,7 @@ describe('ObjectStorageWrapper', () => {
             params: { 'query[key0]': 'value0', 'query[key1]': 'value1' },
             headers: {
               Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-              'User-Agent': 'userAgent',
+              'User-Agent': 'userAgent axios/0.26.1',
             }
           });
         });
