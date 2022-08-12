@@ -24,7 +24,7 @@ export class ObjectStorageWrapper {
 
   objectStorage: any;
 
-  constructor(context: Scope, userAgent: string) {
+  constructor(context: Scope, userAgent?: string) {
     this.logger = context.logger;
     if (!process.env.ELASTICIO_OBJECT_STORAGE_TOKEN || !process.env.ELASTICIO_OBJECT_STORAGE_URI) {
       throw new Error('Can not find storage token or storage uri values... Check environment variables');
