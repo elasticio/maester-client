@@ -1,4 +1,4 @@
-# 4.0.2 (August 10, 2022)
+# 4.0.2 (August 12, 2022)
 * Added parameter `userAgent` which will be passed in each request
 
 # 4.0.1 (July 25, 2022)
