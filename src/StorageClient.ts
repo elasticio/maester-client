@@ -37,7 +37,7 @@ export class StorageClient {
 
   private readonly userAgent: string;
 
-  public constructor(config: { uri: string; jwtSecret?: string, userAgent: string }) {
+  public constructor(config: { uri: string; jwtSecret?: string, userAgent?: string }) {
     this.api = axios.create({
       baseURL: config.uri,
       httpAgent: StorageClient.httpAgent,
@@ -45,7 +45,7 @@ export class StorageClient {
       maxContentLength: Infinity,
       maxRedirects: 0
     });
-    this.userAgent = `${config.userAgent} axios/${packageJson.dependencies.axios}`;
+    this.userAgent = `${config.userAgent || ''} axios/${packageJson.dependencies.axios}`;
     this.jwtSecret = config.jwtSecret;
   }
 
