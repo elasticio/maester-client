@@ -67,7 +67,6 @@ export class StorageClient {
           if (!axiosReqConfig.headers[CONTENT_TYPE_HEADER]) axiosReqConfig.headers[CONTENT_TYPE_HEADER] = mime;
           bodyAsStream = stream;
         }
-        log.info('axiosReqConfig.headers: ', JSON.stringify(axiosReqConfig.headers));
         res = await this.api.request({ ...axiosReqConfig, data: bodyAsStream, timeout: requestTimeout });
       } catch (e) {
         if (e instanceof ObjectStorageClientError) {
