@@ -23,6 +23,7 @@ const { ELASTICIO_OBJECT_STORAGE_TOKEN, ELASTICIO_OBJECT_STORAGE_URI } = process
 export const creds = {
   jwtSecret: ELASTICIO_OBJECT_STORAGE_TOKEN,
   uri: ELASTICIO_OBJECT_STORAGE_URI,
+  userAgent: 'userAgent'
 };
 
 export const getContext = () => ({

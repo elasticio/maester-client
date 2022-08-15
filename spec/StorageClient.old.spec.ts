@@ -14,7 +14,8 @@ import { RETRIES_COUNT } from '../src/interfaces';
 describe('Storage Client', () => {
   const config = {
     uri: 'https://ma.es.ter',
-    jwtSecret: 'jwt'
+    jwtSecret: 'jwt',
+    userAgent: 'userAgent'
   };
   const storageClient = new StorageClient(config);
 
@@ -45,8 +46,7 @@ describe('Storage Client', () => {
 
   describe('get', () => {
     it('should throw exception if neither jwt secret, nor jwt token provided', async () => {
-      // @ts-ignore
-      const storageClient2 = new StorageClient({ uri: config.uri });
+      const storageClient2 = new StorageClient({ uri: config.uri, userAgent: 'userAgent' });
 
       let err;
       try {
@@ -109,8 +109,7 @@ describe('Storage Client', () => {
       expect(log.callCount).to.be.equal(0);
     });
     it('should accept jwt token on get', async () => {
-      // @ts-ignore
-      const storageClient2 = new StorageClient({ uri: config.uri });
+      const storageClient2 = new StorageClient({ uri: config.uri, userAgent: 'userAgent' });
       const jwtPayload = { tenantId: '12', contractId: '1' };
       const storageClientCalls = nock(config.uri)
         .matchHeader('authorization', authHeaderMatch(jwtPayload))
@@ -159,8 +158,7 @@ describe('Storage Client', () => {
         expect(storageClientCalls.isDone()).to.be.true;
       });
       it('should accept jwt token on add', async () => {
-        // @ts-ignore
-        const storageClient2 = new StorageClient({ uri: config.uri });
+        const storageClient2 = new StorageClient({ uri: config.uri, userAgent: 'userAgent' });
 
         const jwtPayload = { tenantId: '12', contractId: '1' };
         const storageClientCalls = nock(config.uri)
@@ -199,8 +197,7 @@ describe('Storage Client', () => {
         expect(storageClientCalls.isDone()).to.be.true;
       });
       it('should throw exception if neither jwt secret, nor jwt token provided', async () => {
-        // @ts-ignore
-        const storageClient2 = new StorageClient({ uri: config.uri });
+        const storageClient2 = new StorageClient({ uri: config.uri, userAgent: 'userAgent' });
 
         let err;
         try {
@@ -213,8 +210,7 @@ describe('Storage Client', () => {
         expect(err).to.be.instanceOf(JwtNotProvidedError);
       });
       it('should accept jwt token on add', async () => {
-        // @ts-ignore
-        const storageClient2 = new StorageClient({ uri: config.uri });
+        const storageClient2 = new StorageClient({ uri: config.uri, userAgent: 'userAgent' });
 
         const jwtPayload = { tenantId: '12', contractId: '1' };
         const storageClientCalls = nock(config.uri)

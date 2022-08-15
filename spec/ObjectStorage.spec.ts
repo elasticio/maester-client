@@ -14,6 +14,7 @@ describe('Object Storage', () => {
   const config = {
     uri: 'https://ma.es.ter',
     jwtSecret: 'jwt',
+    userAgent: 'userAgent'
   };
   const objectStorage = new ObjectStorage(config);
   const postData = { test: 'test' };
@@ -57,7 +58,10 @@ describe('Object Storage', () => {
             url: '/objects',
             responseType: 'stream',
             params: { foo: 'bar' },
-            headers: { Authorization: 'Bearer jwt' }
+            headers: {
+              Authorization: 'Bearer jwt',
+              'User-Agent': 'userAgent axios/0.26.1',
+            }
           });
         });
       });
@@ -77,7 +81,10 @@ describe('Object Storage', () => {
             url: '/objects/objectId',
             responseType: 'stream',
             params: {},
-            headers: { Authorization: 'Bearer jwt' }
+            headers: {
+              Authorization: 'Bearer jwt',
+              'User-Agent': 'userAgent axios/0.26.1'
+            }
           });
         });
       });
@@ -96,7 +103,10 @@ describe('Object Storage', () => {
             url: '/objects/objectId',
             responseType: 'stream',
             params: {},
-            headers: { Authorization: 'Bearer jwt' }
+            headers: {
+              Authorization: 'Bearer jwt',
+              'User-Agent': 'userAgent axios/0.26.1'
+            }
           });
         });
       });
@@ -116,7 +126,10 @@ describe('Object Storage', () => {
             url: '/objects/objectId',
             responseType: 'stream',
             params: {},
-            headers: { Authorization: 'Bearer jwt' }
+            headers: {
+              Authorization: 'Bearer jwt',
+              'User-Agent': 'userAgent axios/0.26.1'
+            }
           });
         });
       });

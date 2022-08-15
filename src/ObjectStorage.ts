@@ -12,7 +12,7 @@ export class ObjectStorage {
 
   private reverses: TransformMiddleware[];
 
-  public constructor(config: { uri: string; jwtSecret: string }, client?: StorageClient) {
+  public constructor(config: { uri: string; jwtSecret?: string, userAgent?: string }, client?: StorageClient) {
     this.client = client || new StorageClient(config);
     this.forwards = [];
     this.reverses = [];

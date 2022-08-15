@@ -13,7 +13,7 @@ process.env.ELASTICIO_OBJECT_STORAGE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6I';
 process.env.ELASTICIO_OBJECT_STORAGE_URI = 'https://ma.estr';
 
 describe('ObjectStorageWrapper', () => {
-  const objectStorageWrapper = new ObjectStorageWrapper(getContext());
+  const objectStorageWrapper = new ObjectStorageWrapper(getContext(), 'userAgent');
   const genHeaders = (amount: number) => {
     const resultHeaders = [];
     for (let i = 0; i < amount; i++) {
@@ -63,8 +63,9 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
+            'User-Agent': 'userAgent axios/0.26.1',
             'x-query-key0': 'value0',
-            'x-eio-ttl': '10'
+            'x-eio-ttl': '10',
           }
         });
       });
@@ -80,6 +81,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
+            'User-Agent': 'userAgent axios/0.26.1',
             'x-query-key0': 'value0',
             'x-query-key1': 'value1',
             'x-meta-key0': 'value0',
@@ -100,6 +102,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
+            'User-Agent': 'userAgent axios/0.26.1',
           }
         });
       });
@@ -115,6 +118,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
+            'User-Agent': 'userAgent axios/0.26.1',
           }
         });
       });
@@ -170,7 +174,10 @@ describe('ObjectStorageWrapper', () => {
         url: '/objects/id123',
         responseType: 'stream',
         params: {},
-        headers: { Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I' }
+        headers: {
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
+          'User-Agent': 'userAgent axios/0.26.1'
+        }
       });
     });
   });
@@ -191,7 +198,10 @@ describe('ObjectStorageWrapper', () => {
         url: '/objects',
         responseType: 'stream',
         params: { 'query[baz]': 'bap' },
-        headers: { Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I' }
+        headers: {
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
+          'User-Agent': 'userAgent axios/0.26.1',
+        }
       });
     });
     it('Should throw error: query key set, query value undefined', async () => {
@@ -218,6 +228,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects/id123',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
+            'User-Agent': 'userAgent axios/0.26.1',
           }
         });
       });
@@ -233,6 +244,7 @@ describe('ObjectStorageWrapper', () => {
           url: '/objects/id123',
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
+            'User-Agent': 'userAgent axios/0.26.1',
             'x-query-key0': 'value0',
             'x-query-key1': 'value1',
             'x-query-key2': 'value2',
@@ -272,7 +284,10 @@ describe('ObjectStorageWrapper', () => {
         method: 'delete',
         url: '/objects/id123',
         params: {},
-        headers: { Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I' }
+        headers: {
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
+          'User-Agent': 'userAgent axios/0.26.1'
+        }
       });
     });
   });
@@ -292,7 +307,10 @@ describe('ObjectStorageWrapper', () => {
             method: 'delete',
             url: '/objects',
             params: { 'query[key0]': 'value0', 'query[key1]': 'value1' },
-            headers: { Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I' }
+            headers: {
+              Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
+              'User-Agent': 'userAgent axios/0.26.1',
+            }
           });
         });
       });

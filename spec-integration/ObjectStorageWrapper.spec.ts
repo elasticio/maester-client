@@ -6,7 +6,7 @@ import { getContext } from './common';
 chai.use(require('chai-as-promised'));
 
 describe('ObjectStorageWrapper', () => {
-  const objectStorageWrapper = new ObjectStorageWrapper(getContext());
+  const objectStorageWrapper = new ObjectStorageWrapper(getContext(), 'userAgent');
   const genHeaders = (amount: number) => {
     const resultHeaders = [];
     for (let i = 0; i < amount; i++) {

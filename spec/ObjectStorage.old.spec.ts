@@ -16,6 +16,7 @@ describe('Object Storage', () => {
   const config = {
     uri: 'https://ma.es.ter',
     jwtSecret: 'jwt',
+    userAgent: 'userAgent'
   };
   const objectStorage = new ObjectStorage(config);
   const postData = { test: 'test' };
