@@ -38,6 +38,10 @@ describe('Object Storage', () => {
 
   let finalReqCfg;
   afterEach(sinon.restore);
+  before(() => {
+    process.env.ELASTICIO_FLOW_ID = 'flow_id';
+    process.env.ELASTICIO_STEP_ID = 'step_id';
+  });
 
   describe('basic', () => {
     describe('data mode', () => {
@@ -48,7 +52,8 @@ describe('Object Storage', () => {
           ));
         });
         it('should getAllByParams', async () => {
-          const result = await objectStorage.getAllByParams({ foo: 'bar' });
+          const objectStorage2 = new ObjectStorage({ ...config, msgId: 'msgId' });
+          const result = await objectStorage2.getAllByParams({ foo: 'bar' });
           expect(result).to.deep.equal([createdObjWithQueryField, createdObjWithQueryField]);
           const { firstArg, lastArg } = finalReqCfg.getCall(0);
           expect(lastArg).to.be.deep.equal({});
@@ -61,6 +66,7 @@ describe('Object Storage', () => {
             headers: {
               Authorization: 'Bearer jwt',
               'User-Agent': 'userAgent axios/0.26.1',
+              'x-request-id': 'f:flow_id;s:step_id;m:msgId',
             }
           });
         });
@@ -83,7 +89,8 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent axios/0.26.1'
+              'User-Agent': 'userAgent axios/0.26.1',
+              'x-request-id': 'f:flow_id;s:step_id;m:',
             }
           });
         });
@@ -105,7 +112,8 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent axios/0.26.1'
+              'User-Agent': 'userAgent axios/0.26.1',
+              'x-request-id': 'f:flow_id;s:step_id;m:',
             }
           });
         });
@@ -128,7 +136,8 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent axios/0.26.1'
+              'User-Agent': 'userAgent axios/0.26.1',
+              'x-request-id': 'f:flow_id;s:step_id;m:',
             }
           });
         });
