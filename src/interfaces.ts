@@ -3,7 +3,7 @@ import { AxiosRequestConfig } from 'axios';
 
 export const TTL_HEADER = 'x-eio-ttl';
 export const CONTENT_TYPE_HEADER = 'content-type';
-export const REQUEST_ID_HEADER = 'x-request-id'; // f:[flow_id];s:[step_id];m:[message_id]
+export const REQUEST_ID_HEADER = 'x-request-id'; // f:[ELASTICIO_FLOW_ID];s:[ELASTICIO_STEP_ID];m:[msg.id]
 
 export interface StreamBasedRequestConfig {
   getFreshStream?: () => Promise<Readable>;
