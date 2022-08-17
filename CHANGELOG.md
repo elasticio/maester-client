@@ -1,4 +1,5 @@
-# 4.0.3 (August 14, 2022)
+# 4.0.3 (August 26, 2022)
+* Added `x-request-id` header with information about flow and step id
 * Added parameter `msgId` for class constructors which will used in `x-request-id` header in each request
 
 # 4.0.2 (August 12, 2022)
