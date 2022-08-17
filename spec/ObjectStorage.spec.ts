@@ -38,6 +38,10 @@ describe('Object Storage', () => {
 
   let finalReqCfg;
   afterEach(sinon.restore);
+  before(() => {
+    process.env.ELASTICIO_FLOW_ID = 'flow_id';
+    process.env.ELASTICIO_STEP_ID = 'step_id';
+  });
 
   describe('basic', () => {
     describe('data mode', () => {
@@ -61,6 +65,7 @@ describe('Object Storage', () => {
             headers: {
               Authorization: 'Bearer jwt',
               'User-Agent': 'userAgent axios/0.26.1',
+              'x-request-id': 'req_id'
             }
           });
         });
@@ -70,7 +75,7 @@ describe('Object Storage', () => {
           finalReqCfg = sinon.stub(StorageClient.prototype, <any>'requestRetry').callsFake(async () => ({ data: streamFromObject({ q: 'i`m a stream' }) }));
         });
         it('should getById (stream)', async () => {
-          const result = await objectStorage.getOne('objectId', { responseType: 'stream' });
+          const result = await objectStorage.getOne('objectId', { responseType: 'stream', 'x-request-id': 'req_id' });
           const streamAsJSON = await getStream(result);
           expect(JSON.parse(streamAsJSON)).to.be.deep.equal({ q: 'i`m a stream' });
           const { firstArg, lastArg } = finalReqCfg.getCall(0);
@@ -83,7 +88,8 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent axios/0.26.1'
+              'User-Agent': 'userAgent axios/0.26.1',
+              'x-request-id': 'req_id'
             }
           });
         });
@@ -105,7 +111,8 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent axios/0.26.1'
+              'User-Agent': 'userAgent axios/0.26.1',
+              'x-request-id': 'f:flow_id;s:step_id'
             }
           });
         });
@@ -128,7 +135,8 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent axios/0.26.1'
+              'User-Agent': 'userAgent axios/0.26.1',
+              'x-request-id': 'f:flow_id;s:step_id'
             }
           });
         });
@@ -196,6 +204,7 @@ describe('Object Storage', () => {
         .matchHeader('x-eio-ttl', '1')
         .matchHeader('x-meta-k', 'v')
         .matchHeader('x-query-k', 'v')
+        .matchHeader('x-request-id', 'req_id')
         .post('/objects')
         .reply(200, streamFromObject({ objectId: 'dfsf-2dasd3-dsf2l' }));
 
@@ -205,6 +214,7 @@ describe('Object Storage', () => {
           'x-eio-ttl': 1,
           'x-meta-k': 'v',
           'x-query-k': 'v',
+          'x-request-id': 'req_id'
         }
       });
       expect(response).to.be.equal('dfsf-2dasd3-dsf2l');

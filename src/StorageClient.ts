@@ -18,7 +18,7 @@ import {
 import { validateAndGetRetryOptions } from './utils';
 import {
   JWTPayload, reqWithBodyHeaders, RetryOptions, ReqWithBodyOptions,
-  StreamBasedRequestConfig, ReqOptions, searchObjectCriteria, CONTENT_TYPE_HEADER
+  StreamBasedRequestConfig, ReqOptions, searchObjectCriteria, CONTENT_TYPE_HEADER, REQUEST_ID_HEADER
 } from './interfaces';
 
 export const getStreamWithContentType = async (getStream: () => Promise<Readable>): Promise<{ mime, stream }> => {
@@ -99,6 +99,9 @@ export class StorageClient {
     const token = typeof jwtPayloadOrToken === 'string'
       ? jwtPayloadOrToken
       : await promisify(sign)(jwtPayloadOrToken, this.jwtSecret);
+    if (!headers[REQUEST_ID_HEADER]) {
+      headers[REQUEST_ID_HEADER] = `f:${process.env.ELASTICIO_FLOW_ID};s:${process.env.ELASTICIO_STEP_ID}`;
+    }
     return {
       Authorization: `Bearer ${token}`,
       'User-Agent': this.userAgent,
@@ -143,8 +146,9 @@ export class StorageClient {
    */
   public async get(
     searchCriteria: searchObjectCriteria,
-    { jwtPayloadOrToken = this.jwtSecret, retryOptions = {} }: ReqOptions
+    reqOptions: ReqOptions
   ): Promise<any> {
+    const { jwtPayloadOrToken = this.jwtSecret, retryOptions = {} } = reqOptions;
     const byId = typeof searchCriteria === 'string';
     return this.requestRetry({
       axiosReqConfig: {
@@ -152,7 +156,7 @@ export class StorageClient {
         url: byId ? `/objects/${searchCriteria}` : '/objects',
         responseType: 'stream',
         params: byId ? {} : searchCriteria,
-        headers: await this.formHeaders(jwtPayloadOrToken)
+        headers: await this.formHeaders(jwtPayloadOrToken, { [REQUEST_ID_HEADER]: reqOptions[REQUEST_ID_HEADER] })
       }
     }, retryOptions);
   }
@@ -163,15 +167,16 @@ export class StorageClient {
    */
   public async delete(
     searchCriteria: searchObjectCriteria,
-    { jwtPayloadOrToken = this.jwtSecret, retryOptions = {} }: ReqOptions
+    reqOptions: ReqOptions
   ) {
+    const { jwtPayloadOrToken = this.jwtSecret, retryOptions = {} } = reqOptions;
     const byId = typeof searchCriteria === 'string';
     return this.requestRetry({
       axiosReqConfig: {
         method: 'delete',
         url: byId ? `/objects/${searchCriteria}` : '/objects',
         params: byId ? {} : searchCriteria,
-        headers: await this.formHeaders(jwtPayloadOrToken)
+        headers: await this.formHeaders(jwtPayloadOrToken, { [REQUEST_ID_HEADER]: reqOptions[REQUEST_ID_HEADER] })
       }
     }, retryOptions);
   }

@@ -1,5 +1,5 @@
 import { ObjectStorage } from './ObjectStorage';
-import { uploadData, TTL_HEADER } from './interfaces';
+import { uploadData, TTL_HEADER, REQUEST_ID_HEADER } from './interfaces';
 
 export const MAESTER_MAX_SUPPORTED_COUNT_OF_QUERY_HEADERS = 5;
 const isHeaders = (headers?: Header[]): boolean => headers && headers.length > 0;
@@ -37,48 +37,48 @@ export class ObjectStorageWrapper {
   /**
    * @param data any data (except 'undefined')
    */
-  async createObject(data: uploadData, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number) {
+  async createObject(data: uploadData, queryHeaders?: Header[], metaHeaders?: Header[], ttl?: number, reqId?: string) {
     this.logger.debug('Going to create an object...');
     if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
     const resultHeaders = ObjectStorageWrapper.formHeadersToAdd(queryHeaders, metaHeaders);
     if (ttl) resultHeaders[TTL_HEADER] = ttl.toString();
-    return this.objectStorage.add(data, { headers: resultHeaders });
+    return this.objectStorage.add(data, { headers: { ...resultHeaders, [REQUEST_ID_HEADER]: reqId } });
   }
 
-  async deleteObjectById(id: string) {
+  async deleteObjectById(id: string, reqId?: string) {
     this.logger.debug(`Going to delete an object with id ${id}...`);
-    return this.objectStorage.deleteOne(id);
+    return this.objectStorage.deleteOne(id, { [REQUEST_ID_HEADER]: reqId });
   }
 
-  async deleteObjectsByQueryParameters(headers: Header[]) {
+  async deleteObjectsByQueryParameters(headers: Header[], reqId?: string) {
     this.logger.debug('Going to delete objects by query parameters...');
     ObjectStorageWrapper.validateQueryHeaders(headers);
     const resultParams = ObjectStorageWrapper.getQueryParams(headers);
-    return this.objectStorage.deleteAllByParams(resultParams);
+    return this.objectStorage.deleteAllByParams(resultParams, { [REQUEST_ID_HEADER]: reqId });
   }
 
-  async lookupObjectById(id: string) {
+  async lookupObjectById(id: string, reqId?: string) {
     this.logger.debug(`Going to find an object by id ${id}...`);
-    return this.objectStorage.getOne(id);
+    return this.objectStorage.getOne(id, { [REQUEST_ID_HEADER]: reqId });
   }
 
-  async getObjectHeaders(id: string) {
+  async getObjectHeaders(id: string, reqId?: string) {
     this.logger.debug(`Going to fetch object headers by id ${id}...`);
-    return this.objectStorage.getHeaders(id);
+    return this.objectStorage.getHeaders(id, { [REQUEST_ID_HEADER]: reqId });
   }
 
-  async lookupObjectsByQueryParameters(headers: Header[]) {
+  async lookupObjectsByQueryParameters(headers: Header[], reqId?: string) {
     this.logger.debug('Going to find an object by query parameters');
     ObjectStorageWrapper.validateQueryHeaders(headers);
     const resultParams = ObjectStorageWrapper.getQueryParams(headers);
-    return this.objectStorage.getAllByParams(resultParams);
+    return this.objectStorage.getAllByParams(resultParams, { [REQUEST_ID_HEADER]: reqId });
   }
 
   /**
    * @param data any data (except 'undefined')
    */
-  async updateObjectById(id: string, data: uploadData, queryHeaders?: Header[], metaHeaders?: Header[]) {
+  async updateObjectById(id: string, data: uploadData, queryHeaders?: Header[], metaHeaders?: Header[], reqId?: string) {
     this.logger.debug(`Going to update and object with id ${id}...`);
     if (isHeaders(queryHeaders)) ObjectStorageWrapper.validateQueryHeaders(queryHeaders);
     if (isHeaders(metaHeaders)) ObjectStorageWrapper.validateMetaHeaders(metaHeaders);
