@@ -35,9 +35,9 @@ export class StorageClient {
 
   private readonly jwtSecret: string;
 
-  private readonly userAgent: string;
+  private readonly debugHeaders: object;
 
-  public constructor(config: { uri: string; jwtSecret?: string, userAgent?: string }) {
+  public constructor(config: { uri: string; jwtSecret?: string, userAgent?: string, requestId?: string }) {
     this.api = axios.create({
       baseURL: config.uri,
       httpAgent: StorageClient.httpAgent,
@@ -45,7 +45,10 @@ export class StorageClient {
       maxContentLength: Infinity,
       maxRedirects: 0
     });
-    this.userAgent = `${config.userAgent || ''} axios/${packageJson.dependencies.axios}`;
+    this.debugHeaders = {
+      'User-Agent': `${config.userAgent || ''} axios/${packageJson.dependencies.axios}`,
+      'x-request-id': config.requestId
+    };
     this.jwtSecret = config.jwtSecret;
   }
 
@@ -101,7 +104,7 @@ export class StorageClient {
       : await promisify(sign)(jwtPayloadOrToken, this.jwtSecret);
     return {
       Authorization: `Bearer ${token}`,
-      'User-Agent': this.userAgent,
+      ...this.debugHeaders,
       ...headers
     };
   }
