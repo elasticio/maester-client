@@ -48,7 +48,7 @@ describe('Object Storage', () => {
           ));
         });
         it('should getAllByParams', async () => {
-          const result = await objectStorage.getAllByParams({ foo: 'bar' });
+          const result = await objectStorage.getAllByParams({ foo: 'bar' }, { 'x-request-id': 'req_id' });
           expect(result).to.deep.equal([createdObjWithQueryField, createdObjWithQueryField]);
           const { firstArg, lastArg } = finalReqCfg.getCall(0);
           expect(lastArg).to.be.deep.equal({});
