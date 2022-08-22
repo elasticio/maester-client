@@ -45,6 +45,10 @@ describe('ObjectStorageWrapper', () => {
   let finalReqCfg;
 
   afterEach(sinon.restore);
+  before(() => {
+    process.env.ELASTICIO_FLOW_ID = 'flow_id';
+    process.env.ELASTICIO_STEP_ID = 'step_id';
+  });
 
   describe('Create object', () => {
     beforeEach(async () => {
@@ -66,6 +70,7 @@ describe('ObjectStorageWrapper', () => {
             'User-Agent': 'userAgent axios/0.26.1',
             'x-query-key0': 'value0',
             'x-eio-ttl': '10',
+            'x-request-id': 'f:flow_id;s:step_id;m:',
           }
         });
       });
@@ -87,6 +92,7 @@ describe('ObjectStorageWrapper', () => {
             'x-meta-key0': 'value0',
             'x-meta-key1': 'value1',
             'x-meta-key2': 'value2',
+            'x-request-id': 'f:flow_id;s:step_id;m:',
           }
         });
       });
@@ -103,6 +109,7 @@ describe('ObjectStorageWrapper', () => {
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
             'User-Agent': 'userAgent axios/0.26.1',
+            'x-request-id': 'f:flow_id;s:step_id;m:',
           }
         });
       });
@@ -119,6 +126,7 @@ describe('ObjectStorageWrapper', () => {
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
             'User-Agent': 'userAgent axios/0.26.1',
+            'x-request-id': 'f:flow_id;s:step_id;m:',
           }
         });
       });
@@ -176,7 +184,8 @@ describe('ObjectStorageWrapper', () => {
         params: {},
         headers: {
           Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-          'User-Agent': 'userAgent axios/0.26.1'
+          'User-Agent': 'userAgent axios/0.26.1',
+          'x-request-id': 'f:flow_id;s:step_id;m:',
         }
       });
     });
@@ -201,6 +210,7 @@ describe('ObjectStorageWrapper', () => {
         headers: {
           Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
           'User-Agent': 'userAgent axios/0.26.1',
+          'x-request-id': 'f:flow_id;s:step_id;m:',
         }
       });
     });
@@ -229,6 +239,7 @@ describe('ObjectStorageWrapper', () => {
           headers: {
             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
             'User-Agent': 'userAgent axios/0.26.1',
+            'x-request-id': 'f:flow_id;s:step_id;m:',
           }
         });
       });
@@ -249,7 +260,8 @@ describe('ObjectStorageWrapper', () => {
             'x-query-key1': 'value1',
             'x-query-key2': 'value2',
             'x-meta-key0': 'value0',
-            'x-meta-key1': 'value1'
+            'x-meta-key1': 'value1',
+            'x-request-id': 'f:flow_id;s:step_id;m:',
           }
         });
       });
@@ -275,7 +287,8 @@ describe('ObjectStorageWrapper', () => {
       finalReqCfg = sinon.stub(StorageClient.prototype, <any>'requestRetry').callsFake(async () => ({ data: '' }));
     });
     it('should delete object by ID', async () => {
-      const result = await objectStorageWrapper.deleteObjectById(id);
+      const objectStorageWrapper2 = new ObjectStorageWrapper(getContext(), 'userAgent', 'msgId');
+      const result = await objectStorageWrapper2.deleteObjectById(id);
       expect(result.data).to.be.equal('');
       const { firstArg, lastArg } = finalReqCfg.getCall(0);
       expect(lastArg).to.be.deep.equal({});
@@ -286,7 +299,8 @@ describe('ObjectStorageWrapper', () => {
         params: {},
         headers: {
           Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
-          'User-Agent': 'userAgent axios/0.26.1'
+          'User-Agent': 'userAgent axios/0.26.1',
+          'x-request-id': 'f:flow_id;s:step_id;m:msgId',
         }
       });
     });
@@ -310,6 +324,7 @@ describe('ObjectStorageWrapper', () => {
             headers: {
               Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6I',
               'User-Agent': 'userAgent axios/0.26.1',
+              'x-request-id': 'f:flow_id;s:step_id;m:',
             }
           });
         });

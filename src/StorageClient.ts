@@ -37,7 +37,9 @@ export class StorageClient {
 
   private readonly userAgent: string;
 
-  public constructor(config: { uri: string; jwtSecret?: string, userAgent?: string }) {
+  private readonly msgId: string;
+
+  public constructor(config: { uri: string; jwtSecret?: string, userAgent?: string, msgId?: string }) {
     this.api = axios.create({
       baseURL: config.uri,
       httpAgent: StorageClient.httpAgent,
@@ -46,6 +48,7 @@ export class StorageClient {
       maxRedirects: 0
     });
     this.userAgent = `${config.userAgent || ''} axios/${packageJson.dependencies.axios}`;
+    this.msgId = config.msgId || '';
     this.jwtSecret = config.jwtSecret;
   }
 
@@ -102,6 +105,7 @@ export class StorageClient {
     return {
       Authorization: `Bearer ${token}`,
       'User-Agent': this.userAgent,
+      'x-request-id': `f:${process.env.ELASTICIO_FLOW_ID};s:${process.env.ELASTICIO_STEP_ID};m:${this.msgId}`,
       ...headers
     };
   }

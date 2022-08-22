@@ -1,5 +1,9 @@
+# 4.0.3 (August 26, 2022)
+* Added `x-request-id` header with information about `flow_id`, `step_id` and `incoming_message_id` 
+* Added parameter `msgId` for class constructors which will be used in `x-request-id` header in each request
+
 # 4.0.2 (August 12, 2022)
-* Added parameter `userAgent` which will be passed in each request
+* Added parameter `userAgent` for class constructors which will be passed in each request
 
 # 4.0.1 (July 25, 2022)
 * Update component-commons-library to v.3.0.0
