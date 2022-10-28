@@ -4,7 +4,7 @@ The official Elastic.io object-storage client.
 
 ## Usage
 
-This library propose you two clients: `ObjectStorage` & `ObjectStorageWrapper`. 
+This library propose you two clients: `ObjectStorage` & `ObjectStorageWrapper`.
 Use `ObjectStorageWrapper` to operate with data like `string`, `number`, `object`, `array`
 Use `ObjectStorage` to operate attachments (also could be used for same purpose as `ObjectStorageWrapper`)
 
@@ -187,8 +187,8 @@ where
 - [reqOptions](/src/interfaces.ts#L22).
 
 ```
-const obj = await objectStorage.getOne(id);
-const objAsStream = await objectStorage.getOne(id, { responseType: 'stream'});
+const { data, headers } = await objectStorage.getOne(id);
+const { data: stream, headers } = await objectStorage.getOne(id, { responseType: 'stream'});
 ```
 
 #### Get objects by query parameters
@@ -198,7 +198,7 @@ The method has the following signature:
 async getAllByParams(params: object, reqOptions: ReqOptions = {})
 ```
 where
-- params - object of query params, current maximum - 5 items. 
+- params - object of query params, current maximum - 5 items.
 - [reqOptions](/src/interfaces.ts#L22).
 
 
@@ -249,7 +249,7 @@ The method has the following signature:
 async deleteAllByParams(params: object, reqOptions: ReqOptions = {})
 ```
 where
-- params - object of query params, current maximum - 5 items. 
+- params - object of query params, current maximum - 5 items.
 - [reqOptions](/src/interfaces.ts#L22).
 ```
 const obj = await objectStorage.deleteAllByParams({ 'query[field]': 'value' });

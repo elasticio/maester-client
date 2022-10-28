@@ -38,7 +38,7 @@ describe('objectStorage', () => {
         const objectId = await objectStorage.add(getJSONAsStream);
         expect(typeof objectId).to.be.equal('string');
         const object = await objectStorage.getOne(objectId);
-        expect(object).to.be.deep.equal({ a: 4 });
+        expect(object).to.be.deep.equal({ data: { a: 4 }, headers: {} });
       });
     });
     describe('as any', () => {
