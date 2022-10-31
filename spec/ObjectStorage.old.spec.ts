@@ -125,6 +125,20 @@ describe('Object Storage', () => {
         expect(response).to.deep.equal(responseData);
         expect(objectStorageCalls.isDone()).to.be.true;
       });
+      it('should return headers', async () => {
+        const objectStorageCalls = nock(config.uri)
+          .matchHeader('authorization', authHeaderMatch())
+          .get('/objects/1')
+          .reply(200, streamFromObject(responseData), { 'Content-Length': '200' });
+
+        const { data, headers } = await objectStorage.getOne('1', { jwtPayloadOrToken: {} });
+
+        expect(objectStorageCalls.isDone()).to.be.true;
+        expect(data).to.be.deep.equal(responseData);
+        expect(headers).to.be.deep.equal({
+          'content-length': '200'
+        });
+      });
       it('should accept jwt token on add', async () => {
         const jwtPayload = { tenantId: '12', contractId: '1' };
         const objectStorageCalls = nock(config.uri)
