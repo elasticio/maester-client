@@ -1,0 +1,6 @@
+{
+    "GHSA-f8q6-p94x-37v3": {
+            "active": true,
+            "notes": "A long dependency chain from 'bunyan' till 'minimatch'. 'bunyan' uses 'minimatch' only via an optional dependency 'mv', which we don't install. So not affected"
+    }
+}

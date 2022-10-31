@@ -5,6 +5,7 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
+    "audit": "better-npm-audit audit --level high --production",
     "lint": "eslint '*/**/*[^.d$].ts' --quiet --fix",
     "test": "mocha -r ts-node/register --recursive spec/**/*.ts --timeout 12000",
     "integration-test": "npm run pretest && mocha --exit --r ts-node/register spec-integration/**/*.ts --timeout 1000000",
@@ -32,6 +33,7 @@
   },
   "homepage": "https://github.com/elasticio/maester-client#readme",
   "devDependencies": {
+    "better-npm-audit": "3.7.3",
     "@elastic.io/component-logger": "0.0.1",
     "@types/chai": "4.2.11",
     "@types/chai-as-promised": "7.1.5",
