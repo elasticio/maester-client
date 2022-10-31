@@ -60,7 +60,8 @@ export class ObjectStorageWrapper {
 
   async lookupObjectById(id: string) {
     this.logger.debug(`Going to find an object by id ${id}...`);
-    return this.objectStorage.getOne(id);
+    const { data } = await this.objectStorage.getOne(id);
+    return data;
   }
 
   async getObjectHeaders(id: string) {

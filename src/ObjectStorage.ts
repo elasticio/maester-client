@@ -77,9 +77,12 @@ export class ObjectStorage {
   }
 
   public async getOne(objectId: string, reqOptions: ReqOptions = {}): Promise<any> {
-    const getResultStream = async () => (await this.client.get(objectId, reqOptions)).data;
-    const stream = await this.applyMiddlewares(getResultStream, this.reverses);
-    return this.getDataByResponseType(stream, reqOptions.responseType);
+    const res = await this.client.get(objectId, reqOptions);
+    const stream = await this.applyMiddlewares(() => res.data, this.reverses);
+    return {
+      data: await this.getDataByResponseType(stream, reqOptions.responseType),
+      headers: res.headers
+    };
   }
 
   public async getAllByParams(params: object, reqOptions: ReqOptions = {}): Promise<any> {
@@ -89,7 +92,9 @@ export class ObjectStorage {
   }
 
   public async getHeaders(objectId: string, reqOptions: ReqOptions = {}) {
-    const { headers } = await this.client.get(objectId, reqOptions);
+    const { headers, data } = await this.client.get(objectId, reqOptions);
+    // free resources, as we don't use the stream
+    data.destroy();
     return headers;
   }
 
