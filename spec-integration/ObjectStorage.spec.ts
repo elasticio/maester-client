@@ -37,16 +37,16 @@ describe('objectStorage', () => {
         const getJSONAsStream = async () => utils.streamFromData({ a: 4 });
         const objectId = await objectStorage.add(getJSONAsStream);
         expect(typeof objectId).to.be.equal('string');
-        const object = await objectStorage.getOne(objectId);
-        expect(object).to.be.deep.equal({ data: { a: 4 }, headers: {} });
+        const { data } = await objectStorage.getOne(objectId);
+        expect(data).to.be.deep.equal({ data: { a: 4 }, headers: {} });
       });
     });
     describe('as any', () => {
       it('should add (JSON)', async () => {
         const objectId = await objectStorage.add({ a: 2 });
         expect(typeof objectId).to.be.equal('string');
-        const object = await objectStorage.getOne(objectId);
-        expect(object).to.be.deep.equal({ a: 2 });
+        const { data } = await objectStorage.getOne(objectId);
+        expect(data).to.be.deep.equal({ a: 2 });
         const objectHeaders = await objectStorage.getHeaders(objectId);
         expect(objectHeaders['content-type']).to.be.equal('application/json');
       });
@@ -54,8 +54,8 @@ describe('objectStorage', () => {
         const dataArray = [1, '2', null, { d: 2, a: 1 }];
         const objectId = await objectStorage.add(dataArray);
         expect(typeof objectId).to.be.equal('string');
-        const object = await objectStorage.getOne(objectId);
-        expect(object).to.be.deep.equal(dataArray);
+        const { data } = await objectStorage.getOne(objectId);
+        expect(data).to.be.deep.equal(dataArray);
         const objectHeaders = await objectStorage.getHeaders(objectId);
         expect(objectHeaders['content-type']).to.be.equal('application/json');
       });
@@ -63,8 +63,8 @@ describe('objectStorage', () => {
         const dataString = 'hurray';
         const objectId = await objectStorage.add(dataString);
         expect(typeof objectId).to.be.equal('string');
-        const object = await objectStorage.getOne(objectId);
-        expect(object).to.be.deep.equal(dataString);
+        const { data } = await objectStorage.getOne(objectId);
+        expect(data).to.be.deep.equal(dataString);
         const objectHeaders = await objectStorage.getHeaders(objectId);
         expect(objectHeaders['content-type']).to.be.equal('application/json');
       });
@@ -72,16 +72,16 @@ describe('objectStorage', () => {
         const dataNumber = 56;
         const objectId = await objectStorage.add(dataNumber);
         expect(typeof objectId).to.be.equal('string');
-        const object = await objectStorage.getOne(objectId);
-        expect(object).to.be.deep.equal(dataNumber);
+        const { data } = await objectStorage.getOne(objectId);
+        expect(data).to.be.deep.equal(dataNumber);
         const objectHeaders = await objectStorage.getHeaders(objectId);
         expect(objectHeaders['content-type']).to.be.equal('application/json');
       });
       it('should add null', async () => {
         const objectId = await objectStorage.add(null);
         expect(typeof objectId).to.be.equal('string');
-        const object = await objectStorage.getOne(objectId);
-        expect(object).to.be.deep.equal(null);
+        const { data } = await objectStorage.getOne(objectId);
+        expect(data).to.be.deep.equal(null);
         const objectHeaders = await objectStorage.getHeaders(objectId);
         expect(objectHeaders['content-type']).to.be.equal('application/json');
       });
@@ -90,8 +90,8 @@ describe('objectStorage', () => {
         const dataArrayOut = [1, '2', null, null, { d: 2, a: 1 }];
         const objectId = await objectStorage.add(dataArrayIn);
         expect(typeof objectId).to.be.equal('string');
-        const object = await objectStorage.getOne(objectId);
-        expect(object).to.be.deep.equal(dataArrayOut);
+        const { data } = await objectStorage.getOne(objectId);
+        expect(data).to.be.deep.equal(dataArrayOut);
         const objectHeaders = await objectStorage.getHeaders(objectId);
         expect(objectHeaders['content-type']).to.be.equal('application/json');
       });
@@ -107,8 +107,8 @@ describe('objectStorage', () => {
           }
         });
         expect(typeof objectId).to.be.equal('string');
-        const object = await objectStorage.getOne(objectId);
-        expect(object).to.be.deep.equal({ a: 2 });
+        const { data } = await objectStorage.getOne(objectId);
+        expect(data).to.be.deep.equal({ a: 2 });
         const objectWithHeaders = await objectStorage.getHeaders(objectId);
         expect(objectWithHeaders['content-type']).to.be.equal('some-type');
         expect(objectWithHeaders['x-meta-k']).to.be.equal('v');
@@ -119,14 +119,14 @@ describe('objectStorage', () => {
   describe('get', () => {
     it('should get (default responseType: json)', async () => {
       const objectId = await objectStorage.add({ a: 2 });
-      const object = await objectStorage.getOne(objectId);
-      expect(object).to.be.deep.equal({ a: 2 });
+      const { data } = await objectStorage.getOne(objectId);
+      expect(data).to.be.deep.equal({ a: 2 });
     });
     it('should get (default responseType: json)', async () => {
       const getJSONAsStream = async () => utils.streamFromData({ a: 4 });
       const objectId = await objectStorage.add(getJSONAsStream);
-      const object = await objectStorage.getOne(objectId);
-      expect(object).to.be.deep.equal({ a: 4 });
+      const { data } = await objectStorage.getOne(objectId);
+      expect(data).to.be.deep.equal({ a: 4 });
     });
     it('should throw error (get image as json)', async () => {
       const getAttachAsStream = async () => (await axios.get('https://if0s.info/files/1.jpg', { responseType: 'stream' })).data;
@@ -145,15 +145,15 @@ describe('objectStorage', () => {
       const dataAsStream = async () => utils.streamFromData({ a: 2 });
       const objId = await objectStorage.add({ a: 3 });
       const resUpdate = await objectStorage.update(objId, dataAsStream);
-      const object = await objectStorage.getOne(objId);
-      expect(object).to.be.deep.equal({ a: 2 });
+      const { data } = await objectStorage.getOne(objId);
+      expect(data).to.be.deep.equal({ a: 2 });
       expect(resUpdate.contentType).to.be.equal('application/json');
     });
     it('should update (addAsJSON, update as json)', async () => {
       const objId = await objectStorage.add({ a: 3 });
       const resUpdate = await objectStorage.update(objId, { a: 2 });
-      const object = await objectStorage.getOne(objId);
-      expect(object).to.be.deep.equal({ a: 2 });
+      const { data } = await objectStorage.getOne(objId);
+      expect(data).to.be.deep.equal({ a: 2 });
       expect(resUpdate.contentType).to.be.equal('application/json');
     });
     it('should update (addAsStream, update as stream)', async () => {
@@ -161,15 +161,15 @@ describe('objectStorage', () => {
       const dataAsStream2 = async () => utils.streamFromData({ a: 2 });
       const objId = await objectStorage.add(dataAsStream);
       await objectStorage.update(objId, dataAsStream2);
-      const object = await objectStorage.getOne(objId);
-      expect(object).to.be.deep.equal({ a: 2 });
+      const { data } = await objectStorage.getOne(objId);
+      expect(data).to.be.deep.equal({ a: 2 });
     });
     it('should update (addAsStream, update as json)', async () => {
       const dataAsStream = async () => utils.streamFromData({ a: 4 });
       const objId = await objectStorage.add(dataAsStream);
       await objectStorage.update(objId, { a: 2 });
-      const object = await objectStorage.getOne(objId);
-      expect(object).to.be.deep.equal({ a: 2 });
+      const { data } = await objectStorage.getOne(objId);
+      expect(data).to.be.deep.equal({ a: 2 });
     });
     it('should update pdf', async () => {
       const dataAsStream = async () => utils.streamFromData({ a: 4 });
@@ -181,8 +181,8 @@ describe('objectStorage', () => {
     it('should update with custom content-type', async () => {
       const objectId = await objectStorage.add({ a: 2 });
       await objectStorage.update(objectId, { a: 3 }, { headers: { 'content-type': 'some-type' } });
-      const object = await objectStorage.getOne(objectId);
-      expect(object).to.be.deep.equal({ a: 3 });
+      const { data } = await objectStorage.getOne(objectId);
+      expect(data).to.be.deep.equal({ a: 3 });
       const objectWithHeaders = await objectStorage.getHeaders(objectId);
       expect(objectWithHeaders['content-type']).to.be.equal('some-type');
     });
@@ -206,8 +206,8 @@ describe('objectStorage', () => {
       await objectStorage.deleteAllByParams({ 'query[t]': '123' });
       const resultAfterDelete = await objectStorage.getAllByParams({ 'query[t]': '123' });
       expect(resultAfterDelete.length).to.be.equal(0);
-      const aliveObject = await objectStorage.getOne(aliveId);
-      expect(aliveObject).to.be.deep.equal({});
+      const { data: aliveData } = await objectStorage.getOne(aliveId);
+      expect(aliveData).to.be.deep.equal({});
     });
   });
   describe('getByParams', () => {
