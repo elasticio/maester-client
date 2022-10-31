@@ -76,8 +76,8 @@ describe('Object Storage', () => {
           finalReqCfg = sinon.stub(StorageClient.prototype, <any>'requestRetry').callsFake(async () => ({ data: streamFromObject({ q: 'i`m a stream' }) }));
         });
         it('should getById (stream)', async () => {
-          const result = await objectStorage.getOne('objectId', { responseType: 'stream' });
-          const streamAsJSON = await getStream(result);
+          const { data } = await objectStorage.getOne('objectId', { responseType: 'stream' });
+          const streamAsJSON = await getStream(data);
           expect(JSON.parse(streamAsJSON)).to.be.deep.equal({ q: 'i`m a stream' });
           const { firstArg, lastArg } = finalReqCfg.getCall(0);
           expect(lastArg).to.be.deep.equal({});
@@ -100,8 +100,8 @@ describe('Object Storage', () => {
           finalReqCfg = sinon.stub(StorageClient.prototype, <any>'requestRetry').callsFake(async () => ({ data: streamFromObject({ q: 'i`m a stream' }) }));
         });
         it('should getById (json)', async () => {
-          const result = await objectStorage.getOne('objectId', { responseType: 'json' });
-          expect(result).to.be.deep.equal({ q: 'i`m a stream' });
+          const { data } = await objectStorage.getOne('objectId', { responseType: 'json' });
+          expect(data).to.be.deep.equal({ q: 'i`m a stream' });
           const { firstArg, lastArg } = finalReqCfg.getCall(0);
           expect(lastArg).to.be.deep.equal({});
           expect(firstArg.getFreshStream).to.be.equal(undefined);
@@ -123,9 +123,9 @@ describe('Object Storage', () => {
           finalReqCfg = sinon.stub(StorageClient.prototype, <any>'requestRetry').callsFake(async () => ({ data: streamFromObject({ q: 'i`m a stream' }) }));
         });
         it('should getById (arraybuffer)', async () => {
-          const result = await objectStorage.getOne('objectId', { responseType: 'arraybuffer' });
+          const { data } = await objectStorage.getOne('objectId', { responseType: 'arraybuffer' });
           const encodedResult = Buffer.from(JSON.stringify({ q: 'i`m a stream' }), 'binary').toString('base64');
-          expect(result.toString('base64')).to.be.equal(encodedResult);
+          expect(data.toString('base64')).to.be.equal(encodedResult);
           const { firstArg, lastArg } = finalReqCfg.getCall(0);
           expect(lastArg).to.be.deep.equal({});
           expect(firstArg.getFreshStream).to.be.equal(undefined);
@@ -162,9 +162,9 @@ describe('Object Storage', () => {
           .get('/objects/1')
           .reply(200, streamFromObject(responseData));
 
-        const response = await objectStorage.getOne('1', { responseType: 'json' });
+        const { data } = await objectStorage.getOne('1', { responseType: 'json' });
         expect(objectStorageCalls.isDone()).to.be.true;
-        expect(response).to.be.deep.equal(responseData);
+        expect(data).to.be.deep.equal(responseData);
       });
       it('should throw an error on post request connection error', async () => {
         const objectStorageCalls = nock(config.uri)
@@ -268,8 +268,8 @@ describe('Object Storage', () => {
           .get('/objects/1')
           .reply(200, responseStream);
 
-        const stream = await objectStorageWithMiddlewares.getOne('1', { responseType: 'stream' });
-        const result = await getStream(stream);
+        const { data } = await objectStorageWithMiddlewares.getOne('1', { responseType: 'stream' });
+        const result = await getStream(data);
         expect(result).to.be.deep.equal(JSON.stringify(responseData));
         expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
       });
@@ -341,8 +341,8 @@ describe('Object Storage', () => {
           .reply(200, streamFromObject({ objectId: '234-sdf' }));
 
         const retryOptions = { retriesCount: 4, requestTimeout: 1 };
-        const result = await objectStorage.getOne('1', { retryOptions });
-        expect(result).to.be.deep.equal({ objectId: '234-sdf' });
+        const { data } = await objectStorage.getOne('1', { retryOptions });
+        expect(data).to.be.deep.equal({ objectId: '234-sdf' });
         expect(objectStorageCalls.isDone()).to.be.true;
         const { lastArg } = finalReqCfg.getCall(0);
         expect(lastArg).to.be.deep.equal(retryOptions);

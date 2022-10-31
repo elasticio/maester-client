@@ -78,9 +78,9 @@ export class ObjectStorage {
 
   public async getOne(objectId: string, reqOptions: ReqOptions = {}): Promise<any> {
     const res = await this.client.get(objectId, reqOptions);
-    const stream = await this.applyMiddlewares(() => res.stream, this.reverses);
+    const stream = await this.applyMiddlewares(() => res.data, this.reverses);
     return {
-      data: this.getDataByResponseType(stream, reqOptions.responseType),
+      data: await this.getDataByResponseType(stream, reqOptions.responseType),
       headers: res.headers
     };
   }

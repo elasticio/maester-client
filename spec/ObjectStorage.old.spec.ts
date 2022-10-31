@@ -76,10 +76,10 @@ describe('Object Storage', () => {
           .get('/objects/1')
           .reply(200, streamFromObject(responseData));
 
-        const out = await objectStorage.getOne('1', { jwtPayloadOrToken: {} });
+        const { data } = await objectStorage.getOne('1', { jwtPayloadOrToken: {} });
 
         expect(objectStorageCalls.isDone()).to.be.true;
-        expect(out).to.be.deep.equal(responseData);
+        expect(data).to.be.deep.equal(responseData);
       });
       it(`should retry get as string request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
         const objectStorageCalls = nock(config.uri)
@@ -91,10 +91,10 @@ describe('Object Storage', () => {
           .get('/objects/1')
           .reply(200, streamFromObject(responseData));
 
-        const out = await objectStorage.getOne('1', { jwtPayloadOrToken: {} });
+        const { data } = await objectStorage.getOne('1', { jwtPayloadOrToken: {} });
 
         expect(objectStorageCalls.isDone()).to.be.true;
-        expect(out).to.be.deep.equal(responseData);
+        expect(data).to.be.deep.equal(responseData);
       });
       it(`should retry post request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
         const objectStorageCalls = nock(config.uri)
@@ -146,12 +146,12 @@ describe('Object Storage', () => {
           .get('/objects/1')
           .reply(200, streamFromObject(responseData));
 
-        const out = await objectStorage.getOne('1', {
+        const { data } = await objectStorage.getOne('1', {
           jwtPayloadOrToken: sign(jwtPayload, config.jwtSecret)
         });
 
         expect(objectStorageCalls.isDone()).to.be.true;
-        expect(out).to.be.deep.equal(responseData);
+        expect(data).to.be.deep.equal(responseData);
       });
       it('should accept jwt token on delete', async () => {
         const jwtPayload = { tenantId: '12', contractId: '1' };
@@ -226,9 +226,9 @@ describe('Object Storage', () => {
           .get('/objects/1')
           .reply(200, streamFromObject(responseData));
 
-        const response = await objectStorage.getOne('1', { jwtPayloadOrToken: {}, responseType: 'stream' });
+        const { data } = await objectStorage.getOne('1', { jwtPayloadOrToken: {}, responseType: 'stream' });
 
-        const out = JSON.parse(await getStream(response));
+        const out = JSON.parse(await getStream(data));
         expect(objectStorageCalls.isDone()).to.be.true;
         expect(out).to.be.deep.equal(responseData);
       });
@@ -370,10 +370,10 @@ describe('Object Storage', () => {
               return stream.pipe(encryptStream()).pipe(zip());
             });
 
-          const out = await objectStorageWithMiddlewares.getOne('1', { jwtPayloadOrToken: {} });
+          const { data } = await objectStorageWithMiddlewares.getOne('1', { jwtPayloadOrToken: {} });
 
           expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-          expect(out).to.be.deep.equal(responseData);
+          expect(data).to.be.deep.equal(responseData);
         });
         it(`should retry post request ${RETRIES_COUNT.defaultValue} times on errors`, async () => {
           const objectStorageWithMiddlewares = new ObjectStorage(config);
@@ -458,12 +458,12 @@ describe('Object Storage', () => {
               return stream.pipe(encryptStream()).pipe(zip());
             });
 
-          const out = await objectStorageWithMiddlewares.getOne('1', {
+          const { data } = await objectStorageWithMiddlewares.getOne('1', {
             jwtPayloadOrToken: sign(jwtPayload, config.jwtSecret)
           });
 
           expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-          expect(out).to.be.deep.equal(responseData);
+          expect(data).to.be.deep.equal(responseData);
         });
         it('should add 2 objects successfully', async () => {
           const objectStorageWithMiddlewares = new ObjectStorage(config);
@@ -529,16 +529,16 @@ describe('Object Storage', () => {
               return stream.pipe(encryptStream()).pipe(zip());
             });
 
-          const outFirst = await objectStorageWithMiddlewares.getOne('1', {
+          const { data: dataFirst } = await objectStorageWithMiddlewares.getOne('1', {
             jwtPayloadOrToken: sign(jwtPayload, config.jwtSecret)
           });
-          const outSecond = await objectStorageWithMiddlewares.getOne('2', {
+          const { data: dataSecond } = await objectStorageWithMiddlewares.getOne('2', {
             jwtPayloadOrToken: sign(jwtPayload, config.jwtSecret)
           });
 
           expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-          expect(outFirst).to.be.deep.equal(responseData);
-          expect(outSecond).to.be.deep.equal(responseData);
+          expect(dataFirst).to.be.deep.equal(responseData);
+          expect(dataSecond).to.be.deep.equal(responseData);
         });
         it('should throw exception if neither jwt secret, nor jwt token provided', async () => {
           // @ts-ignore
@@ -595,10 +595,10 @@ describe('Object Storage', () => {
               return stream.pipe(encryptStream()).pipe(zip());
             });
 
-          const response = await objectStorageWithMiddlewares.getOne('1', { jwtPayloadOrToken: {} });
+          const { data } = await objectStorageWithMiddlewares.getOne('1', { jwtPayloadOrToken: {} });
 
           expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
-          expect(response).to.be.deep.equal(responseData);
+          expect(data).to.be.deep.equal(responseData);
         });
         it('should throw an error on put request connection error', async () => {
           const objectStorageWithMiddlewares = new ObjectStorage(config);
@@ -742,16 +742,16 @@ describe('Object Storage', () => {
               return stream.pipe(encryptStream()).pipe(zip());
             });
 
-          const outStreamFirst = await objectStorageWithMiddlewares.getOne('1', {
+          const { data: dataStreamFirst } = await objectStorageWithMiddlewares.getOne('1', {
             jwtPayloadOrToken: sign(jwtPayload, config.jwtSecret),
             responseType: 'stream'
           });
-          const outFirst = JSON.parse(await getStream(outStreamFirst));
-          const outStreamSecond = await objectStorageWithMiddlewares.getOne('2', {
+          const outFirst = JSON.parse(await getStream(dataStreamFirst));
+          const { data: dataStreamSecond } = await objectStorageWithMiddlewares.getOne('2', {
             jwtPayloadOrToken: sign(jwtPayload, config.jwtSecret),
             responseType: 'stream'
           });
-          const outSecond = JSON.parse(await getStream(outStreamSecond));
+          const outSecond = JSON.parse(await getStream(dataStreamSecond));
           expect(objectStorageWithMiddlewaresCalls.isDone()).to.be.true;
           expect(outFirst).to.be.deep.equal(responseData);
           expect(outSecond).to.be.deep.equal(responseData);
