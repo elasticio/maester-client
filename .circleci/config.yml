@@ -16,7 +16,7 @@ jobs:
             - ./node_modules
       - run:
           name: "Running audit"
-          command: npm audit --production
+          command: npm run audit
       - run:
           name: Running Mocha Tests
           command: npm test
@@ -35,6 +35,6 @@ workflows:
           filters:
             branches:
               only:
-                - v4
+                - master
     jobs:
       - build
