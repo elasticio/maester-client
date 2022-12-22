@@ -1,3 +1,6 @@
+# 5.0.1 (December 22, 2022)
+* Handled jsonwebtoken vulnerability (actually, we are not affected)
+
 # 5.0.0 (October 31, 2022)
 * (breaking change) `ObjectStorage.getOne()` now returns an object with a `data` and `headers` properties
 
