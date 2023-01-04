@@ -6,5 +6,9 @@
     "GHSA-27h2-hvpr-p74q": {
         "active": true,
         "notes": "The vulnerability is in maester-client v4.x because of cross-dependency with component-commons-library. Maester-client of v4.x doesn't use jwt.verify function. So not affected"
+    },
+    "GHSA-9c47-m6qq-7p4h": {
+        "active": true,
+        "notes": "The vulnerability affects only dev dependencies: eslint-plugin-import and nyc. Packages are not fixed yet"
     }
 }
