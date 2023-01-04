@@ -1,21 +1,19 @@
 version: 2.1
+orbs:
+  node: circleci/node@5.0.3
+
 jobs:
   build:
     docker:
-      - image: cimg/node:12.3.0
+      - image: 'cimg/base:stable'
     steps:
       - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - node/install:
+          node-version: '12.3.0'
+      - node/install-packages:
+          cache-path: ~/project/node_modules
       - run:
-          name: Installing Dependencies
-          command: npm install
-      - save_cache:
-          key: dependency-cache-{{ checksum "package-lock.json" }}
-          paths:
-            - ./node_modules
-      - run:
-          name: "Running audit"
+          name: Running audit
           command: npm run audit
       - run:
           name: Running Mocha Tests
