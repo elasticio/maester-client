@@ -1,3 +1,6 @@
+# 5.0.2 (March 07, 2024)
+* Updated @elastic.io/component-commons-library to 3.2.0
+
 # 5.0.1 (December 22, 2022)
 * Handled jsonwebtoken vulnerability (actually, we are not affected)
 
