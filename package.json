@@ -62,7 +62,7 @@
   },
   "dependencies": {
     "@elastic.io/bunyan-logger": "1.0.8",
-    "@elastic.io/component-commons-library": "3.2.0-dev.1",
+    "@elastic.io/component-commons-library": "3.2.0-dev.2",
     "@types/sinon": "10.0.0",
     "axios": "0.26.1",
     "form-data": "4.0.0",
