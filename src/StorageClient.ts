@@ -1,4 +1,4 @@
-/* eslint-disable no-continue */
+/* eslint-disable no-continue,default-param-last */
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { promisify } from 'util';
 import http from 'http';
@@ -52,9 +52,7 @@ export class StorageClient {
     this.jwtSecret = config.jwtSecret;
   }
 
-  private async requestRetry(
-    requestConfig: StreamBasedRequestConfig, retryOptions: RetryOptions
-  ): Promise<AxiosResponse> {
+  private async requestRetry(requestConfig: StreamBasedRequestConfig, retryOptions: RetryOptions): Promise<AxiosResponse> {
     const { retriesCount, requestTimeout } = validateAndGetRetryOptions(retryOptions);
     let currentRetries = 0;
     let res;
