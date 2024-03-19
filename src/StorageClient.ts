@@ -6,7 +6,6 @@ import https from 'https';
 import { Readable } from 'stream';
 import { sign } from 'jsonwebtoken';
 import { getMimeType } from 'stream-mime-type';
-import { exponentialSleep } from '@elastic.io/component-commons-library/dist/src/externalApi';
 import log from './logger';
 import packageJson from '../package.json';
 import {
@@ -15,7 +14,10 @@ import {
   ServerTransportError,
   ClientTransportError
 } from './errors';
-import { validateAndGetRetryOptions } from './utils';
+import {
+  exponentialSleep,
+  validateAndGetRetryOptions
+} from './utils';
 import {
   JWTPayload, reqWithBodyHeaders, RetryOptions, ReqWithBodyOptions,
   StreamBasedRequestConfig, ReqOptions, searchObjectCriteria, CONTENT_TYPE_HEADER

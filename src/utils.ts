@@ -46,3 +46,16 @@ export const validateAndGetRetryOptions = ({
   retriesCount: (retriesCount > RETRIES_COUNT.maxValue || retriesCount < RETRIES_COUNT.minValue) ? RETRIES_COUNT.defaultValue : retriesCount,
   requestTimeout: (requestTimeout > REQUEST_TIMEOUT.maxValue || requestTimeout < REQUEST_TIMEOUT.minValue) ? REQUEST_TIMEOUT.defaultValue : requestTimeout
 });
+
+export const exponentialSleep = async (currentRetries: number) => sleep(exponentialDelay(currentRetries));
+
+const sleep = async (ms: number) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
+
+export const exponentialDelay = (currentRetries: number) => {
+  const maxBackoff = 15000;
+  const delay = (2 ** currentRetries) * 100;
+  const randomSum = delay * 0.2 * Math.random(); // 0-20% of the delay
+  return Math.min(delay + randomSum, maxBackoff);
+};

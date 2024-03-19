@@ -6,9 +6,5 @@
     "GHSA-27h2-hvpr-p74q": {
         "active": true,
         "notes": "The vulnerability is in maester-client v4.x because of cross-dependency with component-commons-library. Maester-client of v4.x doesn't use jwt.verify function. So not affected"
-    },
-    "GHSA-fqg8-vfv7-8fj8": {
-        "active": true,
-        "notes": "The vulnerability is in maester-client v5.x because of cross-dependency with component-commons-library. Maester-client of v5.x doesn't use jsonata functions. So not affected"
     }
 }
