@@ -1,4 +1,4 @@
-/* eslint-disable no-continue */
+/* eslint-disable no-continue,default-param-last */
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { promisify } from 'util';
 import http from 'http';
@@ -6,7 +6,6 @@ import https from 'https';
 import { Readable } from 'stream';
 import { sign } from 'jsonwebtoken';
 import { getMimeType } from 'stream-mime-type';
-import { exponentialSleep } from '@elastic.io/component-commons-library/dist/src/externalApi';
 import log from './logger';
 import packageJson from '../package.json';
 import {
@@ -15,7 +14,10 @@ import {
   ServerTransportError,
   ClientTransportError
 } from './errors';
-import { validateAndGetRetryOptions } from './utils';
+import {
+  exponentialSleep,
+  validateAndGetRetryOptions
+} from './utils';
 import {
   JWTPayload, reqWithBodyHeaders, RetryOptions, ReqWithBodyOptions,
   StreamBasedRequestConfig, ReqOptions, searchObjectCriteria, CONTENT_TYPE_HEADER
@@ -52,9 +54,7 @@ export class StorageClient {
     this.jwtSecret = config.jwtSecret;
   }
 
-  private async requestRetry(
-    requestConfig: StreamBasedRequestConfig, retryOptions: RetryOptions
-  ): Promise<AxiosResponse> {
+  private async requestRetry(requestConfig: StreamBasedRequestConfig, retryOptions: RetryOptions): Promise<AxiosResponse> {
     const { retriesCount, requestTimeout } = validateAndGetRetryOptions(retryOptions);
     let currentRetries = 0;
     let res;

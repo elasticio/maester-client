@@ -69,9 +69,7 @@ export class ObjectStorage {
   /**
    * @param dataOrFunc async function returning stream OR any data (except 'undefined')
    */
-  public async update(
-    objectId: string, dataOrFunc: uploadData | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions
-  ) {
+  public async update(objectId: string, dataOrFunc: uploadData | (() => Promise<Readable>), reqWithBodyOptions?: ReqWithBodyOptions) {
     const { data } = await this.client.put(objectId, await this.formStreamGetter(dataOrFunc), reqWithBodyOptions);
     return data;
   }
