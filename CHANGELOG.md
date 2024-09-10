@@ -1,3 +1,6 @@
+# 5.0.3 (September 11, 2024)
+* Got rid of `sinon` in the 'dependencies' section and left it in the 'devDependencies' only
+
 # 5.0.2 (March 22, 2024)
 * Got rid of @elastic.io/component-commons-library lib as a dependency to avoid circular dependency. The only function that was used from that library has been moved to this library source code
 
