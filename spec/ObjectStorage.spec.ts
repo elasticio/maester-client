@@ -65,7 +65,7 @@ describe('Object Storage', () => {
             params: { foo: 'bar' },
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent axios/^0.27.2',
+              'User-Agent': 'userAgent axios/~0.27.2',
               'x-request-id': 'f:flow_id;s:step_id;m:msgId',
             }
           });
@@ -89,7 +89,7 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent axios/^0.27.2',
+              'User-Agent': 'userAgent axios/~0.27.2',
               'x-request-id': 'f:flow_id;s:step_id;m:',
             }
           });
@@ -112,7 +112,7 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent axios/^0.27.2',
+              'User-Agent': 'userAgent axios/~0.27.2',
               'x-request-id': 'f:flow_id;s:step_id;m:',
             }
           });
@@ -136,7 +136,7 @@ describe('Object Storage', () => {
             params: {},
             headers: {
               Authorization: 'Bearer jwt',
-              'User-Agent': 'userAgent axios/^0.27.2',
+              'User-Agent': 'userAgent axios/~0.27.2',
               'x-request-id': 'f:flow_id;s:step_id;m:',
             }
           });
