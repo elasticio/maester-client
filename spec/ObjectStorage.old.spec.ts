@@ -132,12 +132,13 @@ describe('Object Storage', () => {
           .reply(200, streamFromObject(responseData), { 'Content-Length': '200' });
 
         const { data, headers } = await objectStorage.getOne('1', { jwtPayloadOrToken: {} });
+        const expectedHeaders = {
+          'content-length': '200'
+        };
 
         expect(objectStorageCalls.isDone()).to.be.true;
         expect(data).to.be.deep.equal(responseData);
-        expect(headers).to.be.deep.equal({
-          'content-length': '200'
-        });
+        expect(headers.toJSON()).to.deep.equal(expectedHeaders);
       });
       it('should accept jwt token on add', async () => {
         const jwtPayload = { tenantId: '12', contractId: '1' };
