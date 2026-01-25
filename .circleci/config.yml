@@ -8,7 +8,7 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: '20.x'
+          node-version: '20'
       - node/install-packages:
           cache-path: ~/project/node_modules
           override-ci-command: npm install
