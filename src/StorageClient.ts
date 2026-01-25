@@ -101,7 +101,7 @@ export class StorageClient {
     }
     const token = typeof jwtPayloadOrToken === 'string'
       ? jwtPayloadOrToken
-      : await promisify(sign)(jwtPayloadOrToken, this.jwtSecret);
+      : sign(jwtPayloadOrToken, this.jwtSecret);
     return {
       Authorization: `Bearer ${token}`,
       'User-Agent': this.userAgent,
