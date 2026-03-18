@@ -1,6 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { Readable, Stream } from 'stream';
 import getStream from 'get-stream';
+import { AxiosResponse } from 'axios';
 import { StorageClient, } from './StorageClient';
 import { parseJson, streamFromData, getFreshStreamChecker } from './utils';
 import { TransformMiddleware, ReqWithBodyOptions, ReqOptions, ResponseType, uploadData } from './interfaces';
@@ -96,11 +97,11 @@ export class ObjectStorage {
     return headers;
   }
 
-  public async deleteOne(objectId: string, reqOptions: ReqOptions = {}) {
+  public async deleteOne(objectId: string, reqOptions: ReqOptions = {}): Promise<AxiosResponse> {
     return this.client.delete(objectId, reqOptions);
   }
 
-  public async deleteAllByParams(params: object, reqOptions: ReqOptions = {}) {
+  public async deleteAllByParams(params: object, reqOptions: ReqOptions = {}): Promise<AxiosResponse> {
     return this.client.delete(params, reqOptions);
   }
 }

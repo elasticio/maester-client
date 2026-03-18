@@ -1,3 +1,11 @@
+# 6.0.1 (January 31, 2026)
+* Updated development dependencies to support Node.js v20 and TypeScript v5.9.
+* Resolved TypeScript compilation errors related to `jsonwebtoken.sign` and `dom` types.
+* Added explicit return type annotations to `deleteOne` and `deleteAllByParams` to fix portable type error (TS2742).
+* Updated CircleCI configuration to use Node.js v20 and the latest `circleci/node` orb.
+* Added `engines` field to `package.json` to specify Node.js `^20.0.0` compatibility.
+* Fix audit vulnerability issues
+
 # 6.0.0 (March 21, 2025)
 * (breaking change) Bumped Axios from 0.27.2 to 1.8.2 ([#45](https://github.com/elasticio/maester-client/issues/45)) which brings several potential breaking changes. For example, Axios headers return as an Axios Headers instance, not as a plain JSON object.
 
