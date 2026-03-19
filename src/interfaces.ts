@@ -52,11 +52,11 @@ export const DEFAULT_RESPONSE_TYPE: ResponseType = 'json';
 
 export const RETRIES_COUNT = {
   minValue: 0,
-  defaultValue: 2, // times error will be retried
+  defaultValue: 3, // times error will be retried
   maxValue: 4
 } as const;
 export const REQUEST_TIMEOUT = {
   minValue: 500,
-  defaultValue: 10000, // 10s
+  defaultValue: 15000, // 15s
   maxValue: 20000
 } as const;
