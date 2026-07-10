@@ -1,1 +1,14 @@
-{}
+{
+  "GHSA-5c6j-r48x-rmvq": {
+    "active": true,
+    "notes": "serialize-javascript RCE via RegExp.flags — only used in mocha (devDependency), not included in production runtime"
+  },
+  "GHSA-qj8w-gfj5-8c6v": {
+    "active": true,
+    "notes": "serialize-javascript CPU exhaustion DoS — only used in mocha (devDependency), not included in production runtime"
+  },
+  "GHSA-5v7r-6r5c-r473": {
+    "active": true,
+    "notes": "file-type infinite loop in ASF parser on malformed input (CVE-2026-31808)."
+  }
+}
