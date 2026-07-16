@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  node: circleci/node@5.0.3
+  node: circleci/node@7.2.1
 jobs:
   build:
     docker:
@@ -8,7 +8,7 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: '14.19.3'
+          node-version: '20'
       - node/install-packages:
           cache-path: ~/project/node_modules
           override-ci-command: npm install

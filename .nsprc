@@ -1,10 +1,6 @@
 {
-    "GHSA-f8q6-p94x-37v3": {
-            "active": true,
-            "notes": "A long dependency chain from 'bunyan' till 'minimatch'. 'bunyan' uses 'minimatch' only via an optional dependency 'mv', which we don't install. So not affected"
-    },
-    "GHSA-27h2-hvpr-p74q": {
-        "active": true,
-        "notes": "The vulnerability is in maester-client v4.x because of cross-dependency with component-commons-library. Maester-client of v4.x doesn't use jwt.verify function. So not affected"
-    }
+  "GHSA-5v7r-6r5c-r473": {
+    "active": true,
+    "notes": "file-type infinite loop in ASF parser on malformed input (CVE-2026-31808). No fix available — stream-mime-type depends on vulnerable file-type version."
+  }
 }
