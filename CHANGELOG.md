@@ -1,3 +1,9 @@
+# 6.0.2 (August 5, 2026)
+* Fixed an issue where request timeouts were capped at 20 seconds, preventing the upload of large files under constrained network conditions. Increased the maximum request timeout threshold to 20 minutes (1,200,000 ms).
+* Migrated the test runner configuration from `ts-node` to `tsx` to resolve execution failures under Node.js v24.
+* Upgraded package dependency versions to their latest compatible releases.
+* Upgraded the Node.js engine compatibility requirement and CircleCI configuration to Node.js v24.
+
 # 6.0.1 (January 31, 2026)
 * Updated development dependencies to support Node.js v20 and TypeScript v5.9.
 * Resolved TypeScript compilation errors related to `jsonwebtoken.sign` and `dom` types.

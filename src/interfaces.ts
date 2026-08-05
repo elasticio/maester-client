@@ -58,5 +58,5 @@ export const RETRIES_COUNT = {
 export const REQUEST_TIMEOUT = {
   minValue: 500,
   defaultValue: 15000, // 15s
-  maxValue: 20000
+  maxValue: 1200000 // 20m
 } as const;

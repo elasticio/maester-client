@@ -4,11 +4,11 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:24.10.0
     steps:
       - checkout
       - node/install:
-          node-version: '20'
+          node-version: '24'
       - node/install-packages:
           cache-path: ~/project/node_modules
           override-ci-command: npm install
