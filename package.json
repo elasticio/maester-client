@@ -7,8 +7,8 @@
   "scripts": {
     "audit": "better-npm-audit audit --level high --production",
     "lint": "eslint '*/**/*[^.d$].ts' --quiet --fix",
-    "test": "mocha -r ts-node/register --recursive spec/**/*.ts --timeout 12000",
-    "integration-test": "npm run pretest && mocha --exit --r ts-node/register spec-integration/**/*.ts --timeout 1000000",
+    "test": "mocha -r tsx --recursive spec/**/*.ts --timeout 12000",
+    "integration-test": "npm run pretest && mocha --exit -r tsx spec-integration/**/*.ts --timeout 1000000",
     "pretest": "rm -rf dist && eslint --ext .ts --quiet --fix && find src spec spec-integration -name \"*.js\" -type f -delete && find src spec spec-integration -name \"*.d.ts\" -type f -delete",
     "posttest": "tsc",
     "build": "tsc",
@@ -43,7 +43,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mocha": "^10.0.10",
     "@types/nock": "^11.1.0",
-    "@types/node": "^20.0.0",
+    "@types/node": "^24.0.0",
     "@types/sinon": "^17.0.4",
     "chai": "^4.5.0",
     "chai-as-promised": "^7.1.2",
@@ -57,7 +57,7 @@
     "mocha": "^10.8.2",
     "nock": "^12.0.3",
     "sinon": "^18.0.1",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.1",
     "typescript": "^5.9.3"
   },
   "dependencies": {
