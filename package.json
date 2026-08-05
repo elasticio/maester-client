@@ -1,6 +1,6 @@
 {
   "name": "@elastic.io/maester-client",
-  "version": "6.0.1",
+  "version": "6.0.2",
   "description": "The official object-storage client",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/elasticio/maester-client#readme",
   "engines": {
-    "node": "^20.0.0"
+    "node": "24.x"
   },
   "devDependencies": {
     "better-npm-audit": "^3.11.0",
@@ -62,9 +62,9 @@
   },
   "dependencies": {
     "@elastic.io/bunyan-logger": "^1.0.9",
-    "axios": "^1.13.5",
+    "axios": "^1.19.0",
     "get-stream": "^6.0.1",
-    "jsonwebtoken": "^9.0.0",
+    "jsonwebtoken": "^9.0.2",
     "stream-mime-type": "^1.0.2"
   }
 }
