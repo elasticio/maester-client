@@ -6,7 +6,7 @@
   "types": "dist/src/index.d.ts",
   "scripts": {
     "audit": "better-npm-audit audit --level high --production",
-    "lint": "eslint '*/**/*[^.d$].ts' --quiet --fix",
+    "lint": "eslint \"*/**/*[^.d$].ts\" --quiet --fix",
     "test": "mocha -r tsx --recursive spec/**/*.ts --timeout 12000",
     "integration-test": "npm run pretest && mocha --exit -r tsx spec-integration/**/*.ts --timeout 1000000",
     "pretest": "rm -rf dist && eslint --ext .ts --quiet --fix && find src spec spec-integration -name \"*.js\" -type f -delete && find src spec spec-integration -name \"*.d.ts\" -type f -delete",
