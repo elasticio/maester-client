@@ -1,4 +1,4 @@
-# 6.0.3 (August 20, 2026)
+# 6.0.3 (August 27, 2026)
 * Fixed [#226](https://github.com/elasticio/elasticioproject/issues/226): `parseJson` now returns the raw source string instead of throwing when `JSON.parse` fails. This prevents double-escaped string literals when retrieving non-JSON payloads (NDJSON, CSV, XML, plain text) offloaded to Object Storage via the lightweight message path.
 
 # 6.0.2 (August 5, 2026)
