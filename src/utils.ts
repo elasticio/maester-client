@@ -6,13 +6,11 @@ const ENV_RETRIES_COUNT = process.env.REQUEST_MAX_RETRY ? parseInt(process.env.R
 const ENV_REQUEST_TIMEOUT = process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : null;
 
 export const parseJson = (source: string) => {
-  let parsedJson;
   try {
-    parsedJson = JSON.parse(source);
+    return JSON.parse(source);
   } catch (parseError) {
-    throw new Error('Could not parse Maester object as it is not a JSON object');
+    return source;
   }
-  return parsedJson;
 };
 
 // 'undefined' throws error, but 'null' is ok (as an option - convert 'undefined' to 'null')

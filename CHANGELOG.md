@@ -1,3 +1,6 @@
+# 6.0.3 (August 27, 2026)
+* Fixed [#226](https://github.com/elasticio/elasticioproject/issues/226): `parseJson` now returns the raw source string instead of throwing when `JSON.parse` fails. This prevents double-escaped string literals when retrieving non-JSON payloads (NDJSON, CSV, XML, plain text) offloaded to Object Storage via the lightweight message path.
+
 # 6.0.2 (August 5, 2026)
 * Fixed an issue where request timeouts were capped at 20 seconds, preventing the upload of large files under constrained network conditions. Increased the maximum request timeout threshold to 20 minutes (1,200,000 ms).
 * Migrated the test runner configuration from `ts-node` to `tsx` to resolve execution failures under Node.js v24.
